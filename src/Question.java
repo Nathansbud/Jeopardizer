@@ -1,4 +1,5 @@
 import processing.core.PApplet;
+import processing.core.PConstants;
 
 public class Question {
     private static Question selected = null;
@@ -10,11 +11,16 @@ public class Question {
     private String question;
     private String answer;
 
+    private String category;
+
     private boolean answered = false;
     private boolean dailyDouble = false;
 
     private static float width, height;
     private static float widthBuffer, heightBuffer;
+
+    private static float selectedWidth;
+    private static float selectedHeight;
 
     private float x, y;
 
@@ -32,16 +38,28 @@ public class Question {
     }
 
     public void draw() {
-        if(!answered) {
+        if(isSelected(this)) {
             gui.fill(PApplet.unhex("ff051281"));
-            gui.rect(x, y, width, height);
-            gui.fill(255);
-            gui.textSize(45);
+            gui.rect(0, 0, gui.width, gui.height);
+            gui.textSize(35);
             gui.fill(PApplet.unhex("fff9ad46"));
-            gui.text(valueText, x+width/2.0f - 0.5f*gui.textWidth(valueText), y + height/2.0f + 0.5f*gui.textAscent());
+            gui.text(valueText, gui.width/2.0f - 0.5f*gui.textWidth(valueText), 0 + gui.height/10.0f);
+            gui.fill(255);
+            gui.text(category, gui.width/2.0f - 0.5f*gui.textWidth(category), 0+gui.height/5.0f);
+            gui.textSize(40);
+            gui.text(question, gui.width/8.0f, gui.height/3.0f, gui.width - gui.width/3.0f, gui.height);
         } else {
-            gui.fill(PApplet.unhex("ff060ce9"));
-            gui.rect(x, y, width, height);
+            if (!answered) {
+                gui.fill(PApplet.unhex("ff051281"));
+                gui.rect(x, y, width, height);
+                gui.fill(255);
+                gui.textSize(45);
+                gui.fill(PApplet.unhex("fff9ad46"));
+                gui.text(valueText, x + width / 2.0f - 0.5f * gui.textWidth(valueText), y + height / 2.0f + 0.5f * gui.textAscent());
+            } else {
+                gui.fill(PApplet.unhex("ff051281"));
+                gui.rect(x, y, width, height);
+            }
         }
     }
 
@@ -66,6 +84,14 @@ public class Question {
         question = _question;
     }
 
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String _category) {
+        category = _category;
+    }
+
     public boolean isDailyDouble() {
         return dailyDouble;
     }
@@ -88,10 +114,16 @@ public class Question {
         gui = _gui;
     }
 
+    public float getX() {
+        return x;
+    }
     public void setX(float _x) {
         x = _x;
     }
 
+    public float getY() {
+        return y;
+    }
     public void setY(float _y) {
         y = _y;
     }
@@ -101,6 +133,7 @@ public class Question {
     }
     public static void setWidth() {
         width = gui.width/6.125f;
+        selectedWidth = gui.width;
     }
 
     public static float getHeight() {
@@ -108,6 +141,7 @@ public class Question {
     }
     public static void setHeight() {
         height = gui.height/6.25f;
+        selectedHeight = gui.height;
     }
 
     public static float getWidthBuffer() {
@@ -122,5 +156,16 @@ public class Question {
     }
     public static void setHeightBuffer() {
         heightBuffer = gui.height/150.0f;
+    }
+
+
+    public static boolean isSelected(Question q) {
+        return q.equals(selected);
+    }
+    public static Question getSelected() {
+        return selected;
+    }
+    public static void setSelected(Question _selected) {
+        selected = _selected;
     }
 }

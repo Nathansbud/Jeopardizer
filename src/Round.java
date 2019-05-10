@@ -26,8 +26,12 @@ public class Round {
 
 
     public void draw() {
-        for(Category c : categories) {
-            c.draw();
+        if(Question.getSelected() == null) {
+            for (Category c : categories) {
+                c.draw();
+            }
+        } else {
+            Question.getSelected().draw();
         }
     }
 

@@ -3,6 +3,7 @@ import processing.core.PApplet;
 import org.json.simple.*;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import processing.event.KeyEvent;
 
 import java.util.ArrayList;
 import java.util.concurrent.ThreadLocalRandom;
@@ -20,8 +21,10 @@ public class Jeopardy extends PApplet {
     private static Round second = new Round(Round.RoundType.DOUBLE);
     private static Round third = new Round(Round.RoundType.FINAL);
 
-    private static Pattern alexDialogue = Pattern.compile("(?<=\\(Alex: )(?s)(.*)(?=\\))");
+    private static ArrayList<Player> players = new ArrayList<Player>();
 
+    private static Pattern alexDialogue = Pattern.compile("(?<=\\(Alex: )(?s)(.*)(?=\\))");
+    private static int amountAnswered = 0;
 
     @Override
     public void settings() {
@@ -43,14 +46,186 @@ public class Jeopardy extends PApplet {
         Round.getCurrentRound().draw();
     }
 
+    @Override
+    public void mouseClicked() {
+        if(Question.getSelected() == null) {
+            for (Category c : Round.getCurrentRound().getCategories()) {
+                for (Question q : c.getQuestions()) {
+                    if(mouseX > q.getX() && mouseX < (q.getX() + Question.getWidth()) && mouseY > q.getY() && mouseY < q.getY() + Question.getHeight()) {
+                        q.setAnswered(true);
+                        Question.setSelected(q);
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    @Override
+    public void keyPressed(KeyEvent event) { //Numpad reserved for wagering once implemented (daily double + FJ)!
+        System.out.println(event.getKeyCode());
+        if(Round.getCurrentRound() != third && Question.getSelected() == null) { //Question select screen
+            ArrayList<Category> c = Round.getCurrentRound().getCategories();
+            Question q = null;
+            switch (event.getKeyCode()) {
+                case 81: //q
+                    q = c.get(0).getQuestions().get(0);
+                    break;
+                case 87: //w
+                    q = c.get(1).getQuestions().get(0);
+                    break;
+                case 69: //e
+                    q = c.get(2).getQuestions().get(0);
+                    break;
+                case 82: //r
+                    q = c.get(3).getQuestions().get(0);
+                    break;
+                case 84: //t
+                    q = c.get(4).getQuestions().get(0);
+                    break;
+                case 89: //y
+                    q = c.get(5).getQuestions().get(0);
+                    break;
+                case 85: //u
+                    q = c.get(0).getQuestions().get(1);
+                    break;
+                case 73: //i
+                    q = c.get(1).getQuestions().get(1);
+                    break;
+                case 79: //o
+                    q = c.get(2).getQuestions().get(1);
+                    break;
+                case 80: //p
+                    q = c.get(3).getQuestions().get(1);
+                    break;
+                case 91: //[
+                    q = c.get(4).getQuestions().get(1);
+                    break;
+                case 93: //]
+                    q = c.get(5).getQuestions().get(1);
+                    break;
+                case 65: //a
+                    q = c.get(0).getQuestions().get(2);
+                    break;
+                case 83: //s
+                    q = c.get(1).getQuestions().get(2);
+                    break;
+                case 68: //d
+                    q = c.get(2).getQuestions().get(2);
+                    break;
+                case 70: //f
+                    q = c.get(3).getQuestions().get(2);
+                    break;
+                case 71: //g
+                    q = c.get(4).getQuestions().get(2);
+                    break;
+                case 72: //h
+                    q = c.get(5).getQuestions().get(2);
+                    break;
+                case 74: //j
+                    q = c.get(0).getQuestions().get(3);
+                    break;
+                case 75: //k
+                    q = c.get(1).getQuestions().get(3);
+                    break;
+                case 76: //l
+                    q = c.get(2).getQuestions().get(3);
+                    break;
+                case 59: //;
+                    q = c.get(3).getQuestions().get(3);
+                    break;
+                case 222: //'
+                    q = c.get(4).getQuestions().get(3);
+                    break;
+                case 92: //\
+                    q = c.get(5).getQuestions().get(3);
+                    break;
+                case 90: //z
+                    q = c.get(0).getQuestions().get(4);
+                    break;
+                case 88: //x
+                    q = c.get(1).getQuestions().get(4);
+                    break;
+                case 67: //c
+                    q = c.get(2).getQuestions().get(4);
+                    break;
+                case 86: //v
+                    q = c.get(3).getQuestions().get(4);
+                    break;
+                case 66: //b
+                    q = c.get(4).getQuestions().get(4);
+                    break;
+                case 78: //n
+                    q = c.get(5).getQuestions().get(4);
+                    break;
+
+            }
+            if(q != null && !q.isAnswered()) {
+                q.setAnswered(true);
+                Question.setSelected(q);
+            }
+        } else if(Question.getSelected() != null) {  //Only on during question up
+            switch(event.getKeyCode()) {
+                case 8: //DELETE
+                    Player.getActive().changeScore(-Question.getSelected().getValue());
+                    System.out.println(Player.getActive().getScore());
+                    break;
+                case 9: //TAB
+                    amountAnswered++;
+                    Question.setSelected(null);
+                    break;
+                case 10: //ENTER
+                    amountAnswered++;
+                    Player.getActive().changeScore(Question.getSelected().getValue());
+                    System.out.println(Player.getActive().getScore());
+                    Question.setSelected(null);
+                    break;
+            }
+        } else {
+            Question finalQ = Round.getCurrentRound().getCategories().get(0).getQuestions().get(0);
+            finalQ.setAnswered(true);
+            Question.setSelected(finalQ);
+        }
+
+        switch(event.getKeyCode()) { //Always On
+            case 44: //<
+                if(players.size() >= 1) {
+                    Player.setActive(players.get(0));
+                }
+                System.out.println("Active Player:" + Player.getActive().getName());
+                break;
+            case 46: //]
+                if(players.size() >= 2) {
+                    Player.setActive(players.get(1));
+                }
+                System.out.println("Active Player:" + Player.getActive().getName());
+                break;
+            case 47: //\
+                if(players.size() >= 3) {
+                    Player.setActive(players.get(2));
+                }
+                System.out.println("Active Player:" + Player.getActive().getName());
+                break;
+            default:
+                break;
+        }
+
+        if(amountAnswered >= 30) {
+            amountAnswered = 0;
+            if(Round.getCurrentRound() == first) {
+                Round.setCurrentRound(second);
+            } else if(Round.getCurrentRound() == second) {
+                Round.setCurrentRound(third);
+            }
+        }
+    }
 
     private static boolean containsDialogue(String s) {
         return s.contains("(") || s.contains(")");
     }
 
     private static String removeAlexDialogue(String s) {
-        System.out.println("Comment:" + s.substring(s.indexOf("("), s.indexOf(")")+1));
-        return s.substring(0, s.indexOf("(")-1) + s.substring(s.lastIndexOf(")")+((s.lastIndexOf(")")!=s.length()-1)?(1):(0)), s.length() - 1);
+        return s.substring(0, s.indexOf("(")) + s.substring(s.lastIndexOf(")")+((s.lastIndexOf(")")!=s.length()-1)?(1):(0)), s.length() - 1);
     }
     public static String getDialogue(String s) {
         String n = s.substring(s.indexOf("("), s.indexOf(")")+1);
@@ -164,11 +339,20 @@ public class Jeopardy extends PApplet {
         setCategories();
         for(Category c : first.getCategories()) {
             System.out.println(c.getName());
+            int count = 0;
+            for(Question q : c.getQuestions()) {
+                System.out.println("("+count++ +")");
+                System.out.println(q.getQuestion());
+                System.out.println(q.getAnswer());
+            }
         }
-        System.out.println(second.getCategories());
-        System.out.println(third.getCategories());
 
-        Round.setCurrentRound(second);
+        Round.setCurrentRound(first);
+        players.add(new Player("Nina"));
+        players.add(new Player("Scott"));
+        players.add(new Player("Zack"));
+        Player.setActive(players.get(0));
+
         PApplet.runSketch(new String[]{"Jeopardy"}, app);
     }
 }

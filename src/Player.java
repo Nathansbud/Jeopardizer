@@ -1,9 +1,10 @@
 public class Player {
     private String name;
     private int score;
+    private static Player active = null;
 
-    public Player() {
-
+    public Player(String _name) {
+        name = _name;
     }
 
     public String getName() {
@@ -16,7 +17,18 @@ public class Player {
     public int getScore() {
         return score;
     }
+    public void changeScore(int amount) {
+        score += amount;
+    }
     public void setScore(int _score) {
         score = _score;
+    }
+
+
+    public static Player getActive() {
+        return active;
+    }
+    public static void setActive(Player _active) {
+        active = _active;
     }
 }

@@ -57,6 +57,7 @@ public class Category {
         return questions;
     }
     public void addQuestion(Question q) {
+        q.setCategory(name);
         questions.add(q);
     }
 

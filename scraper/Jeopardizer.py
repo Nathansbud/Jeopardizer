@@ -3,8 +3,11 @@ from requests.exceptions import RequestException
 from contextlib import closing
 from bs4 import BeautifulSoup, SoupStrainer
 import json
+import random
+
 import os
 import lxml
+
 
 def simple_get(url):
     try:
@@ -134,11 +137,29 @@ def scrape_all():
                         except:
                             print("Something went wrong and an exception was thrown! Link was " + li[li.find("showgame.php"):])
 
-def read_json():
-    with open("/Users/zackamiton/Code/Jeopardizer/data/single_jeopardy.json", "r") as f:
+def read_json(file):
+    with open(file, "r") as f:
         data = json.load(f)
     return data
 
 if __name__ == "__main__":
-    x = read_json()
-    print(x)
+    single_jeopardy_selection = read_json("/Users/zackamiton/Code/Jeopardizer/data/single_jeopardy.json")
+    double_jeopardy_selection = read_json("/Users/zackamiton/Code/Jeopardizer/data/double_jeopardy.json")
+    final_jeopardy_selection = read_json("/Users/zackamiton/Code/Jeopardizer/data/final_jeopardy.json")
+
+    sj = []
+    dj = []
+    fj = final_jeopardy_selection[random.randint(0, len(final_jeopardy_selection))]
+
+
+    while len(sj) < 6:
+        rand = random.randint(0, len(single_jeopardy_selection))
+        if single_jeopardy_selection[rand] not in sj:
+            sj.append(single_jeopardy_selection[rand])
+    while len(dj) < 6:
+        rand = random.randint(0, len(double_jeopardy_selection))
+        if double_jeopardy_selection[rand] not in dj:
+            dj.append(double_jeopardy_selection[rand])
+
+
+

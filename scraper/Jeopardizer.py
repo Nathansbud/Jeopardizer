@@ -4,6 +4,7 @@ from contextlib import closing
 from bs4 import BeautifulSoup, SoupStrainer
 import json
 import os
+import lxml
 
 def simple_get(url):
     try:
@@ -11,6 +12,7 @@ def simple_get(url):
             if is_good_response(resp):
                 return resp.content
             else:
+                print(resp.status_code)
                 return None
     except RequestException as e:
         return None
@@ -30,7 +32,13 @@ content = []
 #This function should scrape every Jeopardy game off the site, and add them to an array
 def scrape_all():
     archive = BeautifulSoup(simple_get(site + "listseasons.php"), parse_only=SoupStrainer('a'), features="html.parser")
-    for season in archive:
+
+    #Account for links in header
+    x = iter(archive)
+    for i in range(29): #7 for S35, 10 for S32, 29 for S13
+        x.__next__()
+
+    for season in x:
         if season.has_attr('href'):
             lt = season.get("href")
             if lt.__contains__("showseason.php"):
@@ -38,92 +46,93 @@ def scrape_all():
                 for episode in episode_list:
                     li = episode.get("href")
                     if li.__contains__("showgame.php"):
-                        questions = BeautifulSoup(simple_get(site + li[li.find("showgame.php"):]), features="html.parser")
-                        questions.prettify()
+                        try:
+                            questions = BeautifulSoup(simple_get(site + li[li.find("showgame.php"):]), features="html.parser")
+                            questions.prettify()
+                            if len(questions.find_all('table', {'class':'round'})) + len(questions.find_all('table', {'class':'final_round'})) != 3:
+                                print("Questions from " + site + li[li.find("showgame.php"):] + " cannot be read due to the game type! Skipping...")
+                                continue
+                            else:
+                                print("Grabbing questions from " + site + li[li.find("showgame.php"):] + "!")
+                                categories = [q.text[2:-2].rstrip("\n") for q in questions.find_all('td', {'class':'category'})]
+                                choices = questions.find_all('td', {'class':'clue'})
+                                choices.append(questions.find_all('td', {'class':'category'})[-1])
 
-                        if len(questions.find_all('table', {'class':'round'})) + len(questions.find_all('table', {'class':'final_round'})) != 3:
-                            print("Questions from " + site + li[li.find("showgame.php"):] + " cannot be read due to the game type! Skipping...")
-                            continue
-                        else:
-                            print("Grabbing questions from " + site + li[li.find("showgame.php"):] + "!")
-                            categories = [q.text[2:-2].rstrip("\n") for q in questions.find_all('td', {'class':'category'})]
-                            choices = questions.find_all('td', {'class':'clue'})
-                            choices.append(questions.find_all('td', {'class':'category'})[-1])
+                                clues = [c.text[2:-2].rstrip("\n") for c in choices]
+                                answers = []
 
-                            clues = [c.text[2:-2].rstrip("\n") for c in choices]
-                            answers = []
-
-                            for elem in choices:
-                                r = elem.find('div')
-                                if r is not None:
-                                    ans = r["onmouseover"].replace("&gt", ">").replace("&lt", "<").replace("\&quot;", '"').replace('\\"correct_response\\"', '"correct_response"')
-                                    answers.append(ans[ans.find('correct_response">')+18:ans.find("</em")].replace("<i>", "").replace("</i>", ""))
-                                else:
-                                    if answers.__len__() == 60:
-                                        pass
+                                for elem in choices:
+                                    r = elem.find('div')
+                                    if r is not None:
+                                        ans = r["onmouseover"].replace("&gt", ">").replace("&lt", "<").replace("\&quot;", '"').replace('\\"correct_response\\"', '"correct_response"')
+                                        answers.append(ans[ans.find('correct_response">')+18:ans.find("</em")].replace("<i>", "").replace("</i>", ""))
                                     else:
-                                        answers.append("")
-
-                            single_jeopardy_categories = categories[:6]
-                            double_jeopardy_categories = categories[6:12]
-                            final_jeopardy = categories[-1][1:]
-
-                            single_jeopardy = []
-                            double_jeopardy = []
-
-                            qa_set = []
-
-                            for a in range(0, 61):
-                                if clues[a].find("\n\n\n\n\n\n\n") != -1:
-                                    qa_set.append({clues[a][clues[a].find("\n\n\n\n\n\n\n")+7:]:answers[a]}) #Normal Jeopardies
-                                elif len(clues[a]) > 0:
-                                    qa_set.append({clues[a][1:]:answers[a]}) #Final Jeopardy
-                                else:
-                                    qa_set.append({clues[a]:answers[a]})
-                            i = 0
-                            for c in single_jeopardy_categories:
-                                single_jeopardy.append({c:qa_set[i:30:6]})
-                                i += 1
-                            i = 0
-                            for c in double_jeopardy_categories:
-                                double_jeopardy.append({c:qa_set[30+i:60:6]})
-                                i += 1
-
-                            final_jeopardy = {final_jeopardy:qa_set[-1]}
-
-                            for c in single_jeopardy:
-                                for n in c.values():
-                                    for r in n:
-                                        if "" in r.keys() or "" in r.values():
-                                            single_jeopardy.remove(c)
-                                            break
+                                        if answers.__len__() == 60:
+                                            pass
                                         else:
-                                            break
+                                            answers.append("")
 
+                                single_jeopardy_categories = categories[:6]
+                                double_jeopardy_categories = categories[6:12]
+                                final_jeopardy = categories[-1][1:]
 
+                                single_jeopardy = []
+                                double_jeopardy = []
 
-                            for c in double_jeopardy:
-                                for n in c.values():
-                                    for r in n:
-                                        if "" in r.keys() or "" in r.values():
-                                            double_jeopardy.remove(c)
-                                            break
-                                        else:
-                                            break
+                                qa_set = []
 
-                            with open('/Users/zackamiton/Code/Jeopardizer/data/single_jeopardy.json', 'a+') as sj:
+                                for a in range(0, 61):
+                                    if clues[a].find("\n\n\n\n\n\n\n") != -1:
+                                        qa_set.append({clues[a][clues[a].find("\n\n\n\n\n\n\n")+7:]:answers[a]}) #Normal Jeopardies
+                                    elif len(clues[a]) > 0:
+                                        qa_set.append({clues[a][1:]:answers[a]}) #Final Jeopardy
+                                    else:
+                                        qa_set.append({clues[a]:answers[a]})
+                                i = 0
+                                for c in single_jeopardy_categories:
+                                    single_jeopardy.append({c:qa_set[i:30:6]})
+                                    i += 1
+                                i = 0
+                                for c in double_jeopardy_categories:
+                                    double_jeopardy.append({c:qa_set[30+i:60:6]})
+                                    i += 1
+
+                                final_jeopardy = {final_jeopardy:qa_set[-1]}
+
                                 for c in single_jeopardy:
-                                    json.dump(c, sj)
-                                    sj.write(",")
+                                    for n in c.values():
+                                        for r in n:
+                                            if "" in r.keys() or "" in r.values():
+                                                single_jeopardy.remove(c)
+                                                break
+                                            else:
+                                                break
 
-                            with open('/Users/zackamiton/Code/Jeopardizer/data/double_jeopardy.json', 'a+') as dj:
                                 for c in double_jeopardy:
-                                    json.dump(c, dj)
-                                    dj.write(",")
+                                    for n in c.values():
+                                        for r in n:
+                                            if "" in r.keys() or "" in r.values():
+                                                double_jeopardy.remove(c)
+                                                break
+                                            else:
+                                                break
 
-                            with open('/Users/zackamiton/Code/Jeopardizer/data/final_jeopardy.json', 'a+') as fj:
-                                json.dump(final_jeopardy, fj)
-                                fj.write(",")
+                                ##This JSON code is outputted fine, but requires array brackets before and after in order to function properly; make sure to add these
+                                with open('/Users/zackamiton/Code/Jeopardizer/data/single_jeopardy.json', 'a+') as sj:
+                                    for c in single_jeopardy:
+                                        json.dump(c, sj)
+                                        sj.write(",")
+
+                                with open('/Users/zackamiton/Code/Jeopardizer/data/double_jeopardy.json', 'a+') as dj:
+                                    for c in double_jeopardy:
+                                        json.dump(c, dj)
+                                        dj.write(",")
+
+                                with open('/Users/zackamiton/Code/Jeopardizer/data/final_jeopardy.json', 'a+') as fj:
+                                    json.dump(final_jeopardy, fj)
+                                    fj.write(",")
+                        except:
+                            print("Something went wrong and an exception was thrown! Link was " + li[li.find("showgame.php"):])
 
 def read_json():
     with open("/Users/zackamiton/Code/Jeopardizer/data/single_jeopardy.json", "r") as f:
@@ -131,5 +140,5 @@ def read_json():
     return data
 
 if __name__ == "__main__":
-    scrape_all()
-    pass
+    x = read_json()
+    print(x)

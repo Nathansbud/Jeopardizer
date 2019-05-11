@@ -43,18 +43,28 @@ public class Jeopardy extends PApplet {
     @Override
     public void draw() {
         background(0);
-        Round.getCurrentRound().draw();
+        if(Round.getGameState() != Round.GameState.SCORES) {
+            Round.getCurrentRound().draw();
+        } else {
+            background(PApplet.unhex("ff051281"));
+            textSize(35);
+            for(int i = 0; i < players.size(); i++) {
+                text(players.get(i).getName() + ": $" + String.valueOf(players.get(i).getScore()), width/3.0f, height/4.0f*(i+1));
+            }
+        }
     }
 
     @Override
     public void mouseClicked() {
-        if(Question.getSelected() == null) {
-            for (Category c : Round.getCurrentRound().getCategories()) {
-                for (Question q : c.getQuestions()) {
-                    if(mouseX > q.getX() && mouseX < (q.getX() + Question.getWidth()) && mouseY > q.getY() && mouseY < q.getY() + Question.getHeight()) {
-                        q.setAnswered(true);
-                        Question.setSelected(q);
-                        break;
+        if(Round.getGameState() != Round.GameState.SCORES) {
+            if (Question.getSelected() == null) {
+                for (Category c : Round.getCurrentRound().getCategories()) {
+                    for (Question q : c.getQuestions()) {
+                        if (mouseX > q.getX() && mouseX < (q.getX() + Question.getWidth()) && mouseY > q.getY() && mouseY < q.getY() + Question.getHeight()) {
+                            q.setAnswered(true);
+                            Question.setSelected(q);
+                            break;
+                        }
                     }
                 }
             }
@@ -158,11 +168,22 @@ public class Jeopardy extends PApplet {
                 case 78: //n
                     q = c.get(5).getQuestions().get(4);
                     break;
-
+                case 16: //LShift
+                    if(Round.getGameState() != Round.GameState.SCORES) {
+                        Round.setGameState(Round.GameState.SCORES);
+                    } else {
+                        Round.setGameState(Round.GameState.ROUND);
+                    }
+                    break;
+                case 192:
+                    Round.setGameState(Round.GameState.ROUND);
+                    progressRound();
+                    break;
             }
             if(q != null && !q.isAnswered()) {
                 q.setAnswered(true);
                 Question.setSelected(q);
+                Round.setGameState(Round.GameState.QUESTION);
             }
         } else if(Question.getSelected() != null) {  //Only on during question up
             switch(event.getKeyCode()) {
@@ -171,14 +192,14 @@ public class Jeopardy extends PApplet {
                     System.out.println(Player.getActive().getScore());
                     break;
                 case 9: //TAB
-                    amountAnswered++;
                     Question.setSelected(null);
+                    Round.setGameState(Round.GameState.ROUND);
                     break;
                 case 10: //ENTER
-                    amountAnswered++;
                     Player.getActive().changeScore(Question.getSelected().getValue());
                     System.out.println(Player.getActive().getScore());
                     Question.setSelected(null);
+                    Round.setGameState(Round.GameState.ROUND);
                     break;
             }
         } else {
@@ -209,14 +230,15 @@ public class Jeopardy extends PApplet {
             default:
                 break;
         }
+    }
 
-        if(amountAnswered >= 30) {
-            amountAnswered = 0;
-            if(Round.getCurrentRound() == first) {
-                Round.setCurrentRound(second);
-            } else if(Round.getCurrentRound() == second) {
-                Round.setCurrentRound(third);
-            }
+    private static void progressRound() {
+        if (Round.getCurrentRound() == first) {
+            Round.setCurrentRound(second);
+        } else if (Round.getCurrentRound() == second) {
+            Round.setCurrentRound(third);
+            Round.getCurrentRound().getCategories().get(0).getQuestions().get(0).setAnswered(true);
+            Question.setSelected(Round.getCurrentRound().getCategories().get(0).getQuestions().get(0));
         }
     }
 
@@ -333,11 +355,9 @@ public class Jeopardy extends PApplet {
         }
     }
 
-    public static void main(String[] args) {
-        String s = "Owowowow (Alex: Suck me off pls)";
-
-        setCategories();
-        for(Category c : first.getCategories()) {
+    public static void printQuestions(Round r) {
+        System.out.println(r.getRound().toString());
+        for(Category c : r.getCategories()) {
             System.out.println(c.getName());
             int count = 0;
             for(Question q : c.getQuestions()) {
@@ -346,6 +366,13 @@ public class Jeopardy extends PApplet {
                 System.out.println(q.getAnswer());
             }
         }
+    }
+
+    public static void main(String[] args) {
+        setCategories();
+        printQuestions(first);
+        printQuestions(second);
+        printQuestions(third);
 
         Round.setCurrentRound(first);
         players.add(new Player("Nina"));

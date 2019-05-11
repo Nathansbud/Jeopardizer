@@ -7,7 +7,14 @@ public class Round {
         FINAL()
     }
 
+    enum GameState {
+        ROUND(),
+        QUESTION(),
+        SCORES()
+    }
+
     private static Round CURRENT_ROUND = null;
+    private static GameState gameState = GameState.ROUND;
 
     private RoundType round;
     private ArrayList<Category> categories = new ArrayList<Category>();
@@ -16,14 +23,51 @@ public class Round {
         round = _round;
     }
 
+    public RoundType getRound() {
+        return round;
+    }
+    public void setRound(RoundType _round) {
+        round = _round;
+    }
+
+    public static GameState getGameState() {
+        return gameState;
+    }
+    public static void setGameState(GameState _gameState) {
+        gameState = _gameState;
+    }
+
     public void setup() {
-        for (int i = 0; i < categories.size(); i++) {
-            categories.get(i).setX(i * Question.getWidth() + i*Question.getWidthBuffer());
-            categories.get(i).setY(0);
-            categories.get(i).setValues(round);
+        if(round != RoundType.FINAL) {
+            for (int i = 0; i < categories.size(); i++) {
+                categories.get(i).setX(i * Question.getWidth() + i * Question.getWidthBuffer());
+                categories.get(i).setY(0);
+                categories.get(i).setValues(round);
+            }
         }
     }
 
+    public int getNumAnswered() {
+        int num = 0;
+        for(Category c : categories) {
+            for(Question q : c.getQuestions()) {
+                if(q.isAnswered()) {
+                    num++;
+                }
+            }
+        }
+        return num;
+    }
+
+    public int getQuestionCount() {
+        int count = 0;
+        for(Category c : categories) {
+            for(Question q : c.getQuestions()) {
+                count++;
+            }
+        }
+        return count;
+    }
 
     public void draw() {
         if(Question.getSelected() == null) {
@@ -49,5 +93,7 @@ public class Round {
     public static Round getCurrentRound() {
         return CURRENT_ROUND;
     }
+
+
 }
 

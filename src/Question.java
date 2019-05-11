@@ -43,7 +43,7 @@ public class Question {
             gui.rect(0, 0, gui.width, gui.height);
             gui.textSize(35);
             gui.fill(PApplet.unhex("fff9ad46"));
-            gui.text(valueText, gui.width/2.0f - 0.5f*gui.textWidth(valueText), 0 + gui.height/10.0f);
+            gui.text(valueText, gui.width/2.0f - 0.5f*gui.textWidth(valueText), 0 + gui.height/10.0f); //Need to handle final jeopardy here
             gui.fill(255);
             gui.text(category, gui.width/2.0f - 0.5f*gui.textWidth(category), 0+gui.height/5.0f);
             gui.textSize(40);
@@ -142,6 +142,13 @@ public class Question {
     public static void setHeight() {
         height = gui.height/6.25f;
         selectedHeight = gui.height;
+    }
+
+    public static float getSelectedWidth() {
+        return selectedWidth;
+    }
+    public static float getSelectedHeight() {
+        return selectedHeight;
     }
 
     public static float getWidthBuffer() {

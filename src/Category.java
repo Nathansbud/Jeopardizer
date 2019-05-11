@@ -6,8 +6,10 @@ public class Category {
     private String name;
     private String dialogue = "";
     private ArrayList<Question> questions = new ArrayList<Question>();
-    private float x, y = 0;
 
+
+    private float x, y = 0;
+    private float width, height;
 
     public Category() {
 
@@ -33,7 +35,7 @@ public class Category {
                 case DOUBLE:
                     questions.get(i).setValue(400+400*i);
                     break;
-                default:
+                case FINAL:
                     questions.get(i).setValue(0);
                     break;
             }
@@ -46,11 +48,21 @@ public class Category {
             q.setX(x);
         }
     }
+
     public void setY(float _y) {
         y = _y;
         for(int i = 1; i < questions.size()+1; i++) {
             questions.get(i-1).setY(i*Question.getHeight()+(i)*Question.getHeightBuffer());
         }
+    }
+
+
+    public void setWidth(float _width) {
+        width = _width;
+    }
+
+    public void setHeight(float _height) {
+        height = _height;
     }
 
     public ArrayList<Question> getQuestions() {

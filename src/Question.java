@@ -15,6 +15,7 @@ public class Question {
 
     private boolean answered = false;
     private boolean dailyDouble = false;
+    private boolean showQuestion = false;
 
     private static float width, height;
     private static float widthBuffer, heightBuffer;
@@ -42,12 +43,19 @@ public class Question {
             gui.fill(PApplet.unhex("ff051281"));
             gui.rect(0, 0, gui.width, gui.height);
             gui.textSize(35);
-            gui.fill(PApplet.unhex("fff9ad46"));
-            gui.text(valueText, gui.width/2.0f - 0.5f*gui.textWidth(valueText), 0 + gui.height/10.0f); //Need to handle final jeopardy here
+            if(!dailyDouble || showQuestion) {
+                gui.fill(PApplet.unhex("fff9ad46"));
+                gui.text(valueText, gui.width/2.0f - 0.5f*gui.textWidth(valueText), 0 + gui.height/10.0f); //Need to handle final jeopardy here
+            } else {
+                gui.fill(PApplet.unhex("ffff0000"));
+                gui.text("DAILY DOUBLE", gui.width/2.0f - 0.5f*gui.textWidth("DAILY DOUBLE"), 0 + gui.height/10.0f); //Need to handle final jeopardy here
+            }
             gui.fill(255);
             gui.text(category, gui.width/2.0f - 0.5f*gui.textWidth(category), 0+gui.height/5.0f);
             gui.textSize(40);
-            gui.text(question, gui.width/8.0f, gui.height/3.0f, gui.width - gui.width/3.0f, gui.height);
+            if(!dailyDouble || (showQuestion)) {
+                gui.text(question, gui.width / 8.0f, gui.height / 3.0f, gui.width - gui.width / 3.0f, gui.height);
+            }
         } else {
             if (!answered) {
                 gui.fill(PApplet.unhex("ff051281"));
@@ -97,6 +105,13 @@ public class Question {
     }
     public void setDailyDouble(boolean _dailyDouble) {
         dailyDouble = _dailyDouble;
+    }
+
+    public boolean isShowQuestion() {
+        return showQuestion;
+    }
+    public void setShowQuestion(boolean _showQuestion) {
+        showQuestion = _showQuestion;
     }
 
     public int getValue() {

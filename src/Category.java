@@ -68,6 +68,9 @@ public class Category {
     public ArrayList<Question> getQuestions() {
         return questions;
     }
+    public Question getQuestion(int index) {
+        return questions.get(index);
+    }
     public void addQuestion(Question q) {
         q.setCategory(name);
         questions.add(q);

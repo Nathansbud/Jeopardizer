@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class Round {
     enum RoundType {
@@ -58,7 +59,6 @@ public class Round {
         }
         return num;
     }
-
     public int getQuestionCount() {
         int count = 0;
         for(Category c : categories) {
@@ -81,6 +81,31 @@ public class Round {
 
     public ArrayList<Category> getCategories() {
         return categories;
+    }
+    public Category getCategory(int index) {
+        return categories.get(index);
+    }
+
+
+
+    public void setDailyDouble() {
+        int rand = ThreadLocalRandom.current().nextInt(0, 30);
+
+        switch(round) {
+            case SINGLE:
+                categories.get(rand/6).getQuestions().get(rand%5).setDailyDouble(true);
+                break;
+            case DOUBLE:
+                categories.get(rand/6).getQuestions().get(rand%5).setDailyDouble(true);
+                int randD = ThreadLocalRandom.current().nextInt(0, 30);
+                while(randD == rand) {
+                    randD = ThreadLocalRandom.current().nextInt(0, 30);
+                }
+                categories.get(randD/6).getQuestions().get(randD%5).setDailyDouble(true);
+                break;
+            case FINAL:
+                break;
+        }
     }
 
     public void addCategory(Category c) {

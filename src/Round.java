@@ -86,9 +86,7 @@ public class Round {
         return categories.get(index);
     }
 
-
-
-    public void setDailyDouble() {
+    public void setWagerables() {
         int rand = ThreadLocalRandom.current().nextInt(0, 30);
 
         switch(round) {
@@ -104,6 +102,7 @@ public class Round {
                 categories.get(randD/6).getQuestions().get(randD%5).setDailyDouble(true);
                 break;
             case FINAL:
+                categories.get(0).getQuestions().get(0).setWagerable(true);
                 break;
         }
     }

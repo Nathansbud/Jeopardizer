@@ -203,9 +203,11 @@ public class Jeopardy extends PApplet {
                     break;
                 case 10: //ENTER
                     Player.getActive().changeScore(Question.getSelected().getValue());
-                    System.out.println(Player.getActive().getScore());
-                    Question.setSelected(null);
-                    Round.setGameState(Round.GameState.ROUND);
+                    System.out.println(Player.getActive().getName() + ": " + Player.getActive().getScore());
+                    if(Round.getCurrentRound().getRound() != Round.RoundType.FINAL) {
+                        Question.setSelected(null);
+                        Round.setGameState(Round.GameState.ROUND);
+                    }
                     wager = "";
                     break;
                 case 45:
@@ -215,7 +217,7 @@ public class Jeopardy extends PApplet {
                     }
                     break;
                 case 61:
-                    if(Question.getSelected().isDailyDouble()) {
+                    if(Question.getSelected().isWagerable()) {
                         if(wager.length() == 0) {
                             Question.getSelected().setValue(0);
                         } else {
@@ -227,6 +229,7 @@ public class Jeopardy extends PApplet {
                             }
                         }
                     }
+                    wager = "";
                     break;
                 case 48:
                 case 49:
@@ -238,16 +241,24 @@ public class Jeopardy extends PApplet {
                 case 55:
                 case 56:
                 case 57:
-                    if(Question.getSelected().isDailyDouble()) {
+                    if(Question.getSelected().isWagerable()) {
                         wager += (event.getKey());
                         System.out.println(wager);
                     }
                     break;
             }
         } else {
-            Question finalQ = Round.getCurrentRound().getCategories().get(0).getQuestions().get(0);
-            finalQ.setAnswered(true);
-            Question.setSelected(finalQ);
+            if(event.getKeyCode() == 16 && Round.getGameState() != Round.GameState.QUESTION) {
+                if(Round.getGameState() != Round.GameState.SCORES) {
+                    Round.setGameState(Round.GameState.SCORES);
+                } else {
+                    Round.setGameState(Round.GameState.ROUND);
+                }
+            } else {
+                Question finalQ = Round.getCurrentRound().getCategories().get(0).getQuestions().get(0);
+                finalQ.setAnswered(true);
+                Question.setSelected(finalQ);
+            }
         }
 
         switch(event.getKeyCode()) { //Always On
@@ -435,11 +446,12 @@ public class Jeopardy extends PApplet {
         printQuestions(first);
         printQuestions(second);
         printQuestions(third);
-        first.setDailyDouble();
-        second.setDailyDouble();
 
+        first.setWagerables();
+        second.setWagerables();
+        third.setWagerables();
 
-        Round.setCurrentRound(first);
+        Round.setCurrentRound(third);
 
         players.add(new Player("Rana"));
         Player.setActive(players.get(0));

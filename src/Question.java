@@ -5,8 +5,8 @@ public class Question {
     private static Question selected = null;
     private static PApplet gui;
 
-    private int value=200;
-    private String valueText="$200";
+    private int value;
+    private String valueText = "";
 
     private String question;
     private String answer;
@@ -15,7 +15,9 @@ public class Question {
 
     private boolean answered = false;
     private boolean dailyDouble = false;
-    private boolean showQuestion = false;
+    private boolean wagerable = false;
+    private boolean showQuestion = true;
+
 
     private static float width, height;
     private static float widthBuffer, heightBuffer;
@@ -43,12 +45,18 @@ public class Question {
             gui.fill(PApplet.unhex("ff051281"));
             gui.rect(0, 0, gui.width, gui.height);
             gui.textSize(35);
-            if(!dailyDouble || showQuestion) {
-                gui.fill(PApplet.unhex("fff9ad46"));
-                gui.text(valueText, gui.width/2.0f - 0.5f*gui.textWidth(valueText), 0 + gui.height/10.0f); //Need to handle final jeopardy here
-            } else {
+
+            if(wagerable) {
                 gui.fill(PApplet.unhex("ffff0000"));
-                gui.text("DAILY DOUBLE", gui.width/2.0f - 0.5f*gui.textWidth("DAILY DOUBLE"), 0 + gui.height/10.0f); //Need to handle final jeopardy here
+                if(!dailyDouble && wagerable) {
+                    gui.text("FINAL JEOPARDY", gui.width / 2.0f - 0.5f * gui.textWidth("DAILY DOUBLE"), 0 + gui.height / 10.0f); //Need to handle final jeopardy here
+                } else {
+                    gui.text("DAILY DOUBLE", gui.width/2.0f - 0.5f*gui.textWidth("DAILY DOUBLE"), 0 + gui.height/10.0f); //Need to handle final jeopardy here
+                }
+            }
+            if(showQuestion) {
+                gui.fill(PApplet.unhex("fff9ad46"));
+                gui.text(valueText, gui.width / 2.0f - 0.5f * gui.textWidth(valueText), 0 + gui.height / 7.2f); //Need to handle final jeopardy here
             }
             gui.fill(255);
             gui.text(category, gui.width/2.0f - 0.5f*gui.textWidth(category), 0+gui.height/5.0f);
@@ -100,11 +108,20 @@ public class Question {
         category = _category;
     }
 
+    public boolean isWagerable() {
+        return wagerable || dailyDouble;
+    }
+    public void setWagerable(boolean _wagerable) {
+        wagerable = _wagerable;
+    }
+
     public boolean isDailyDouble() {
         return dailyDouble;
     }
     public void setDailyDouble(boolean _dailyDouble) {
         dailyDouble = _dailyDouble;
+        wagerable = _dailyDouble;
+        showQuestion = !_dailyDouble;
     }
 
     public boolean isShowQuestion() {
@@ -113,6 +130,7 @@ public class Question {
     public void setShowQuestion(boolean _showQuestion) {
         showQuestion = _showQuestion;
     }
+
 
     public int getValue() {
         return value;

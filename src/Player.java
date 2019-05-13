@@ -25,6 +25,9 @@ public class Player {
     }
 
 
+    public boolean isActive() {
+        return active != null && active.equals(this);
+    }
     public static Player getActive() {
         return active;
     }

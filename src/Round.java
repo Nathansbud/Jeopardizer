@@ -117,7 +117,5 @@ public class Round {
     public static Round getCurrentRound() {
         return CURRENT_ROUND;
     }
-
-
 }
 

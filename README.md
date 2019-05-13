@@ -4,7 +4,7 @@
 
 Jeopardy is awesome, and Jeopardy fans are even cooler! J-Archive has an archive of (nearly) every Jeopardy game to date, and thanks to a shoddily made scraper, so do I!
 
-This generates random games of Jeopardy (Single, Double, and Final), for 3 players, with 1 acting as the game's host and controlling selection and score awarding via keyboard as the "dev console." Still a work in progress (Daily Double/Final Jeopardy wagering systems unfinished, timers unfinished, sometimes categories that are unfinished can show up on the board), but overall largely functional!
+This generates random games of Jeopardy (Single, Double, and Final), for 3 players, with a 4th acting as the game's host and controlling selection and score awarding via keyboard as the "dev console." Core game loop is finished, though timers and buzzers are not implemented programmatically as of yet, and occasionally unfinished categories or categories that require external media which is unpresent can show up on the board. Overall, largely functional though!
 
 ## External Dependencies
 

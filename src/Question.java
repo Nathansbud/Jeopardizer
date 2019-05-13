@@ -22,9 +22,6 @@ public class Question {
     private static float width, height;
     private static float widthBuffer, heightBuffer;
 
-    private static float selectedWidth;
-    private static float selectedHeight;
-
     private float x, y;
 
     public Question(String _question, String _answer) {
@@ -42,20 +39,20 @@ public class Question {
 
     public void draw() {
         if(isSelected(this)) {
-            gui.fill(PApplet.unhex("ff051281"));
+            gui.fill(PApplet.unhex(Constants.JEOPARDY_BLUE));
             gui.rect(0, 0, gui.width, gui.height);
             gui.textSize(35);
 
             if(wagerable) {
-                gui.fill(PApplet.unhex("ffff0000"));
+                gui.fill(PApplet.unhex(Constants.JEOPARDY_WAGERABLE));
                 if(!dailyDouble && wagerable) {
-                    gui.text("FINAL JEOPARDY", gui.width / 2.0f - 0.5f * gui.textWidth("DAILY DOUBLE"), 0 + gui.height / 10.0f); //Need to handle final jeopardy here
+                    gui.text("FINAL JEOPARDY", gui.width / 2.0f - 0.5f * gui.textWidth("FINAL JEOPARDY"), 0 + gui.height / 10.0f); //Need to handle final jeopardy here
                 } else {
                     gui.text("DAILY DOUBLE", gui.width/2.0f - 0.5f*gui.textWidth("DAILY DOUBLE"), 0 + gui.height/10.0f); //Need to handle final jeopardy here
                 }
             }
             if(showQuestion) {
-                gui.fill(PApplet.unhex("fff9ad46"));
+                gui.fill(PApplet.unhex(Constants.JEOPARDY_YELLOW));
                 gui.text(valueText, gui.width / 2.0f - 0.5f * gui.textWidth(valueText), 0 + gui.height / 7.2f); //Need to handle final jeopardy here
             }
             gui.fill(255);
@@ -66,14 +63,14 @@ public class Question {
             }
         } else {
             if (!answered) {
-                gui.fill(PApplet.unhex("ff051281"));
+                gui.fill(PApplet.unhex(Constants.JEOPARDY_BLUE));
                 gui.rect(x, y, width, height);
                 gui.fill(255);
                 gui.textSize(45);
-                gui.fill(PApplet.unhex("fff9ad46"));
+                gui.fill(PApplet.unhex(Constants.JEOPARDY_YELLOW));
                 gui.text(valueText, x + width / 2.0f - 0.5f * gui.textWidth(valueText), y + height / 2.0f + 0.5f * gui.textAscent());
             } else {
-                gui.fill(PApplet.unhex("ff051281"));
+                gui.fill(PApplet.unhex(Constants.JEOPARDY_BLUE));
                 gui.rect(x, y, width, height);
             }
         }
@@ -113,6 +110,7 @@ public class Question {
     }
     public void setWagerable(boolean _wagerable) {
         wagerable = _wagerable;
+        value = 0;
     }
 
     public boolean isDailyDouble() {
@@ -122,6 +120,7 @@ public class Question {
         dailyDouble = _dailyDouble;
         wagerable = _dailyDouble;
         showQuestion = !_dailyDouble;
+        value = 0;
     }
 
     public boolean isShowQuestion() {
@@ -166,7 +165,6 @@ public class Question {
     }
     public static void setWidth() {
         width = gui.width/6.125f;
-        selectedWidth = gui.width;
     }
 
     public static float getHeight() {
@@ -174,14 +172,6 @@ public class Question {
     }
     public static void setHeight() {
         height = gui.height/6.25f;
-        selectedHeight = gui.height;
-    }
-
-    public static float getSelectedWidth() {
-        return selectedWidth;
-    }
-    public static float getSelectedHeight() {
-        return selectedHeight;
     }
 
     public static float getWidthBuffer() {

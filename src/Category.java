@@ -16,13 +16,15 @@ public class Category {
     }
 
     public void draw() {
-        gui.fill(PApplet.unhex("ff051281"));
-        gui.rect(x, y, Question.getWidth(), Question.getHeight());
-        gui.fill(255);
-        gui.textSize(18);
-        gui.text(name, x+0.1f*Question.getWidth(), y + Question.getHeight()/3.0f, Question.getWidth()*0.9f, Question.getHeight());
-        for(Question q : questions) {
-            q.draw();
+        if(gui.args[0].equals("Game")) {
+            gui.fill(PApplet.unhex(Constants.JEOPARDY_BLUE));
+            gui.rect(x, y, Question.getWidth(), Question.getHeight());
+            gui.fill(255);
+            gui.textSize(18);
+            gui.text(name, x + 0.1f * Question.getWidth(), y + Question.getHeight() / 3.0f, Question.getWidth() * 0.9f, Question.getHeight());
+            for (Question q : questions) {
+                q.draw();
+            }
         }
     }
 

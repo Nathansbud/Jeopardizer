@@ -14,8 +14,9 @@ import java.io.IOException;
 import java.util.regex.Pattern;
 
 
-public class Jeopardy extends PApplet {
-    private static Jeopardy app = new Jeopardy();
+public class Game extends PApplet {
+    private static Game app = new Game();
+    private static Console console = new Console();
 
     private static Round first = new Round(Round.RoundType.SINGLE);
     private static Round second = new Round(Round.RoundType.DOUBLE);
@@ -27,11 +28,10 @@ public class Jeopardy extends PApplet {
     private static int amountAnswered = 0;
 
     private static String wager = "";
-    private static boolean showWager = false;
 
     @Override
     public void settings() {
-        fullScreen();
+        fullScreen(1);
     }
 
     @Override
@@ -40,7 +40,6 @@ public class Jeopardy extends PApplet {
         Category.setGui(app);
         first.setup();
         second.setup();
-
     }
 
     @Override
@@ -49,8 +48,8 @@ public class Jeopardy extends PApplet {
         if(Round.getGameState() != Round.GameState.SCORES) {
             Round.getCurrentRound().draw();
         } else {
-            background(PApplet.unhex("ff051281"));
-            fill(PApplet.unhex("fff9ad46"));
+            background(PApplet.unhex(Constants.JEOPARDY_BLUE));
+            fill(PApplet.unhex(Constants.JEOPARDY_YELLOW));
             textSize(35);
             for(int i = 0; i < players.size(); i++) {
                 text(players.get(i).getName() + ": $" + String.valueOf(players.get(i).getScore()), width/3.0f, height/4.0f*(i+1));
@@ -77,7 +76,7 @@ public class Jeopardy extends PApplet {
 
     @Override
     public void keyPressed(KeyEvent event) { //Numpad reserved for wagering once implemented (daily double + FJ)!
-        System.out.println(event.getKeyCode());
+//        System.out.println(event.getKeyCode());
         if(Round.getCurrentRound() != third && Question.getSelected() == null) { //Question select screen
             ArrayList<Category> c = Round.getCurrentRound().getCategories();
             Question q = null;
@@ -212,8 +211,7 @@ public class Jeopardy extends PApplet {
                     break;
                 case 45:
                     if(Question.getSelected().isDailyDouble() && wager.length() > 0) {
-                        wager = wager.substring(0, wager.length() - 2);
-                        System.out.println(wager);
+                        wager = wager.substring(0, wager.length() - 1);
                     }
                     break;
                 case 61:
@@ -266,19 +264,16 @@ public class Jeopardy extends PApplet {
                 if(players.size() >= 1) {
                     Player.setActive(players.get(0));
                 }
-                System.out.println("Active Player: " + Player.getActive().getName() +  " (Score: " + Player.getActive().getScore()+")");
                 break;
             case 46: //]
                 if(players.size() >= 2) {
                     Player.setActive(players.get(1));
                 }
-                System.out.println("Active Player: " + Player.getActive().getName() + " (Score: " + Player.getActive().getScore()+")");
                 break;
             case 47: //\
                 if(players.size() >= 3) {
                     Player.setActive(players.get(2));
                 }
-                System.out.println("Active Player: " + Player.getActive().getName() + " (Score: " + Player.getActive().getScore()+")");
                 break;
             default:
                 break;
@@ -293,6 +288,13 @@ public class Jeopardy extends PApplet {
             Round.getCurrentRound().getCategories().get(0).getQuestions().get(0).setAnswered(true);
             Question.setSelected(Round.getCurrentRound().getCategories().get(0).getQuestions().get(0));
         }
+    }
+
+    public static ArrayList<Player> getPlayers() {
+        return players;
+    }
+    public static String getWager() {
+        return wager;
     }
 
     private static boolean containsDialogue(String s) {
@@ -367,7 +369,7 @@ public class Jeopardy extends PApplet {
                 boolean passed = true;
                 for(Object thing : ((JSONObject)sj.get(rand)).values()) {
                     for(Object o : ((JSONArray)thing)) {
-                        if(((JSONObject)o).containsKey("") || ((JSONObject) o).containsValue("")) {
+                        if(((JSONObject)o).containsKey("") || ((JSONObject) o).containsValue("") || ((JSONObject) o).containsKey(" ") || ((JSONObject) o).containsValue(" ") || ((JSONObject) o).containsKey("=") || ((JSONObject) o).containsValue("=")) {
                             passed = false;
                         }
                     }
@@ -381,7 +383,7 @@ public class Jeopardy extends PApplet {
                 boolean passed = true;
                 for(Object thing : ((JSONObject)sj.get(rand)).values()) {
                     for(Object o : ((JSONArray)thing)) {
-                        if(((JSONObject)o).containsKey("") || ((JSONObject) o).containsValue("")) {
+                        if(((JSONObject)o).containsKey("") || ((JSONObject) o).containsValue("") || ((JSONObject) o).containsKey(" ") || ((JSONObject) o).containsValue(" ") || ((JSONObject) o).containsKey("=") || ((JSONObject) o).containsValue("=")) {
                             passed = false;
                         }
                     }
@@ -451,11 +453,18 @@ public class Jeopardy extends PApplet {
         second.setWagerables();
         third.setWagerables();
 
-        Round.setCurrentRound(third);
+        Round.setCurrentRound(first);
 
-        players.add(new Player("Rana"));
+       for(String p : new String[]{"Nina"}) {
+           players.add(new Player(p));
+       }
+
         Player.setActive(players.get(0));
 
-        PApplet.runSketch(new String[]{"Jeopardy"}, app);
+        app.args = new String[]{"Game"};
+        console.args = new String[]{"Console"};
+
+        PApplet.runSketch(app.args, app);
+        PApplet.runSketch(console.args, new Console());
     }
 }

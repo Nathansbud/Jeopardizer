@@ -11,7 +11,8 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.regex.Pattern;
+
+import ddf.minim.*;
 
 
 public class Game extends PApplet {
@@ -24,8 +25,9 @@ public class Game extends PApplet {
 
     private static ArrayList<Player> players = new ArrayList<Player>();
 
-    private static Pattern alexDialogue = Pattern.compile("(?<=\\(Alex: )(?s)(.*)(?=\\))");
-    private static int amountAnswered = 0;
+    private static Minim minim;
+
+    private static AudioPlayer tracks[] = new AudioPlayer[3];
 
     private static String wager = "";
 
@@ -40,6 +42,10 @@ public class Game extends PApplet {
         Category.setGui(app);
         first.setup();
         second.setup();
+        minim = new Minim(app);
+        tracks[0] = minim.loadFile("data" + File.separator + "audio" + File.separator + "Time Out.mp3");
+        tracks[1] = minim.loadFile("data" + File.separator + "audio" + File.separator + "Daily Double.mp3");
+        tracks[2] = minim.loadFile("data" + File.separator + "audio" + File.separator + "Final Jeopardy.mp3");
     }
 
     @Override
@@ -64,6 +70,9 @@ public class Game extends PApplet {
                 for (Category c : Round.getCurrentRound().getCategories()) {
                     for (Question q : c.getQuestions()) {
                         if (mouseX > q.getX() && mouseX < (q.getX() + Question.getWidth()) && mouseY > q.getY() && mouseY < q.getY() + Question.getHeight() && !q.isAnswered()) {
+                            if(q.isDailyDouble()) {
+                                tracks[2].play();
+                            }
                             q.setAnswered(true);
                             Question.setSelected(q);
                             break;
@@ -76,7 +85,10 @@ public class Game extends PApplet {
 
     @Override
     public void keyPressed(KeyEvent event) { //Numpad reserved for wagering once implemented (daily double + FJ)!
-//        System.out.println(event.getKeyCode());
+        System.out.println(event.getKeyCode());
+        if(event.getKeyCode() == 192 && Round.getCurrentRound() == third) {
+            tracks[2].play();
+        }
         if(Round.getCurrentRound() != third && Question.getSelected() == null) { //Question select screen
             ArrayList<Category> c = Round.getCurrentRound().getCategories();
             Question q = null;
@@ -183,9 +195,14 @@ public class Game extends PApplet {
                     progressRound();
                     break;
             }
+
             if(q != null && !q.isAnswered()) {
                 q.setAnswered(true);
                 Question.setSelected(q);
+                System.out.println(q.isDailyDouble());
+                if(q.isDailyDouble()) {
+                    tracks[1].play();
+                }
                 Round.setGameState(Round.GameState.QUESTION);
             }
         } else if(Question.getSelected() != null) {  //Only on during question up
@@ -246,16 +263,22 @@ public class Game extends PApplet {
                     break;
             }
         } else {
-            if(event.getKeyCode() == 16 && Round.getGameState() != Round.GameState.QUESTION) {
-                if(Round.getGameState() != Round.GameState.SCORES) {
-                    Round.setGameState(Round.GameState.SCORES);
-                } else {
-                    Round.setGameState(Round.GameState.ROUND);
-                }
-            } else {
-                Question finalQ = Round.getCurrentRound().getCategories().get(0).getQuestions().get(0);
-                finalQ.setAnswered(true);
-                Question.setSelected(finalQ);
+            switch(event.getKeyCode()) {
+                case 16:
+                    if (Round.getGameState() != Round.GameState.QUESTION) {
+                        Round.setGameState(Round.GameState.SCORES);
+                    } else {
+                        Round.setGameState(Round.GameState.ROUND);
+                    }
+                    break;
+                case 192:
+                    tracks[2].play();
+                    break;
+                default:
+                    Question finalQ = Round.getCurrentRound().getCategories().get(0).getQuestions().get(0);
+                    finalQ.setAnswered(true);
+                    Question.setSelected(finalQ);
+                    break;
             }
         }
 
@@ -287,6 +310,8 @@ public class Game extends PApplet {
             Round.setCurrentRound(third);
             Round.getCurrentRound().getCategories().get(0).getQuestions().get(0).setAnswered(true);
             Question.setSelected(Round.getCurrentRound().getCategories().get(0).getQuestions().get(0));
+        } else {
+            tracks[2].play();
         }
     }
 
@@ -351,15 +376,15 @@ public class Game extends PApplet {
 
         JSONParser jsonParser = new JSONParser();
         try {
-            FileReader reader = new FileReader("data" + File.separator + "single_jeopardy.json");
+            FileReader reader = new FileReader("data" + File.separator + "questions/single_jeopardy.json");
             JSONArray sj = (JSONArray)jsonParser.parse(reader);
             reader.close();
 
-            reader = new FileReader("data" + File.separator + "double_jeopardy.json");
+            reader = new FileReader("data" + File.separator + "questions/double_jeopardy.json");
             JSONArray dj = (JSONArray)jsonParser.parse(reader);
             reader.close();
 
-            reader = new FileReader("data" + File.separator + "final_jeopardy.json");
+            reader = new FileReader("data" + File.separator + "questions/final_jeopardy.json");
             JSONArray fj = (JSONArray)jsonParser.parse(reader);
             reader.close();
 
@@ -443,6 +468,7 @@ public class Game extends PApplet {
         }
     }
 
+
     public static void main(String[] args) {
         setCategories();
         printQuestions(first);
@@ -455,7 +481,9 @@ public class Game extends PApplet {
 
         Round.setCurrentRound(first);
 
-       for(String p : new String[]{"Nina"}) {
+
+
+       for(String p : new String[]{"Aneekha", "Ritika"}) {
            players.add(new Player(p));
        }
 

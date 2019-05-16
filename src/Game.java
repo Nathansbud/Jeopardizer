@@ -24,9 +24,11 @@ public class Game extends PApplet {
     private static Round third = new Round(Round.RoundType.FINAL);
 
     private static ArrayList<Player> players = new ArrayList<Player>();
+    private static String[] playerNames = {
+            "Zack", "Scott", "Nina"
+    };
 
     private static Minim minim;
-
     private static AudioPlayer tracks[] = new AudioPlayer[3];
 
     private static String wager = "";
@@ -71,7 +73,7 @@ public class Game extends PApplet {
                     for (Question q : c.getQuestions()) {
                         if (mouseX > q.getX() && mouseX < (q.getX() + Question.getWidth()) && mouseY > q.getY() && mouseY < q.getY() + Question.getHeight() && !q.isAnswered()) {
                             if(q.isDailyDouble()) {
-                                tracks[2].play();
+                                tracks[1].play();
                             }
                             q.setAnswered(true);
                             Question.setSelected(q);
@@ -84,7 +86,7 @@ public class Game extends PApplet {
     }
 
     @Override
-    public void keyPressed(KeyEvent event) { //Numpad reserved for wagering once implemented (daily double + FJ)!
+    public void keyPressed(KeyEvent event) {
         System.out.println(event.getKeyCode());
         if(event.getKeyCode() == 192 && Round.getCurrentRound() == third) {
             tracks[2].play();
@@ -208,8 +210,10 @@ public class Game extends PApplet {
         } else if(Question.getSelected() != null) {  //Only on during question up
             switch(event.getKeyCode()) {
                 case 8: //DELETE
-                    Player.getActive().changeScore(-Question.getSelected().getValue());
-                    System.out.println(Player.getActive().getScore());
+                    if(Player.getActive() != null) {
+                        Player.getActive().changeScore(-Question.getSelected().getValue());
+                        System.out.println(Player.getActive().getScore());
+                    }
                     wager = "";
                     break;
                 case 9: //TAB
@@ -218,8 +222,10 @@ public class Game extends PApplet {
                     wager = "";
                     break;
                 case 10: //ENTER
-                    Player.getActive().changeScore(Question.getSelected().getValue());
-                    System.out.println(Player.getActive().getName() + ": " + Player.getActive().getScore());
+                    if(Player.getActive() != null) {
+                        Player.getActive().changeScore(Question.getSelected().getValue());
+                        System.out.println(Player.getActive().getName() + ": " + Player.getActive().getScore());
+                    }
                     if(Round.getCurrentRound().getRound() != Round.RoundType.FINAL) {
                         Question.setSelected(null);
                         Round.setGameState(Round.GameState.ROUND);
@@ -261,6 +267,9 @@ public class Game extends PApplet {
                         System.out.println(wager);
                     }
                     break;
+                case 192:
+                    tracks[0].play();
+                    break;
             }
         } else {
             switch(event.getKeyCode()) {
@@ -296,6 +305,18 @@ public class Game extends PApplet {
             case 47: //\
                 if(players.size() >= 3) {
                     Player.setActive(players.get(2));
+                }
+                break;
+            case 37: //Left arrow key (mac)
+                int leftShift = players.indexOf(Player.getActive())-1;
+                if(leftShift > -1) {
+                    Player.setActive(players.get(leftShift));
+                }
+                break;
+            case 39: //Right arrow key (mac)
+                int rightShift = players.indexOf(Player.getActive())+1;
+                if(rightShift < players.size()) {
+                    Player.setActive(players.get(rightShift));
                 }
                 break;
             default:
@@ -468,31 +489,37 @@ public class Game extends PApplet {
         }
     }
 
-
     public static void main(String[] args) {
-        setCategories();
-        printQuestions(first);
-        printQuestions(second);
-        printQuestions(third);
+        boolean runGame = true;
 
-        first.setWagerables();
-        second.setWagerables();
-        third.setWagerables();
+        if(runGame) {
+            setCategories();
 
-        Round.setCurrentRound(first);
+            printQuestions(first);
+            printQuestions(second);
+            printQuestions(third);
+
+            first.setWagerables();
+            second.setWagerables();
+            third.setWagerables();
+
+            Round.setCurrentRound(first);
 
 
+            for (String p : playerNames) {
+                players.add(new Player(p));
+            }
 
-       for(String p : new String[]{"Aneekha", "Ritika"}) {
-           players.add(new Player(p));
-       }
+            if(players.size() > 0) {
+                Player.setActive(players.get(0));
+            }
 
-        Player.setActive(players.get(0));
+            app.args = new String[]{"Game"};
+            console.args = new String[]{"Console"};
 
-        app.args = new String[]{"Game"};
-        console.args = new String[]{"Console"};
 
-        PApplet.runSketch(app.args, app);
-        PApplet.runSketch(console.args, new Console());
+            PApplet.runSketch(app.args, app);
+            PApplet.runSketch(console.args, new Console());
+        }
     }
 }

@@ -5,7 +5,10 @@ public class Category {
     private static PApplet gui;
     private String name;
     private String dialogue = "";
+    private String date = "";
+
     private ArrayList<Question> questions = new ArrayList<Question>();
+
 
 
     private float x, y = 0;
@@ -58,7 +61,6 @@ public class Category {
         }
     }
 
-
     public void setWidth(float _width) {
         width = _width;
     }
@@ -70,6 +72,10 @@ public class Category {
     public ArrayList<Question> getQuestions() {
         return questions;
     }
+    public void setQuestions(ArrayList<Question> _questions) {
+        questions = _questions;
+    }
+
     public Question getQuestion(int index) {
         return questions.get(index);
     }
@@ -88,12 +94,20 @@ public class Category {
     public String getDialogue() {
         return dialogue;
     }
-
+    public boolean hasDialogue() {
+        return !dialogue.equals("");
+    }
     public void setDialogue(String _dialogue) {
         dialogue = _dialogue;
     }
 
+    public void setDate(String _date) {
+        date = _date;
+    }
 
+    public String getDate() {
+        return date;
+    }
 
     public static void setGui(PApplet _gui) {
         gui = _gui;

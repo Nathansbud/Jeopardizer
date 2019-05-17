@@ -10,6 +10,7 @@ public class Question {
 
     private String question;
     private String answer;
+    private String dialogue;
 
     private String category;
 
@@ -27,6 +28,10 @@ public class Question {
     public Question(String _question, String _answer) {
         question = _question;
         answer = _answer;
+    }
+
+    public Question() {
+
     }
 
     public static void setConstants(PApplet _gui) {
@@ -130,6 +135,12 @@ public class Question {
         showQuestion = _showQuestion;
     }
 
+    public String getDialogue() {
+        return dialogue;
+    }
+    public void setDialogue(String _dialogue) {
+        dialogue = _dialogue;
+    }
 
     public int getValue() {
         return value;

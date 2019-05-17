@@ -5,7 +5,8 @@ public class Round {
     enum RoundType {
         SINGLE(),
         DOUBLE(),
-        FINAL()
+        FINAL(),
+        CUSTOM()
     }
 
     enum GameState {
@@ -39,11 +40,17 @@ public class Round {
     }
 
     public void setup() {
+        setWagerables();
         if(round != RoundType.FINAL) {
             for (int i = 0; i < categories.size(); i++) {
                 categories.get(i).setX(i * Question.getWidth() + i * Question.getWidthBuffer());
                 categories.get(i).setY(0);
                 categories.get(i).setValues(round);
+                for(Question q : categories.get(i).getQuestions()) {
+                    if(categories.get(i).hasDialogue()) {
+                        q.setDialogue(categories.get(i).getDialogue());
+                    }
+                }
             }
         }
     }
@@ -62,9 +69,7 @@ public class Round {
     public int getQuestionCount() {
         int count = 0;
         for(Category c : categories) {
-            for(Question q : c.getQuestions()) {
-                count++;
-            }
+            count += c.getQuestions().size();
         }
         return count;
     }

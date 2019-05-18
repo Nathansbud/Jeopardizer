@@ -23,6 +23,12 @@ This generates random games of Jeopardy (Single, Double, and Final), for 3 playe
             <li>json-simple is required used in order to parse the question json files and read them in as categories.</li>
         </ul>
     </li>
+    <li>
+        Minim
+        <ul>
+            <li>Minim is used to play Jeopardy SFX—possibly overkill, but JavaSound felt like an ordeal</li>
+        </ul>
+    </li>
 </ul>
 
 <em>Scraper (Python)</em>

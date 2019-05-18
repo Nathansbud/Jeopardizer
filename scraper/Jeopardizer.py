@@ -54,7 +54,7 @@ def scrape_games():
 
     # Account for links in header
     x = iter(archive)
-    for i in range(7):  # 7 for S35, 10 for S32, 29 for S13
+    for i in range(9):  # 7 for S35, 10 for S32, 29 for S13
         x.__next__()
 
     for season in x:
@@ -251,7 +251,18 @@ def read_json(file):
         data = json.load(f)
     return data
 
+def add_end_backet():
+    files = os.listdir("/Users/zackamiton/Code/Jeopardizer/redata")
+
+    for f in files:
+        with open("/Users/zackamiton/Code/Jeopardizer/redata/" + f, 'rb+') as bfile:
+            bfile.seek(-1, os.SEEK_END)
+            bfile.truncate()
+        with open("/Users/zackamiton/Code/Jeopardizer/redata/" + f, 'a') as bfile: #Inefficient but seek stuff yells at me if I try and open in append mode so └[•-•]┘
+            bfile.write("]")
+
 if __name__ == "__main__":
     scrape_games()
-    pass
+    # add_end_backet()
+
 

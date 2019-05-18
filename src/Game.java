@@ -605,37 +605,35 @@ public class Game extends PApplet {
     }
 
     public static void main(String[] args) {
-        boolean runGame = true;
-//        cleanJSONRead(custom, "redata" + File.separator + "single_jeopardy.json", 1, 5);
+//        cleanJSONRead(first, "redata" + File.separator + "single_jeopardy_season_35.json", 6, 5);
+//        cleanJSONRead(second, "redata" + File.separator + "double_jeopardy_season_35.json", 6, 5);
+//        cleanJSONRead(third, "redata" + File.separator + "final_jeopardy_season_35.json", 1, 1);
 
+        setCategories();
 
-        if(runGame) {
-            setCategories();
+        printQuestions(first);
+        printQuestions(second);
+        printQuestions(third);
 
-            printQuestions(first);
-            printQuestions(second);
-            printQuestions(third);
+        first.setWagerables();
+        second.setWagerables();
+        third.setWagerables();
 
-            first.setWagerables();
-            second.setWagerables();
-            third.setWagerables();
+        Round.setCurrentRound(first); //Current goal
 
-            Round.setCurrentRound(first); //Current goal
-
-            for (String p : playerNames) {
-                players.add(new Player(p));
-            }
-
-            if(players.size() > 0) {
-                Player.setActive(players.get(0));
-            }
-
-            app.args = new String[]{"Game"};
-            console.args = new String[]{"Console"};
-
-
-            PApplet.runSketch(app.args, app);
-            PApplet.runSketch(console.args, new Console());
+        for (String p : playerNames) {
+            players.add(new Player(p));
         }
+
+        if(players.size() > 0) {
+            Player.setActive(players.get(0));
+        }
+
+        app.args = new String[]{"Game"};
+        console.args = new String[]{"Console"};
+
+
+        PApplet.runSketch(app.args, app);
+        PApplet.runSketch(console.args, new Console());
     }
 }

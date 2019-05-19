@@ -9,8 +9,6 @@ public class Category {
 
     private ArrayList<Question> questions = new ArrayList<Question>();
 
-
-
     private float x, y = 0;
     private float width, height;
 
@@ -104,10 +102,23 @@ public class Category {
     public void setDate(String _date) {
         date = _date;
     }
-
     public String getDate() {
         return date;
     }
+
+    public int getDay() {
+        return date.length() > 0 ? Integer.parseInt(date.substring(date.indexOf("/")+1, date.lastIndexOf("/"))) : -1;
+    }
+    public int getMonth() {
+        return date.length() > 0 ? Integer.parseInt(date.substring(0, date.indexOf("/"))) : -1;
+    }
+    public int getYear() {
+        return date.length() > 0 ? Integer.parseInt(date.substring(date.lastIndexOf("/")+1)) : -1;
+    }
+    public String getMonthName() {
+        return date.length() > 0 ? Constants.MONTHS[getMonth()-1] : "";
+    }
+
 
     public static void setGui(PApplet _gui) {
         gui = _gui;

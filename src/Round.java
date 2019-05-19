@@ -6,7 +6,8 @@ public class Round {
         SINGLE(),
         DOUBLE(),
         FINAL(),
-        CUSTOM()
+
+        CUSTOM(),
     }
 
     enum GameState {
@@ -21,14 +22,17 @@ public class Round {
     private RoundType round;
     private ArrayList<Category> categories = new ArrayList<Category>();
 
+    private int filterYear = -1;
+    private boolean filter;
+
     public Round(RoundType _round) {
         round = _round;
     }
 
-    public RoundType getRound() {
+    public RoundType getRoundType() {
         return round;
     }
-    public void setRound(RoundType _round) {
+    public void setRoundType(RoundType _round) {
         round = _round;
     }
 
@@ -41,6 +45,7 @@ public class Round {
 
     public void setup() {
         setWagerables();
+
         if(round != RoundType.FINAL) {
             for (int i = 0; i < categories.size(); i++) {
                 categories.get(i).setX(i * Question.getWidth() + i * Question.getWidthBuffer());
@@ -53,6 +58,21 @@ public class Round {
                 }
             }
         }
+    }
+
+    public boolean hasFilter() {
+        return filter;
+    }
+    public void setFilter(boolean _filter) {
+        filter = _filter;
+    }
+
+    public int getFilterYear() {
+        return filterYear;
+    }
+    public void setFilterYear(int _filterYear) {
+        setFilter(true);
+        filterYear = _filterYear;
     }
 
     public int getNumAnswered() {
@@ -96,15 +116,19 @@ public class Round {
 
         switch(round) {
             case SINGLE:
-                categories.get(rand/6).getQuestions().get(rand%5).setDailyDouble(true);
+                if(this.getQuestionCount() == 30) {
+                    categories.get(rand/6).getQuestions().get(rand%5).setDailyDouble(true);
+                }
                 break;
             case DOUBLE:
-                categories.get(rand/6).getQuestions().get(rand%5).setDailyDouble(true);
-                int randD = ThreadLocalRandom.current().nextInt(0, 30);
-                while(randD == rand) {
-                    randD = ThreadLocalRandom.current().nextInt(0, 30);
+                if(this.getQuestionCount() == 30) {
+                    categories.get(rand / 6).getQuestions().get(rand % 5).setDailyDouble(true);
+                    int randD = ThreadLocalRandom.current().nextInt(0, 30);
+                    while (randD == rand) {
+                        randD = ThreadLocalRandom.current().nextInt(0, 30);
+                    }
+                    categories.get(randD / 6).getQuestions().get(randD % 5).setDailyDouble(true);
                 }
-                categories.get(randD/6).getQuestions().get(randD%5).setDailyDouble(true);
                 break;
             case FINAL:
                 categories.get(0).getQuestions().get(0).setWagerable(true);
@@ -118,6 +142,10 @@ public class Round {
 
     public static void setCurrentRound(Round _currentRound) {
         CURRENT_ROUND = _currentRound;
+        if(CURRENT_ROUND.getRoundType() == RoundType.FINAL) {
+           CURRENT_ROUND.getCategories().get(0).getQuestions().get(0).setAnswered(true);
+           Question.setSelected(CURRENT_ROUND.getCategories().get(0).getQuestions().get(0));
+        }
     }
     public static Round getCurrentRound() {
         return CURRENT_ROUND;

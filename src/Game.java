@@ -8,15 +8,14 @@ import org.json.simple.parser.ParseException;
 import ddf.minim.*;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.Queue;
 import java.util.Iterator;
 import java.util.concurrent.ThreadLocalRandom;
 
 import java.io.File;
 import java.io.FileReader;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-
-
 
 
 public class Game extends PApplet {
@@ -27,7 +26,9 @@ public class Game extends PApplet {
     private static Round second = new Round(Round.RoundType.DOUBLE);
     private static Round third = new Round(Round.RoundType.FINAL);
 
-    private static Round custom = new Round(Round.RoundType.CUSTOM);
+    private static ArrayList<Round> customRounds = new ArrayList<>(); //To be used for custom rounds
+
+    private static Queue<Round> progressionPath = new LinkedList<>(); //Used to set path of rounds; 1st->2nd-3rd is classic, but opens up to new possibilities
 
 
     private static ArrayList<Player> players = new ArrayList<Player>();
@@ -40,6 +41,9 @@ public class Game extends PApplet {
 
     private static String wager = "";
 
+    private static int filterYear = 2002;
+    private static boolean isCustom = false;
+
     @Override
     public void settings() {
         fullScreen(1);
@@ -49,8 +53,14 @@ public class Game extends PApplet {
     public void setup() {
         Question.setConstants(app);
         Category.setGui(app);
-        first.setup();
-        second.setup();
+
+        if(!isCustom) {
+            first.setup();
+            second.setup();
+        } else {
+            first.setup();
+        }
+
         minim = new Minim(app);
         tracks[0] = minim.loadFile("data" + File.separator + "audio" + File.separator + "Time Out.mp3");
         tracks[1] = minim.loadFile("data" + File.separator + "audio" + File.separator + "Daily Double.mp3");
@@ -94,11 +104,11 @@ public class Game extends PApplet {
 
     @Override
     public void keyPressed(KeyEvent event) {
-        System.out.println(event.getKeyCode());
-        if(event.getKeyCode() == 192 && Round.getCurrentRound() == third) {
+//        System.out.println(event.getKeyCode());
+        if(event.getKeyCode() == 192 && Round.getCurrentRound().getRoundType() == Round.RoundType.FINAL) {
             tracks[2].play();
         }
-        if(Round.getCurrentRound() != third && Question.getSelected() == null) { //Question select screen
+        if(Round.getCurrentRound().getRoundType() != Round.RoundType.FINAL && Question.getSelected() == null) { //Question select screen
             ArrayList<Category> c = Round.getCurrentRound().getCategories();
             Question q = null;
             switch (event.getKeyCode()) {
@@ -227,17 +237,25 @@ public class Game extends PApplet {
                     Question.setSelected(null);
                     Round.setGameState(Round.GameState.ROUND);
                     wager = "";
+                    for(AudioPlayer t : tracks) {
+                        t.pause();
+                        t.rewind();
+                    }
                     break;
                 case 10: //ENTER
                     if(Player.getActive() != null) {
                         Player.getActive().changeScore(Question.getSelected().getValue());
                         System.out.println(Player.getActive().getName() + ": " + Player.getActive().getScore());
                     }
-                    if(Round.getCurrentRound().getRound() != Round.RoundType.FINAL) {
+                    if(Round.getCurrentRound().getRoundType() != Round.RoundType.FINAL) {
                         Question.setSelected(null);
                         Round.setGameState(Round.GameState.ROUND);
                     }
                     wager = "";
+                    for(AudioPlayer t : tracks) {
+                        t.pause();
+                        t.rewind();
+                    }
                     break;
                 case 45:
                     if(Question.getSelected().isDailyDouble() && wager.length() > 0) {
@@ -275,7 +293,11 @@ public class Game extends PApplet {
                     }
                     break;
                 case 192:
-                    if(Round.getCurrentRound() != third) {
+                    if(Round.getCurrentRound().getRoundType() != Round.RoundType.FINAL) {
+                        if(tracks[0].position() > 0) {
+                            tracks[0].pause();
+                            tracks[0].rewind();
+                        }
                         tracks[0].play();
                     }
                     break;
@@ -334,12 +356,8 @@ public class Game extends PApplet {
     }
 
     private static void progressRound() {
-        if (Round.getCurrentRound() == first) {
-            Round.setCurrentRound(second);
-        } else if (Round.getCurrentRound() == second) {
-            Round.setCurrentRound(third);
-            Round.getCurrentRound().getCategories().get(0).getQuestions().get(0).setAnswered(true);
-            Question.setSelected(Round.getCurrentRound().getCategories().get(0).getQuestions().get(0));
+        if(progressionPath.peek() != null) {
+            Round.setCurrentRound(progressionPath.poll());
         } else {
             tracks[2].play();
         }
@@ -406,15 +424,15 @@ public class Game extends PApplet {
 
         JSONParser jsonParser = new JSONParser();
         try {
-            FileReader reader = new FileReader("data" + File.separator + "questions/single_jeopardy.json");
+            FileReader reader = new FileReader("data" + File.separator + "questions" + File.separator + "all" + File.separator + "single_jeopardy.json");
             JSONArray sj = (JSONArray)jsonParser.parse(reader);
             reader.close();
 
-            reader = new FileReader("data" + File.separator + "questions/double_jeopardy.json");
+            reader = new FileReader("data" + File.separator +  "questions" + File.separator + "all" + File.separator + "double_jeopardy.json");
             JSONArray dj = (JSONArray)jsonParser.parse(reader);
             reader.close();
 
-            reader = new FileReader("data" + File.separator + "questions/final_jeopardy.json");
+            reader = new FileReader("data" + File.separator +  "questions" + File.separator + "all" + File.separator + "final_jeopardy.json");
             JSONArray fj = (JSONArray)jsonParser.parse(reader);
             reader.close();
 
@@ -569,19 +587,15 @@ public class Game extends PApplet {
                         }
                     }
                     if(c.getQuestions() != null) {
-                        System.out.println("Category Added:");
-                        r.addCategory(c);
-                        System.out.println(c.getName());
-                        if(c.hasDialogue()) {
-                            System.out.println(c.getDialogue());
-                        }
-                        System.out.println(c.getDate());
-                        for (Question cq : c.getQuestions()) {
-                            if(c.hasDialogue()) {
-                                cq.setDialogue(c.getDialogue());
+                        if(c.getYear() >= r.getFilterYear() || c.getYear() == -1) {
+                            r.addCategory(c);
+                            for (Question cq : c.getQuestions()) {
+                                if (c.hasDialogue()) {
+                                    cq.setDialogue(c.getDialogue());
+                                }
                             }
-                            System.out.println(cq.getQuestion());
-                            System.out.println(cq.getAnswer());
+                        } else {
+                            System.out.println("Failed to add category due to filter year!");
                         }
                     }
                 }
@@ -592,7 +606,7 @@ public class Game extends PApplet {
      }
 
     public static void printQuestions(Round r) {
-        System.out.println(r.getRound().toString());
+        System.out.println(r.getRoundType().toString());
         for(Category c : r.getCategories()) {
             System.out.println(c.getName());
             int count = 0;
@@ -604,22 +618,32 @@ public class Game extends PApplet {
         }
     }
 
+    public static void setProgressionPath(Round... roundPath) {
+        Collections.addAll(progressionPath, roundPath);
+    }
+
+
     public static void main(String[] args) {
-//        cleanJSONRead(first, "redata" + File.separator + "single_jeopardy_season_35.json", 6, 5);
-//        cleanJSONRead(second, "redata" + File.separator + "double_jeopardy_season_35.json", 6, 5);
-//        cleanJSONRead(third, "redata" + File.separator + "final_jeopardy_season_35.json", 1, 1);
+        if(!isCustom) {
+            setProgressionPath(first, second, third);
 
-        setCategories();
+            cleanJSONRead(first, "redata" + File.separator + "by_season" + File.separator + "single_jeopardy_season_35.json", 6, 5);
+            cleanJSONRead(second, "redata" + File.separator + "by_season" + File.separator + "double_jeopardy_season_35.json", 6, 5);
+            cleanJSONRead(third, "redata" + File.separator + "by_season" + File.separator + "final_jeopardy_season_35.json", 6, 5);
 
-        printQuestions(first);
-        printQuestions(second);
-        printQuestions(third);
+            //        setCategories();
+            printQuestions(first);
+            printQuestions(second);
+            printQuestions(third);
 
-        first.setWagerables();
-        second.setWagerables();
-        third.setWagerables();
-
-        Round.setCurrentRound(first); //Current goal
+            first.setWagerables();
+            second.setWagerables();
+            third.setWagerables();
+        } else {
+            setProgressionPath(first);
+            cleanJSONRead(first, "data" + File.separator + "questions" + File.separator + "custom" + File.separator + "video_games.json", 2, 5);
+        }
+        Round.setCurrentRound(progressionPath.poll());
 
         for (String p : playerNames) {
             players.add(new Player(p));

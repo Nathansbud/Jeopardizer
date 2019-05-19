@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-
+#!/usr/bin/env python3.7
 from requests import get
 from requests.exceptions import RequestException
 from contextlib import closing
@@ -54,7 +53,7 @@ def scrape_games():
 
     # Account for links in header
     x = iter(archive)
-    for i in range(9):  # 7 for S35, 10 for S32, 29 for S13
+    for i in range(11):  # 7 for S35, 10 for S32, 29 for S13
         x.__next__()
 
     for season in x:
@@ -205,7 +204,7 @@ def scrape_games():
                                 is_last = (episode_list.index(episode) == len(episode_list) - 1)
                                 is_first = (episode_list.index(episode) == 7) #Might not always succeed
 
-                                with open(os.path.join(os.path.dirname(__file__), "..", "redata", "single_jeopardy_" + season_name + ".json"),
+                                with open(os.path.join(os.path.dirname(__file__), "..", "redata", "by_season", "single_jeopardy_" + season_name + ".json"),
                                           'a+') as sj:
                                     if is_first:
                                         sj.write("[")
@@ -218,7 +217,7 @@ def scrape_games():
                                         else:
                                             sj.write(",")
 
-                                with open(os.path.join(os.path.dirname(__file__), "..", "redata", "double_jeopardy_" + season_name + ".json"),
+                                with open(os.path.join(os.path.dirname(__file__), "..", "redata", "by_season", "double_jeopardy_" + season_name + ".json"),
                                           'a+') as dj:
                                     if is_first:
                                         dj.write("[")
@@ -231,7 +230,7 @@ def scrape_games():
                                         else:
                                             dj.write(",")
 
-                                with open(os.path.join(os.path.dirname(__file__), "..", "redata", "final_jeopardy_" + season_name + ".json"),
+                                with open(os.path.join(os.path.dirname(__file__), "..", "redata", "by_season", "final_jeopardy_" + season_name + ".json"),
                                           'a+') as fj:
                                     for c in final_jeopardy:
                                         if is_first:
@@ -251,18 +250,44 @@ def read_json(file):
         data = json.load(f)
     return data
 
-def add_end_backet():
-    files = os.listdir("/Users/zackamiton/Code/Jeopardizer/redata")
+def add_end_bracket(end):
+    path = "/Users/zackamiton/Code/Jeopardizer/redata/"+end
+
+    files = os.listdir(path)
 
     for f in files:
-        with open("/Users/zackamiton/Code/Jeopardizer/redata/" + f, 'rb+') as bfile:
+        with open(path + f, 'rb+') as bfile:
             bfile.seek(-1, os.SEEK_END)
             bfile.truncate()
-        with open("/Users/zackamiton/Code/Jeopardizer/redata/" + f, 'a') as bfile: #Inefficient but seek stuff yells at me if I try and open in append mode so └[•-•]┘
+        with open(path + f, 'a') as bfile:
             bfile.write("]")
+
+def combine_files():
+    path = "/Users/zackamiton/Code/Jeopardizer/redata/"
+    names = ["single_jeopardy", "double_jeopardy", "final_jeopardy"]
+
+    for name in names:
+        with open(path + "all/" + name + ".json", "a+") as cat:
+            cat.truncate(0)
+            cat.write("[")
+            for file in os.listdir(path + "by_season"):
+                if file.startswith(name):
+                    with(open(path + "by_season/" + file, 'r')) as add:
+                        questions = json.load(add)
+                        for q in questions:
+                            json.dump(q, cat)
+                            cat.write(",")
+    add_end_bracket("all/")
+
+
+
+
+
+
 
 if __name__ == "__main__":
     scrape_games()
-    # add_end_backet()
+    # add_end_bracket("by_season/")
+    # combine_files()
 
 

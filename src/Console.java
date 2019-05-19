@@ -40,7 +40,7 @@ public class Console extends PApplet {
                 for(int i = 0; i < Round.getCurrentRound().getCategories().size(); i++) {
                     Category c = Round.getCurrentRound().getCategory(i);
                     if(c.hasDialogue()) {
-                        text(c.getName().trim() + ": " + c.getDialogue().trim(), width/8.0f, height/4.0f*(i+1), width-width/4.0f, height);
+                        text(c.getDialogue().trim(), width/8.0f, height/4.0f*(i+1), width-width/4.0f, height);
                     }
                 }
             }

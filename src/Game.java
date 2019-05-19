@@ -12,6 +12,7 @@ import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Iterator;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.Collections;
 
 import java.io.File;
 import java.io.FileReader;
@@ -383,127 +384,7 @@ public class Game extends PApplet {
         return s.substring(s.indexOf("("), s.indexOf(")")+1);
     }
 
-    private static void jsonToQuestions(Round round, JSONArray arr) {
-        for(Object category : arr) {
-            JSONObject r = (JSONObject) category;
-            Category cat = new Category();
-            for (Object str : r.keySet()) {
-                String catName = (String)str;
-                if(containsDialogue(catName)) {
-                    cat.setName(removeAlexDialogue(catName));
-                    cat.setDialogue(getDialogue(catName));
-                } else {
-                    cat.setName(catName);
-                }
-            }
-
-            for(Object a : r.values()) {
-                JSONArray n = (JSONArray)a;
-                for(Object o : n) {
-                    JSONObject q = (JSONObject)o;
-                    String question = "";
-                    String answer = "";
-
-                    for(Object temp : q.keySet()) {
-                        question = (String)temp;
-                    }
-                    for(Object temp : q.values()) {
-                        answer = (String)temp;
-                    }
-                    cat.addQuestion(new Question(question, answer));
-                }
-            }
-            round.addCategory(cat);
-        }
-    }
-
-    private static void setCategories() {
-        JSONArray singleJeopardy = new JSONArray();
-        JSONArray doubleJeopardy = new JSONArray();
-        JSONArray finalJeopardy = new JSONArray();
-
-        JSONParser jsonParser = new JSONParser();
-        try {
-            FileReader reader = new FileReader("data" + File.separator + "questions" + File.separator + "all" + File.separator + "single_jeopardy.json");
-            JSONArray sj = (JSONArray)jsonParser.parse(reader);
-            reader.close();
-
-            reader = new FileReader("data" + File.separator +  "questions" + File.separator + "all" + File.separator + "double_jeopardy.json");
-            JSONArray dj = (JSONArray)jsonParser.parse(reader);
-            reader.close();
-
-            reader = new FileReader("data" + File.separator +  "questions" + File.separator + "all" + File.separator + "final_jeopardy.json");
-            JSONArray fj = (JSONArray)jsonParser.parse(reader);
-            reader.close();
-
-            while(singleJeopardy.size() < 6) {
-                int rand = ThreadLocalRandom.current().nextInt(0, sj.size());
-
-                boolean passed = true;
-                for(Object thing : ((JSONObject)sj.get(rand)).values()) {
-                    for(Object o : ((JSONArray)thing)) {
-                        if(((JSONObject)o).containsKey("") || ((JSONObject) o).containsValue("") || ((JSONObject) o).containsKey(" ") || ((JSONObject) o).containsValue(" ") || ((JSONObject) o).containsKey("=") || ((JSONObject) o).containsValue("=")) {
-                            passed = false;
-                        }
-                    }
-                }
-                if(!singleJeopardy.contains(sj.get(rand)) && passed) {
-                    singleJeopardy.add(sj.get(rand));
-                }
-            }
-            while(doubleJeopardy.size() < 6) {
-                int rand = ThreadLocalRandom.current().nextInt(0, dj.size());
-                boolean passed = true;
-                for(Object thing : ((JSONObject)sj.get(rand)).values()) {
-                    for(Object o : ((JSONArray)thing)) {
-                        if(((JSONObject)o).containsKey("") || ((JSONObject) o).containsValue("") || ((JSONObject) o).containsKey(" ") || ((JSONObject) o).containsValue(" ") || ((JSONObject) o).containsKey("=") || ((JSONObject) o).containsValue("=") || ((JSONObject) o).containsKey("\n") || ((JSONObject) o).containsValue("\n")) {
-                            passed = false;
-                        }
-                    }
-                }
-                //Should prob make this a function and not hardcoded
-                if(!doubleJeopardy.contains(dj.get(rand)) && passed) {
-                    doubleJeopardy.add(dj.get(rand));
-                }
-            }
-            finalJeopardy.add(fj.get(ThreadLocalRandom.current().nextInt(0, fj.size())));
-        } catch (ParseException | IOException e) {
-            e.printStackTrace();
-        }
-
-        ArrayList<String> c = new ArrayList<String>();
-        jsonToQuestions(first, singleJeopardy);
-        jsonToQuestions(second, doubleJeopardy);
-        //Rework this to use jsontoquestions
-        for(Object o : finalJeopardy) {
-            JSONObject a = (JSONObject)o;
-            Category cat = new Category();
-            for(Object n : a.keySet()) {
-                String catName = (String)n;
-                if(containsDialogue(catName)) {
-                    cat.setName(removeAlexDialogue(catName));
-                    cat.setDialogue(getDialogue(catName));
-                } else {
-                    cat.setName(catName);
-                }
-            }
-            for(Object v : a.values()) {
-                JSONObject w = (JSONObject)v;
-                String question = "";
-                String answer = "";
-                for(Object l : w.keySet()) {
-                    question = (String)l;
-                }
-                for(Object l : w.values()) {
-                    answer = (String)l;
-                }
-                cat.addQuestion(new Question(question, answer));
-            }
-            third.addCategory(cat);
-        }
-    }
-
-    private static void cleanJSONRead(Round r, String filePath, int categoryCount, int categoryQuestionCount) {
+    private static void loadCategories(Round r, String filePath, int categoryCount, int categoryQuestionCount) {
         JSONParser jsonParser = new JSONParser();
 
         try {
@@ -548,7 +429,7 @@ public class Game extends PApplet {
                                         switch ((String) k.next()) {
                                             case "Answer":
                                                 String aAdd = ((String) v.next()).trim();
-                                                if (!aAdd.equals("") && !aAdd.equals("\u00a0") && !aAdd.equals("=")) { //Null check, shouldn't take place to begin with
+                                                if (!aAdd.equals("") && !aAdd.equals("\u00a0") && !aAdd.equals("=")) { //Null check, shouldn't take place to begin with as I don't believe any null cats exist
                                                     q.setAnswer(aAdd);
                                                 } else {
                                                     c.setQuestions(null);
@@ -557,7 +438,7 @@ public class Game extends PApplet {
                                                 break;
                                             case "Question":
                                                 String qAdd = ((String) v.next()).trim();
-                                                if (!qAdd.equals("") && !qAdd.equals("\u00a0") && !qAdd.equals("=")) { //Null check, shouldn't take place to begin with
+                                                if (!qAdd.equals("") && !qAdd.equals("\u00a0") && !qAdd.equals("=")) { //Null check, shouldn't take place to begin with as don't think any null cats exist
                                                     q.setQuestion(qAdd);
                                                 } else {
                                                     c.setQuestions(null);
@@ -582,7 +463,7 @@ public class Game extends PApplet {
                                 }
                                 break;
                             case "Date":
-                                c.setDate((String) values.next());
+                                c.setDate((String)values.next());
                                 break;
                         }
                     }
@@ -627,11 +508,10 @@ public class Game extends PApplet {
         if(!isCustom) {
             setProgressionPath(first, second, third);
 
-            cleanJSONRead(first, "redata" + File.separator + "by_season" + File.separator + "single_jeopardy_season_35.json", 6, 5);
-            cleanJSONRead(second, "redata" + File.separator + "by_season" + File.separator + "double_jeopardy_season_35.json", 6, 5);
-            cleanJSONRead(third, "redata" + File.separator + "by_season" + File.separator + "final_jeopardy_season_35.json", 6, 5);
+            loadCategories(first, "data" + File.separator + "questions" + File.separator + "all" + File.separator + "single_jeopardy.json", 6, 5);
+            loadCategories(second,"data" + File.separator + "questions" + File.separator + "all" + File.separator + "double_jeopardy.json", 6, 5);
+            loadCategories(third, "data" + File.separator + "questions" + File.separator + "all" + File.separator + "final_jeopardy.json", 1, 1);
 
-            //        setCategories();
             printQuestions(first);
             printQuestions(second);
             printQuestions(third);
@@ -641,7 +521,7 @@ public class Game extends PApplet {
             third.setWagerables();
         } else {
             setProgressionPath(first);
-            cleanJSONRead(first, "data" + File.separator + "questions" + File.separator + "custom" + File.separator + "video_games.json", 2, 5);
+            loadCategories(first, "data" + File.separator + "questions" + File.separator + "custom" + File.separator + "video_games.json", 2, 5);
         }
         Round.setCurrentRound(progressionPath.poll());
 

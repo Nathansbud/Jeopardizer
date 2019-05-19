@@ -277,6 +277,7 @@ def combine_files():
                         for q in questions:
                             json.dump(q, cat)
                             cat.write(",")
+
     add_end_bracket("all/")
 
 
@@ -286,8 +287,9 @@ def combine_files():
 
 
 if __name__ == "__main__":
-    scrape_games()
+    # scrape_games()
     # add_end_bracket("by_season/")
-    # combine_files()
+    combine_files()
+    pass
 
 

@@ -258,11 +258,6 @@ public class Game extends PApplet {
                         t.rewind();
                     }
                     break;
-                case 45:
-                    if(Question.getSelected().isDailyDouble() && wager.length() > 0) {
-                        wager = wager.substring(0, wager.length() - 1);
-                    }
-                    break;
                 case 61:
                     if(Question.getSelected().isWagerable()) {
                         if(wager.length() == 0) {
@@ -275,22 +270,6 @@ public class Game extends PApplet {
                                 System.out.println("Failed to set value of wager due to string error");
                             }
                         }
-                    }
-                    wager = "";
-                    break;
-                case 48:
-                case 49:
-                case 50:
-                case 51:
-                case 52:
-                case 53:
-                case 54:
-                case 55:
-                case 56:
-                case 57:
-                    if(Question.getSelected().isWagerable()) {
-                        wager += (event.getKey());
-                        System.out.println(wager);
                     }
                     break;
                 case 192:
@@ -324,6 +303,35 @@ public class Game extends PApplet {
         }
 
         switch(event.getKeyCode()) { //Always On
+            case 45:
+                if(wager.length() > 0) {
+                    wager = wager.substring(0, wager.length() - 1);
+                    System.out.println(wager);
+                }
+                break;
+            case 61: //=
+                if(Question.getSelected() == null) {
+                    try {
+                        Player.getActive().changeScore(Integer.valueOf(wager));
+                    } catch(NumberFormatException e) {
+                        System.out.println("Wager add failed!");
+                    }
+                }
+                wager = "";
+                break;
+            case 48:
+            case 49:
+            case 50:
+            case 51:
+            case 52:
+            case 53:
+            case 54:
+            case 55:
+            case 56:
+            case 57:
+                wager += (event.getKey());
+                System.out.println(wager);
+                break;
             case 44: //<
                 if(players.size() >= 1) {
                     Player.setActive(players.get(0));
@@ -511,13 +519,11 @@ public class Game extends PApplet {
             loadCategories(second,"data" + File.separator + "questions" + File.separator + "all" + File.separator + "double_jeopardy.json", 6, 5);
             loadCategories(third, "data" + File.separator + "questions" + File.separator + "all" + File.separator + "final_jeopardy.json", 1, 1);
 
-            printQuestions(first);
-            printQuestions(second);
-            printQuestions(third);
-
-            first.setWagerables();
-            second.setWagerables();
-            third.setWagerables();
+            for(Round r : progressionPath) {
+                r.setFilterYear(filterYear);
+                printQuestions(r);
+                r.setWagerables();
+            }
         } else {
             setProgressionPath(first);
             loadCategories(first, "data" + File.separator + "questions" + File.separator + "custom" + File.separator + "video_games.json", 2, 5);

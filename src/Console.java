@@ -11,7 +11,7 @@ public class Console extends PApplet {
         background(PApplet.unhex(Constants.JEOPARDY_BLUE));
         textSize(40);
         try {
-            if (Question.getSelected() != null) {
+            if(Question.getSelected() != null) {
                 if (Question.getSelected().isWagerable()) {
                     fill(PApplet.unhex(Constants.JEOPARDY_WAGERABLE));
                     if (Question.getSelected().isDailyDouble()) {
@@ -25,16 +25,9 @@ public class Console extends PApplet {
 
                 fill(255);
 
-                if (Question.getSelected() != null) {
-                    text(Question.getSelected().getCategory(), width / 2.0f - 0.5f * textWidth(Question.getSelected().getCategory()), 0 + height / 5.0f);
-                }
-                if (Question.getSelected() != null) {
-                    text(Question.getSelected().getQuestion(), width / 8.0f, height / 3.0f, width - width / 3.0f, height);
-                }
-                fill(PApplet.unhex(Constants.JEOPARDY_YELLOW));
-                if (Question.getSelected() != null) {
-                    text(Question.getSelected().getAnswer(), width / 8.0f, height - height / 5.0f);
-                }
+                text(Question.getSelected().getCategory(), width / 2.0f - 0.5f * textWidth(Question.getSelected().getCategory()), 0 + height / 5.0f);
+                text(Question.getSelected().getQuestion(), width / 8.0f, height / 3.0f, width - width / 3.0f, height);
+                text(Question.getSelected().getAnswer(), width / 8.0f, height - height / 5.0f);
             } else {
                 fill(255);
                 for(int i = 0; i < Round.getCurrentRound().getCategories().size(); i++) {

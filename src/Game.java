@@ -34,7 +34,7 @@ public class Game extends PApplet {
 
     private static ArrayList<Player> players = new ArrayList<Player>();
     private static String[] playerNames = {
-            "Scott", "Nina"
+            "Jane", "Nina"
     };
 
     private static Minim minim;
@@ -502,7 +502,6 @@ public class Game extends PApplet {
     public static void setProgressionPath(Round... roundPath) {
         Collections.addAll(progressionPath, roundPath);
     }
-
 
     public static void main(String[] args) {
         if(!isCustom) {

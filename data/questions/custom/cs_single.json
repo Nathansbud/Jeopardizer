@@ -1,0 +1,80 @@
+ [{
+    "Category":"Difficult Wares",
+    "Clues": [
+      {
+        "Question": "Don't bother busting out a calculator, this part of your CPU will handle your calculations",
+        "Answer": "Arithmetic Logic Unit (ALU)"
+      },
+      {
+        "Question": "Fortnite players beware, this vehicle handles allows data to communicate between your CPU and memory",
+        "Answer": "Data Bus"
+      },
+      {
+        "Question": "It's hard to do a many things at once, but this function of the OS makes sure you don't need to think about it!",
+        "Answer": "Multitasking"
+      },
+      {
+        "Question": "It won't be sealing any ducts, but this roll of metal backs up your data in a pinch!",
+        "Answer": "Magnetic Tape"
+      },
+      {
+        "Question": "It's the fastest memory in the west...make sure you have some of this to speed up processer instructions for frequently-accessed memory",
+        "Answer": "Static RAM (SRAM)"
+      },
+      
+    ]
+  },
+  {
+      "Category":"My Little Program",
+      "Clues": [
+        {
+          "Question": "You won't see letters in your math outside of algebra, unless you use this common number base",
+          "Answer": "Hexadecimal"
+        },
+        {
+          "Question": "They say opposites attract, and nowhere is that more true than with this binary operation, where opposites create truth!",
+          "Answer": "Exclusive Or (XOR)"
+        },
+        {
+          "Question": "Only your children have access to these types of variables",
+          "Answer": "Magnetic Tape"
+        },
+        {
+          "Question": "You might not be able to find your keys because they're somewhere you haven't checked yet...or they could be somewhere you can't SEE, due to this OOP principle",
+          "Answer": "Encapsulation"
+        },
+        
+        {
+          "Question": "Your program will most certainly crash due to this exception if you try and access something that doesn't exist!",
+          "Answer": "Null Pointer Exception"
+        },
+        
+      ]
+    },
+    {
+      "Category":"The Social Network",
+      "Clues": [
+        {
+          "Question": "Hackers won't be able to touch your data if you use this type of secure connection",
+          "Answer": "Virtual Private Network (VPN)"
+        },
+        {
+          "Question": "Traffic is a pain when the people in front of you won't move, creating this phenomenon on a network",
+          "Answer": "Bottleneck"
+        },
+        {
+          "Question": "Bluetooth is just one type of this sort of network",
+          "Answer": "Personal Area Network (PAN) or Piconet"
+        },
+        {
+          "Question": "Your ISP probably didn't lie to you about your bandwidth, but what you're seeing isn't bandwidth, it's this networking term",
+          "Answer": "Throughput"
+        },
+        {
+          "Question": "This type of transport method doesn't reach Star Trek levels of speed, but it does utilize this type of cable",
+          "Answer": "Fiber Optic (Cable)"
+        },
+        
+      ]
+    }
+  ]

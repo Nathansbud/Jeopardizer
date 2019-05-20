@@ -6,6 +6,24 @@ Jeopardy is awesome, and Jeopardy fans are even cooler! J-Archive has an archive
 
 This generates random games of Jeopardy (Single, Double, and Final), for 3 players, with a 4th acting as the game's host and controlling selection and score awarding via keyboard as the "dev console." Core game loop is finished, though timers and buzzers are not implemented programmatically as of yet, and occasionally unfinished categories or categories that require external media which is unpresent can show up on the board. Overall, largely functional though!
 
+## Categories
+
+By default, rounds in Jeopardizer are loaded from the single, double, and final jeopardy files located in the data folder. However, the Round class can take any number of categories loaded in from custom folders, provided categories are loaded in using the following JSON structure:
+
+```javascript
+[
+    {"Category":"CategoryName", 
+     "Clues":[
+        {"Question":"QuestionText", "Answer":"AnswerText"}, 
+        {"Question":"QuestionText", "Answer":"AnswerText"},
+        ...
+     ], 
+     "Date":"MM/DD/YYYY"
+    }, 
+    ...
+]
+```
+
 ## External Dependencies
 
 <em>Game (Java)</em>

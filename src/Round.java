@@ -44,8 +44,6 @@ public class Round {
     }
 
     public void setup() {
-        setWagerables();
-
         if(round != RoundType.FINAL) {
             for (int i = 0; i < categories.size(); i++) {
                 categories.get(i).setX(i * Question.getWidth() + i * Question.getWidthBuffer());
@@ -151,4 +149,3 @@ public class Round {
         return CURRENT_ROUND;
     }
 }
-

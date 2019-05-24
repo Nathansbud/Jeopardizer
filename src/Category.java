@@ -18,7 +18,7 @@ public class Category {
 
     public void draw() {
         if(gui.args[0].equals("Game")) {
-            gui.fill(PApplet.unhex(Constants.JEOPARDY_BLUE));
+            gui.fill(PApplet.unhex(JConstants.JEOPARDY_BLUE));
             gui.rect(x, y, Question.getWidth(), Question.getHeight());
             gui.fill(255);
             gui.textSize(18);
@@ -101,6 +101,9 @@ public class Category {
 
     public void setDate(String _date) {
         date = _date;
+        for(Question q : questions) {
+            q.setDate(_date);
+        }
     }
     public String getDate() {
         return date;
@@ -116,7 +119,7 @@ public class Category {
         return date.length() > 0 ? Integer.parseInt(date.substring(date.lastIndexOf("/")+1)) : -1;
     }
     public String getMonthName() {
-        return date.length() > 0 ? Constants.MONTHS[getMonth()-1] : "";
+        return date.length() > 0 ? JConstants.MONTHS[getMonth()-1] : "";
     }
 
 

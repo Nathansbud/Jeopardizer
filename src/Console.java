@@ -8,12 +8,12 @@ public class Console extends PApplet {
 
     @Override
     public void draw() {
-        background(PApplet.unhex(Constants.JEOPARDY_BLUE));
+        background(PApplet.unhex(JConstants.JEOPARDY_BLUE));
         textSize(40);
         try {
             if(Question.getSelected() != null) {
                 if (Question.getSelected().isWagerable()) {
-                    fill(PApplet.unhex(Constants.JEOPARDY_WAGERABLE));
+                    fill(PApplet.unhex(JConstants.JEOPARDY_WAGERABLE));
                     if (Question.getSelected().isDailyDouble()) {
                         text("DAILY DOUBLE", width / 2.0f - 0.5f * textWidth("DAILY DOUBLE"), height / 10.0f);
                     } else {
@@ -23,27 +23,49 @@ public class Console extends PApplet {
                     text(Game.getWager(), width / 2.0f - 0.5f * textWidth(Game.getWager()), height / 8.0f);
                 }
 
-                fill(255);
-
-                text(Question.getSelected().getCategory(), width / 2.0f - 0.5f * textWidth(Question.getSelected().getCategory()), 0 + height / 5.0f);
-                text(Question.getSelected().getQuestion(), width / 8.0f, height / 3.0f, width - width / 3.0f, height);
-                text(Question.getSelected().getAnswer(), width / 8.0f, height - height / 5.0f);
-            } else {
-                fill(255);
-                for(int i = 0; i < Round.getCurrentRound().getCategories().size(); i++) {
-                    Category c = Round.getCurrentRound().getCategory(i);
-                    if(c.hasDialogue()) {
-                        text(c.getDialogue().trim(), width/8.0f, height/4.0f*(i+1), width-width/4.0f, height);
-                    }
-                }
-            }
-            for (int i = 0; i < Game.getPlayers().size(); i++) {
-                if (Game.getPlayers().get(i).isActive()) {
-                    fill(PApplet.unhex(Constants.JEOPARDY_YELLOW));
+                if(Game.getTimerState()) {
+                    fill(PApplet.unhex(JConstants.JEOPARDY_WAGERABLE));
                 } else {
                     fill(255);
                 }
-                text(Game.getPlayers().get(i).getName() + ": $" + String.valueOf(Game.getPlayers().get(i).getScore()), width / 10.0f + width / 5.0f * (i), height / 18.0f);
+
+                text((Game.getTimerState()) ? ("(Timer Running)") : ("(Timer Stopped)"), width/2.0f - 0.5f * textWidth("(Timer Running)"), 0 + height/4.0f);
+
+                fill(255);
+                text(Question.getSelected().getCategory(), width / 2.0f - 0.5f * textWidth(Question.getSelected().getCategory()), 0 + height / 5.0f);
+                text(Question.getSelected().getQuestion(), width / 8.0f, height / 3.0f, width - width / 3.0f, height);
+                text(Question.getSelected().getAnswer(), width / 8.0f, height - height / 5.0f);
+                if(Question.getSelected().getDate().length() > 0) {
+                    text(Question.getSelected().getDate(), width - 2*textWidth(Question.getSelected().getDate()), height - height/ 5.0f);
+                }
+            } else {
+                for (int i = 0; i < Game.getPlayers().size(); i++) {
+                    if (Game.getPlayers().get(i).isActive()) {
+                        fill(PApplet.unhex(JConstants.JEOPARDY_YELLOW));
+                    } else {
+                        fill(255);
+                    }
+                    text(Game.getPlayers().get(i).getName() + ": $" + String.valueOf(Game.getPlayers().get(i).getScore()), width / 10.0f + width / 5.0f * (i), height / 18.0f);
+                }
+                textSize(25);
+                fill(255);
+
+                int offsetDialogue = 0;
+                int offsetDailyDouble = 0;
+
+                for(int i = 0; i < Round.getCurrentRound().getCategories().size(); i++) {
+                    Category c = Round.getCurrentRound().getCategory(i);
+                    if(c.hasDialogue()) {
+                        offsetDialogue++;
+                        text(c.getDialogue().trim(), width/1.95f, height/4.0f*(offsetDialogue), width/3.0f, height);
+                    }
+                    for(int j = 0; j < c.getQuestions().size(); j++) {
+                        if(c.getQuestions().get(j).isDailyDouble()) {
+                           offsetDailyDouble++;
+                           text("DD: " + c.getName() + " (" + c.getQuestions().get(j).getValue() + ")", width/144.0f, height/4.0f*offsetDailyDouble, width/2.0f, height);
+                        }
+                    }
+                }
             }
         } catch(NullPointerException e) {
             System.out.println("Encountered NullPointerException in Console, despite null checks");

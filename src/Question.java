@@ -1,5 +1,4 @@
 import processing.core.PApplet;
-import processing.core.PConstants;
 
 public class Question {
     private static Question selected = null;
@@ -13,6 +12,7 @@ public class Question {
     private String dialogue;
 
     private String category;
+    private String date;
 
     private boolean answered = false;
     private boolean dailyDouble = false;
@@ -44,12 +44,12 @@ public class Question {
 
     public void draw() {
         if(isSelected(this)) {
-            gui.fill(PApplet.unhex(Constants.JEOPARDY_BLUE));
+            gui.fill(PApplet.unhex(JConstants.JEOPARDY_BLUE));
             gui.rect(0, 0, gui.width, gui.height);
             gui.textSize(35);
 
             if(wagerable) {
-                gui.fill(PApplet.unhex(Constants.JEOPARDY_WAGERABLE));
+                gui.fill(PApplet.unhex(JConstants.JEOPARDY_WAGERABLE));
                 if(!dailyDouble && wagerable) {
                     gui.text("FINAL JEOPARDY", gui.width / 2.0f - 0.5f * gui.textWidth("FINAL JEOPARDY"), 0 + gui.height / 10.0f); //Need to handle final jeopardy here
                 } else {
@@ -57,7 +57,7 @@ public class Question {
                 }
             }
             if(showQuestion) {
-                gui.fill(PApplet.unhex(Constants.JEOPARDY_YELLOW));
+                gui.fill(PApplet.unhex(JConstants.JEOPARDY_YELLOW));
                 gui.text(valueText, gui.width / 2.0f - 0.5f * gui.textWidth(valueText), 0 + gui.height / 7.2f); //Need to handle final jeopardy here
             }
             gui.fill(255);
@@ -68,14 +68,14 @@ public class Question {
             }
         } else {
             if (!answered) {
-                gui.fill(PApplet.unhex(Constants.JEOPARDY_BLUE));
+                gui.fill(PApplet.unhex(JConstants.JEOPARDY_BLUE));
                 gui.rect(x, y, width, height);
                 gui.fill(255);
                 gui.textSize(45);
-                gui.fill(PApplet.unhex(Constants.JEOPARDY_YELLOW));
+                gui.fill(PApplet.unhex(JConstants.JEOPARDY_YELLOW));
                 gui.text(valueText, x + width / 2.0f - 0.5f * gui.textWidth(valueText), y + height / 2.0f + 0.5f * gui.textAscent());
             } else {
-                gui.fill(PApplet.unhex(Constants.JEOPARDY_BLUE));
+                gui.fill(PApplet.unhex(JConstants.JEOPARDY_BLUE));
                 gui.rect(x, y, width, height);
             }
         }
@@ -148,6 +148,25 @@ public class Question {
     public void setValue(int _value) {
         value = _value;
         valueText = "$" + String.valueOf(value);
+    }
+
+    public String getDate() {
+        return date;
+    }
+    public int getDay() {
+        return date.length() > 0 ? Integer.parseInt(date.substring(date.indexOf("/")+1, date.lastIndexOf("/"))) : -1;
+    }
+    public int getMonth() {
+        return date.length() > 0 ? Integer.parseInt(date.substring(0, date.indexOf("/"))) : -1;
+    }
+    public int getYear() {
+        return date.length() > 0 ? Integer.parseInt(date.substring(date.lastIndexOf("/")+1)) : -1;
+    }
+    public String getMonthName() {
+        return date.length() > 0 ? JConstants.MONTHS[getMonth()-1] : "";
+    }
+    public void setDate(String _date) {
+        date = _date;
     }
 
     public static PApplet getGui() {

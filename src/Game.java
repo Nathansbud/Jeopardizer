@@ -11,8 +11,10 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Iterator;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.Collections;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.ThreadLocalRandom;
 
 import java.io.File;
 import java.io.FileReader;
@@ -28,22 +30,24 @@ public class Game extends PApplet {
     private static Round third = new Round(Round.RoundType.FINAL);
 
     private static ArrayList<Round> customRounds = new ArrayList<>(); //To be used for custom rounds
-
     private static Queue<Round> progressionPath = new LinkedList<>(); //Used to set path of rounds; 1st->2nd-3rd is classic, but opens up to new possibilities
-
 
     private static ArrayList<Player> players = new ArrayList<Player>();
     private static String[] playerNames = {
-            "Jane", "Nina"
+            "Lafferty", "Settle", "Maeve"
     };
 
     private static Minim minim;
-    private static AudioPlayer tracks[] = new AudioPlayer[3];
+
+    public static AudioPlayer tracks[] = new AudioPlayer[4];
 
     private static String wager = "";
 
-    private static int filterYear = 2002;
+    private static int filterYear = 2008;
     private static boolean isCustom = false;
+
+    private static Timer timer = new Timer();
+    private static boolean timerState = false;
 
     @Override
     public void settings() {
@@ -66,6 +70,7 @@ public class Game extends PApplet {
         tracks[0] = minim.loadFile("data" + File.separator + "audio" + File.separator + "Time Out.mp3");
         tracks[1] = minim.loadFile("data" + File.separator + "audio" + File.separator + "Daily Double.mp3");
         tracks[2] = minim.loadFile("data" + File.separator + "audio" + File.separator + "Final Jeopardy.mp3");
+        tracks[3] = minim.loadFile("data" + File.separator + "audio" + File.separator + "Question Open.mp3");
     }
 
     @Override
@@ -74,8 +79,8 @@ public class Game extends PApplet {
         if(Round.getGameState() != Round.GameState.SCORES) {
             Round.getCurrentRound().draw();
         } else {
-            background(PApplet.unhex(Constants.JEOPARDY_BLUE));
-            fill(PApplet.unhex(Constants.JEOPARDY_YELLOW));
+            background(PApplet.unhex(JConstants.JEOPARDY_BLUE));
+            fill(PApplet.unhex(JConstants.JEOPARDY_YELLOW));
             textSize(35);
             for(int i = 0; i < players.size(); i++) {
                 text(players.get(i).getName() + ": $" + String.valueOf(players.get(i).getScore()), width/3.0f, height/5.0f*(i+1));
@@ -105,7 +110,7 @@ public class Game extends PApplet {
 
     @Override
     public void keyPressed(KeyEvent event) {
-//        System.out.println(event.getKeyCode());
+        System.out.println(event.getKeyCode());
         if(event.getKeyCode() == 192 && Round.getCurrentRound().getRoundType() == Round.RoundType.FINAL) {
             tracks[2].play();
         }
@@ -219,15 +224,17 @@ public class Game extends PApplet {
             if(q != null && !q.isAnswered()) {
                 q.setAnswered(true);
                 Question.setSelected(q);
-                System.out.println(q.isDailyDouble());
                 if(q.isDailyDouble()) {
                     tracks[1].play();
                 }
+//                } else {
+//                    tracks[3].play();
+//                }
                 Round.setGameState(Round.GameState.QUESTION);
             }
         } else if(Question.getSelected() != null) {  //Only on during question up
             switch(event.getKeyCode()) {
-                case 8: //DELETE
+                case 8: //DELETE, HANDLE INCORRECT RESPONSE
                     if(Player.getActive() != null) {
                         Player.getActive().changeScore(-Question.getSelected().getValue());
                         System.out.println(Player.getActive().getScore());
@@ -238,6 +245,12 @@ public class Game extends PApplet {
                     Question.setSelected(null);
                     Round.setGameState(Round.GameState.ROUND);
                     wager = "";
+                    if(timerState) {
+                        System.out.println("Timer cancelled, question closed");
+                        timer.cancel();
+                        timerState = false;
+                        timer = new Timer();
+                    }
                     for(AudioPlayer t : tracks) {
                         t.pause();
                         t.rewind();
@@ -253,9 +266,40 @@ public class Game extends PApplet {
                         Round.setGameState(Round.GameState.ROUND);
                     }
                     wager = "";
+                    if(timerState) {
+                        timer.cancel();
+                        timerState = false;
+                        timer = new Timer();
+                    }
                     for(AudioPlayer t : tracks) {
                         t.pause();
                         t.rewind();
+                    }
+                    break;
+                case 17:
+                    timerState = !timerState;
+                    if(tracks[0].position() > 0) {
+                        tracks[0].pause();
+                        tracks[0].rewind();
+
+                    }
+                    if(timerState) {
+                        System.out.println("Timer started");
+                        timer.schedule(new TimerTask() {
+                            @Override
+                            public void run() {
+                                System.out.println("Timer called");
+                                tracks[0].play();
+                                timerState = false;
+                                timer = new Timer();
+                            }
+                        }, 5000);
+                    } else {
+                        System.out.println("Timer stopped");
+                        timer.cancel();
+                        timerState = false;
+                        timer = new Timer();
+
                     }
                     break;
                 case 61:
@@ -332,20 +376,17 @@ public class Game extends PApplet {
                 wager += (event.getKey());
                 System.out.println(wager);
                 break;
+            case 17: //CTRL
+                break;
+            case 18: //Option
+                break;
+            case 157: //Command
+                break;
             case 44: //<
-                if(players.size() >= 1) {
-                    Player.setActive(players.get(0));
-                }
                 break;
             case 46: //]
-                if(players.size() >= 2) {
-                    Player.setActive(players.get(1));
-                }
                 break;
             case 47: //\
-                if(players.size() >= 3) {
-                    Player.setActive(players.get(2));
-                }
                 break;
             case 37: //Left arrow key (mac)
                 int leftShift = players.indexOf(Player.getActive())-1;
@@ -377,6 +418,9 @@ public class Game extends PApplet {
     }
     public static String getWager() {
         return wager;
+    }
+    public static boolean getTimerState() {
+        return timerState;
     }
 
     private static boolean containsDialogue(String s) {
@@ -483,8 +527,6 @@ public class Game extends PApplet {
                                     cq.setDialogue(c.getDialogue());
                                 }
                             }
-                        } else {
-                            System.out.println("Failed to add category due to filter year!");
                         }
                     }
                 }
@@ -500,7 +542,7 @@ public class Game extends PApplet {
             System.out.println(c.getName());
             int count = 0;
             for(Question q : c.getQuestions()) {
-                System.out.println("("+count++ +")");
+                System.out.println("["+count++ +"]");
                 System.out.println(q.getQuestion());
                 System.out.println(q.getAnswer());
             }
@@ -511,18 +553,23 @@ public class Game extends PApplet {
         Collections.addAll(progressionPath, roundPath);
     }
 
+
+
     public static void main(String[] args) {
         if(!isCustom) {
             setProgressionPath(first, second, third);
+            for(Round r : progressionPath) {
+                r.setFilterYear(filterYear);
+            }
 
             loadCategories(first, "data" + File.separator + "questions" + File.separator + "all" + File.separator + "single_jeopardy.json", 6, 5);
             loadCategories(second,"data" + File.separator + "questions" + File.separator + "all" + File.separator + "double_jeopardy.json", 6, 5);
             loadCategories(third, "data" + File.separator + "questions" + File.separator + "all" + File.separator + "final_jeopardy.json", 1, 1);
 
             for(Round r : progressionPath) {
-                r.setFilterYear(filterYear);
                 printQuestions(r);
                 r.setWagerables();
+
             }
         } else {
             setProgressionPath(first);

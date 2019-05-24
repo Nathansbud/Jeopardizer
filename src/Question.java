@@ -1,4 +1,6 @@
 import processing.core.PApplet;
+import processing.core.PImage;
+import ddf.minim.AudioPlayer;
 
 public class Question {
     private static Question selected = null;
@@ -6,6 +8,9 @@ public class Question {
 
     private int value;
     private String valueText = "";
+
+    private Media media = null;
+    private boolean showMedia = false;
 
     private String question;
     private String answer;
@@ -19,15 +24,23 @@ public class Question {
     private boolean wagerable = false;
     private boolean showQuestion = true;
 
-
     private static float width, height;
     private static float widthBuffer, heightBuffer;
+
+
 
     private float x, y;
 
     public Question(String _question, String _answer) {
         question = _question;
         answer = _answer;
+    }
+
+    public Question(String _question, String _answer, int _value, Media _media) {
+        question = _question;
+        answer = _answer;
+        value = _value;
+        media = _media;
     }
 
     public Question() {
@@ -44,27 +57,49 @@ public class Question {
 
     public void draw() {
         if(isSelected(this)) {
-            gui.fill(PApplet.unhex(JConstants.JEOPARDY_BLUE));
-            gui.rect(0, 0, gui.width, gui.height);
-            gui.textSize(35);
+            if(!showMedia) {
+                gui.fill(PApplet.unhex(JConstants.JEOPARDY_BLUE));
+                gui.rect(0, 0, gui.width, gui.height);
+                gui.textSize(35);
 
-            if(wagerable) {
-                gui.fill(PApplet.unhex(JConstants.JEOPARDY_WAGERABLE));
-                if(!dailyDouble && wagerable) {
-                    gui.text("FINAL JEOPARDY", gui.width / 2.0f - 0.5f * gui.textWidth("FINAL JEOPARDY"), 0 + gui.height / 10.0f); //Need to handle final jeopardy here
-                } else {
-                    gui.text("DAILY DOUBLE", gui.width/2.0f - 0.5f*gui.textWidth("DAILY DOUBLE"), 0 + gui.height/10.0f); //Need to handle final jeopardy here
+                if (wagerable) {
+                    gui.fill(PApplet.unhex(JConstants.JEOPARDY_WAGERABLE));
+                    if (!dailyDouble && wagerable) {
+                        gui.text("FINAL JEOPARDY", gui.width / 2.0f - 0.5f * gui.textWidth("FINAL JEOPARDY"), 0 + gui.height / 10.0f); //Need to handle final jeopardy here
+                    } else {
+                        gui.text("DAILY DOUBLE", gui.width / 2.0f - 0.5f * gui.textWidth("DAILY DOUBLE"), 0 + gui.height / 10.0f); //Need to handle final jeopardy here
+                    }
                 }
-            }
-            if(showQuestion) {
-                gui.fill(PApplet.unhex(JConstants.JEOPARDY_YELLOW));
-                gui.text(valueText, gui.width / 2.0f - 0.5f * gui.textWidth(valueText), 0 + gui.height / 7.2f); //Need to handle final jeopardy here
-            }
-            gui.fill(255);
-            gui.text(category, gui.width/2.0f - 0.5f*gui.textWidth(category), 0+gui.height/5.0f);
-            gui.textSize(40);
-            if(!dailyDouble || (showQuestion)) {
-                gui.text(question, gui.width / 8.0f, gui.height / 3.0f, gui.width - gui.width / 3.0f, gui.height);
+                if (showQuestion) {
+                    gui.fill(PApplet.unhex(JConstants.JEOPARDY_YELLOW));
+                    gui.text(valueText, gui.width / 2.0f - 0.5f * gui.textWidth(valueText), 0 + gui.height / 7.2f); //Need to handle final jeopardy here
+                }
+                gui.fill(255);
+                if(category != null) {
+                    gui.text(category, gui.width / 2.0f - 0.5f * gui.textWidth(category), 0 + gui.height / 5.0f);
+                }
+                gui.textSize(40);
+                if (!dailyDouble || (showQuestion)) {
+                    gui.text(question, gui.width / 8.0f, gui.height / 3.0f, gui.width - gui.width / 3.0f, gui.height);
+                }
+            } else {
+                switch(media.getType()) {
+                    case IMAGE:
+                        gui.image((PImage)media.getMedia(), 0, 0, gui.width, gui.height);
+                        break;
+                    case VIDEO:
+                        break;
+                    case AUDIO:
+                        AudioPlayer m = (AudioPlayer)media.getMedia();
+                        if(m.isPlaying()) {
+                            m.pause();
+                            m.rewind();
+                        } else {
+                            m.play();
+                        }
+                        showMedia = false;
+                        break;
+                }
             }
         } else {
             if (!answered) {
@@ -79,6 +114,23 @@ public class Question {
                 gui.rect(x, y, width, height);
             }
         }
+    }
+
+    public Media getMedia() {
+        return media;
+    }
+    public boolean hasMedia() {
+        return media != null;
+    }
+    public void setMedia(Media _media) {
+        media = _media;
+    }
+
+    public boolean isShowMedia() {
+        return showMedia;
+    }
+    public void setShowMedia(boolean _showMedia) {
+        showMedia = _showMedia;
     }
 
     public boolean isAnswered() {
@@ -134,6 +186,7 @@ public class Question {
     public void setShowQuestion(boolean _showQuestion) {
         showQuestion = _showQuestion;
     }
+
 
     public String getDialogue() {
         return dialogue;

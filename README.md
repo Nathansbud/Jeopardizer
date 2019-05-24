@@ -4,7 +4,7 @@
 
 Jeopardy is awesome, and Jeopardy fans are even cooler! J-Archive has an archive of (nearly) every Jeopardy game to date, and thanks to a shoddily made scraper, so do I!
 
-This generates random games of Jeopardy (Single, Double, and Final), for 3 players, with a 4th acting as the game's host and controlling selection and score awarding via keyboard as the "dev console." Core game loop is finished, though timers and buzzers are not implemented programmatically as of yet, and occasionally unfinished categories or categories that require external media which is unpresent can show up on the board. Overall, largely functional though!
+Jeopardizer random games of Jeopardy (Single, Double, and Final), and is designed 2 screens (one for host console, one for questions) and to be played by 3 players + 4th acting as host. Custom games/categories can be easily implemented, as categories/questions are simply read in by specifying JSON file, category count, and date filter.
 
 ## Categories
 
@@ -14,17 +14,31 @@ By default, rounds in Jeopardizer are loaded from the single, double, and final 
 [
     {"Category":"CategoryName", 
      "Clues":[
-        {"Question":"QuestionText", "Answer":"AnswerText"}, 
-        {"Question":"QuestionText", "Answer":"AnswerText"},
+        {
+            "Question":"QuestionText", //Required
+            "Answer":"AnswerText", //Required
+            "Media":{ //Optional; Parameters required
+                "Name":"MediaName",
+                "Type":"Audio | Video | Image", //Must be one of these
+                "Path":"Filepath", 
+            }
+        }, 
+        {
+            "Question":"...",
+            "Answer":"...",
+            "Media":{
+                ...
+            }            
+        }
         ...
      ], 
-     "Date":"MM/DD/YYYY"
+     "Date":"MM/DD/YYYY" //Optional
     }, 
     ...
 ]
 ```
 
-## External Dependencies
+## Dependencies
 
 <em>Game (Java)</em>
 

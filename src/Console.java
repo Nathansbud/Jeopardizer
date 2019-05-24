@@ -30,14 +30,19 @@ public class Console extends PApplet {
                 }
 
                 text((Game.getTimerState()) ? ("(Timer Running)") : ("(Timer Stopped)"), width/2.0f - 0.5f * textWidth("(Timer Running)"), 0 + height/4.0f);
+                if(Question.getSelected().hasMedia() && Question.getSelected().getMedia().getType() != Media.MediaType.AUDIO) {
+                    text((Question.getSelected().isShowMedia()) ? ("(Showing Media:  ") : ("(Unshown Media: ") + Question.getSelected().getMedia().getName() + ")", width/2.0f - 0.5f * textWidth("(Unshown Media: " + Question.getSelected().getMedia().getName() + ")"),  height/4.0f + height/20.0f);
+                }
 
                 fill(255);
-                text(Question.getSelected().getCategory(), width / 2.0f - 0.5f * textWidth(Question.getSelected().getCategory()), 0 + height / 5.0f);
-                text(Question.getSelected().getQuestion(), width / 8.0f, height / 3.0f, width - width / 3.0f, height);
-                text(Question.getSelected().getAnswer(), width / 8.0f, height - height / 5.0f);
-                if(Question.getSelected().getDate().length() > 0) {
+                if(Question.getSelected().getCategory() != null)
+                    text(Question.getSelected().getCategory(), width / 2.0f - 0.5f * textWidth(Question.getSelected().getCategory()), 0 + height / 5.0f);
+                if(Question.getSelected().getQuestion() != null)
+                    text(Question.getSelected().getQuestion(), width / 8.0f, height / 3.0f, width - width / 3.0f, height);
+                if(Question.getSelected().getAnswer() != null)
+                    text(Question.getSelected().getAnswer(), width / 8.0f, height - height / 5.0f);
+                if(Question.getSelected().getDate() != null)
                     text(Question.getSelected().getDate(), width - 2*textWidth(Question.getSelected().getDate()), height - height/ 5.0f);
-                }
             } else {
                 for (int i = 0; i < Game.getPlayers().size(); i++) {
                     if (Game.getPlayers().get(i).isActive()) {
@@ -68,6 +73,7 @@ public class Console extends PApplet {
                 }
             }
         } catch(NullPointerException e) {
+            System.out.println(e.getStackTrace()[0]);
             System.out.println("Encountered NullPointerException in Console, despite null checks");
         }
     }

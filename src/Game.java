@@ -1,4 +1,5 @@
 import processing.core.PApplet;
+import processing.core.PImage;
 import processing.event.KeyEvent;
 
 import org.json.simple.*;
@@ -20,7 +21,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 
-
 public class Game extends PApplet {
     private static Game app = new Game();
     private static Console console = new Console();
@@ -37,17 +37,15 @@ public class Game extends PApplet {
             "Lafferty", "Settle", "Maeve"
     };
 
-    private static Minim minim;
+    private static Timer timer = new Timer();
+    private static boolean timerState = false;
 
+    private static Minim minim;
     public static AudioPlayer tracks[] = new AudioPlayer[4];
 
     private static String wager = "";
-
     private static int filterYear = 2008;
     private static boolean isCustom = false;
-
-    private static Timer timer = new Timer();
-    private static boolean timerState = false;
 
     @Override
     public void settings() {
@@ -56,8 +54,11 @@ public class Game extends PApplet {
 
     @Override
     public void setup() {
+        minim = new Minim(app);
+
         Question.setConstants(app);
         Category.setGui(app);
+
 
         if(!isCustom) {
             first.setup();
@@ -66,11 +67,23 @@ public class Game extends PApplet {
             first.setup();
         }
 
-        minim = new Minim(app);
+
         tracks[0] = minim.loadFile("data" + File.separator + "audio" + File.separator + "Time Out.mp3");
         tracks[1] = minim.loadFile("data" + File.separator + "audio" + File.separator + "Daily Double.mp3");
         tracks[2] = minim.loadFile("data" + File.separator + "audio" + File.separator + "Final Jeopardy.mp3");
         tracks[3] = minim.loadFile("data" + File.separator + "audio" + File.separator + "Question Open.mp3");
+
+        for(Round r : progressionPath) {
+            for(Category c : r.getCategories()) {
+                for(Question q : c.getQuestions()) {
+                    if(q.hasMedia()) {
+                        q.getMedia().load();
+                    }
+                }
+            }
+        }
+
+        Round.setCurrentRound(progressionPath.poll());
     }
 
     @Override
@@ -110,14 +123,14 @@ public class Game extends PApplet {
 
     @Override
     public void keyPressed(KeyEvent event) {
-        System.out.println(event.getKeyCode());
+//        System.out.println(event.getKeyCode());
         if(event.getKeyCode() == 192 && Round.getCurrentRound().getRoundType() == Round.RoundType.FINAL) {
             tracks[2].play();
         }
         if(Round.getCurrentRound().getRoundType() != Round.RoundType.FINAL && Question.getSelected() == null) { //Question select screen
             ArrayList<Category> c = Round.getCurrentRound().getCategories();
             Question q = null;
-            switch (event.getKeyCode()) {
+            switch (event.getKeyCode()) { //To-do: make this less hardcoded for custom categories
                 case 81: //q
                     q = c.get(0).getQuestions().get(0);
                     break;
@@ -242,6 +255,11 @@ public class Game extends PApplet {
                     wager = "";
                     break;
                 case 9: //TAB
+                    if(Question.getSelected().hasMedia()) {
+                        if(Question.getSelected().getMedia().getType() == Media.MediaType.AUDIO) {
+                            ((AudioPlayer)Question.getSelected().getMedia().getMedia()).pause();
+                        }
+                    }
                     Question.setSelected(null);
                     Round.setGameState(Round.GameState.ROUND);
                     wager = "";
@@ -257,6 +275,12 @@ public class Game extends PApplet {
                     }
                     break;
                 case 10: //ENTER
+                    if(Question.getSelected().hasMedia()) {
+                        if(Question.getSelected().getMedia().getType() == Media.MediaType.AUDIO) {
+                            ((AudioPlayer)Question.getSelected().getMedia().getMedia()).pause();
+                        }
+                    }
+
                     if(Player.getActive() != null) {
                         Player.getActive().changeScore(Question.getSelected().getValue());
                         System.out.println(Player.getActive().getName() + ": " + Player.getActive().getScore());
@@ -266,17 +290,19 @@ public class Game extends PApplet {
                         Round.setGameState(Round.GameState.ROUND);
                     }
                     wager = "";
+
                     if(timerState) {
                         timer.cancel();
                         timerState = false;
                         timer = new Timer();
                     }
+
                     for(AudioPlayer t : tracks) {
                         t.pause();
                         t.rewind();
                     }
                     break;
-                case 17:
+                case 17: //Control
                     timerState = !timerState;
                     if(tracks[0].position() > 0) {
                         tracks[0].pause();
@@ -300,6 +326,11 @@ public class Game extends PApplet {
                         timerState = false;
                         timer = new Timer();
 
+                    }
+                    break;
+                case 18: //Option
+                    if(Question.getSelected().hasMedia()) {
+                        Question.getSelected().setShowMedia(!Question.getSelected().isShowMedia());
                     }
                     break;
                 case 61:
@@ -376,11 +407,7 @@ public class Game extends PApplet {
                 wager += (event.getKey());
                 System.out.println(wager);
                 break;
-            case 17: //CTRL
-                break;
-            case 18: //Option
-                break;
-            case 157: //Command
+            case 157: //Option
                 break;
             case 44: //<
                 break;
@@ -422,6 +449,12 @@ public class Game extends PApplet {
     public static boolean getTimerState() {
         return timerState;
     }
+    public static PApplet getGUI() {
+        return app;
+    }
+    public static Minim getMinim() {
+        return minim;
+    }
 
     private static boolean containsDialogue(String s) {
         return s.contains("(") || s.contains(")");
@@ -436,7 +469,7 @@ public class Game extends PApplet {
         return s.substring(s.indexOf("("), s.indexOf(")")+1);
     }
 
-    private static void loadCategories(Round r, String filePath, int categoryCount, int categoryQuestionCount) {
+    private static void loadCategories(Round r, String filePath, int categoryCount, int categoryQuestionCount) { //Should refactor this to be recursive
         JSONParser jsonParser = new JSONParser();
 
         try {
@@ -497,6 +530,26 @@ public class Game extends PApplet {
                                                     continueAdd = false;
                                                 }
                                                 break;
+                                            case "Media":
+                                                Media m = new Media();
+                                                JSONObject mediaObj = (JSONObject)v.next();
+                                                Iterator mK = mediaObj.keySet().iterator();
+                                                Iterator mV = mediaObj.values().iterator();
+                                                while(mK.hasNext() && mV.hasNext()) {
+                                                    switch((String) mK.next()) {
+                                                        case "Type":
+                                                            m.setType(Media.MediaType.valueOf(((String)mV.next()).toUpperCase()));
+                                                            break;
+                                                        case "Name":
+                                                            m.setName((String)mV.next());
+                                                            break;
+                                                        case "Path":
+                                                            m.setPath((String)mV.next());
+                                                            break;
+                                                    }
+                                                }
+                                                q.setMedia(m);
+                                                break;
                                             default:
                                                 break;
                                         }
@@ -520,7 +573,7 @@ public class Game extends PApplet {
                         }
                     }
                     if(c.getQuestions() != null) {
-                        if(c.getYear() >= r.getFilterYear() || c.getYear() == -1) {
+                        if((c.getYear() >= r.getFilterYear() || c.getYear() == -1) && c.getQuestions().size() == categoryQuestionCount) {
                             r.addCategory(c);
                             for (Question cq : c.getQuestions()) {
                                 if (c.hasDialogue()) {
@@ -569,13 +622,11 @@ public class Game extends PApplet {
             for(Round r : progressionPath) {
                 printQuestions(r);
                 r.setWagerables();
-
             }
         } else {
             setProgressionPath(first);
-            loadCategories(first, "data" + File.separator + "questions" + File.separator + "custom" + File.separator + "video_games.json", 2, 5);
+            loadCategories(first, "data" + File.separator + "questions" + File.separator + "custom" + File.separator + "custom_media.json", 1, 5);
         }
-        Round.setCurrentRound(progressionPath.poll());
 
         for (String p : playerNames) {
             players.add(new Player(p));
@@ -587,7 +638,6 @@ public class Game extends PApplet {
 
         app.args = new String[]{"Game"};
         console.args = new String[]{"Console"};
-
 
         PApplet.runSketch(app.args, app);
         PApplet.runSketch(console.args, new Console());

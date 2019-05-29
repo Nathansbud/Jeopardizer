@@ -10,6 +10,14 @@ public class Console extends PApplet {
     public void draw() {
         background(PApplet.unhex(JConstants.JEOPARDY_BLUE));
         textSize(40);
+        for (int i = 0; i < Game.getPlayers().size(); i++) {
+            if (Game.getPlayers().get(i).isActive()) {
+                fill(PApplet.unhex(JConstants.JEOPARDY_YELLOW));
+            } else {
+                fill(255);
+            }
+            text(Game.getPlayers().get(i).getName() + ": $" + String.valueOf(Game.getPlayers().get(i).getScore()), width / 10.0f + width / 5.0f * (i), height / 18.0f);
+        }
         try {
             if(Question.getSelected() != null) {
                 if (Question.getSelected().isWagerable()) {
@@ -35,23 +43,15 @@ public class Console extends PApplet {
                 }
 
                 fill(255);
-                if(Question.getSelected().getCategory() != null)
+                if(Question.getSelected().getCategory() != null && !Question.getSelected().getCategory().equals(""))
                     text(Question.getSelected().getCategory(), width / 2.0f - 0.5f * textWidth(Question.getSelected().getCategory()), 0 + height / 5.0f);
-                if(Question.getSelected().getQuestion() != null)
+                if(Question.getSelected().getQuestion() != null && !Question.getSelected().getQuestion().equals(""))
                     text(Question.getSelected().getQuestion(), width / 8.0f, height / 3.0f, width - width / 3.0f, height);
-                if(Question.getSelected().getAnswer() != null)
+                if(Question.getSelected().getAnswer() != null && !Question.getSelected().getAnswer().equals(""))
                     text(Question.getSelected().getAnswer(), width / 8.0f, height - height / 5.0f);
-                if(Question.getSelected().getDate() != null)
+                if(Question.getSelected().getDate() != null && !Question.getSelected().getDate().equals(""))
                     text(Question.getSelected().getDate(), width - 2*textWidth(Question.getSelected().getDate()), height - height/ 5.0f);
             } else {
-                for (int i = 0; i < Game.getPlayers().size(); i++) {
-                    if (Game.getPlayers().get(i).isActive()) {
-                        fill(PApplet.unhex(JConstants.JEOPARDY_YELLOW));
-                    } else {
-                        fill(255);
-                    }
-                    text(Game.getPlayers().get(i).getName() + ": $" + String.valueOf(Game.getPlayers().get(i).getScore()), width / 10.0f + width / 5.0f * (i), height / 18.0f);
-                }
                 textSize(25);
                 fill(255);
 

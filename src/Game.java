@@ -34,7 +34,7 @@ public class Game extends PApplet {
 
     private static ArrayList<Player> players = new ArrayList<Player>();
     private static String[] playerNames = {
-            "Player 1", "Player 2", "Player 3"
+            "Zack"
     };
 
     private static Timer timer = new Timer();
@@ -44,7 +44,7 @@ public class Game extends PApplet {
     public static AudioPlayer tracks[] = new AudioPlayer[4];
 
     private static String wager = "";
-    private static int filterYear = 2008;
+    private static int filterYear = 2016;
     private static boolean isCustom = false;
 
     @Override

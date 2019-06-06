@@ -1,6 +1,7 @@
 import processing.core.PApplet;
 import processing.core.PImage;
 import processing.event.KeyEvent;
+import processing.core.PFont;
 
 import org.json.simple.*;
 import org.json.simple.parser.JSONParser;
@@ -25,6 +26,10 @@ public class Game extends PApplet {
     private static Game app = new Game();
     private static Console console = new Console();
 
+    private static PFont qfont = null; //Korinna
+    private static PFont cfont = null; //Helvetica Inserat
+    private static PFont mfont = null; //Swiss 911
+
     private static Round first = new Round(Round.RoundType.SINGLE);
     private static Round second = new Round(Round.RoundType.DOUBLE);
     private static Round third = new Round(Round.RoundType.FINAL);
@@ -34,7 +39,7 @@ public class Game extends PApplet {
 
     private static ArrayList<Player> players = new ArrayList<Player>();
     private static String[] playerNames = {
-            "Zack"
+            "Aneekha", "Dev", "Zack"
     };
 
     private static Timer timer = new Timer();
@@ -44,7 +49,9 @@ public class Game extends PApplet {
     public static AudioPlayer tracks[] = new AudioPlayer[4];
 
     private static String wager = "";
-    private static int filterYear = 2016;
+    private static int filterYear = 2008;
+    private static int upperFilterYear = 2019;
+
     private static boolean isCustom = false;
 
     @Override
@@ -84,6 +91,21 @@ public class Game extends PApplet {
         }
 
         Round.setCurrentRound(progressionPath.poll());
+        String pathToFont = "data" + File.separator + "fonts";
+        for(File f : new File(pathToFont).listFiles()) {
+            String fontName = f.getName().substring(0, f.getName().indexOf("."));
+            switch(fontName) {
+                case "Question":
+                    qfont = createFont(f.getAbsolutePath(), 12, true);
+                    break;
+                case "Category":
+                    cfont = createFont(f.getAbsolutePath(), 12, true);
+                    break;
+                case "Values":
+                    mfont = createFont(f.getAbsolutePath(), 12, true);
+                    break;
+            }
+        }
     }
 
     @Override
@@ -93,8 +115,10 @@ public class Game extends PApplet {
             Round.getCurrentRound().draw();
         } else {
             background(PApplet.unhex(JConstants.JEOPARDY_BLUE));
-            fill(PApplet.unhex(JConstants.JEOPARDY_YELLOW));
-            textSize(35);
+            fill(255);
+
+            textFont(cfont);
+            textSize(60);
             for(int i = 0; i < players.size(); i++) {
                 text(players.get(i).getName() + ": $" + String.valueOf(players.get(i).getScore()), width/3.0f, height/5.0f*(i+1));
             }
@@ -240,9 +264,6 @@ public class Game extends PApplet {
                 if(q.isDailyDouble()) {
                     tracks[1].play();
                 }
-//                } else {
-//                    tracks[3].play();
-//                }
                 Round.setGameState(Round.GameState.QUESTION);
             }
         } else if(Question.getSelected() != null) {  //Only on during question up
@@ -455,6 +476,15 @@ public class Game extends PApplet {
     public static Minim getMinim() {
         return minim;
     }
+    public static PFont getQuestionFont() {
+        return qfont;
+    }
+    public static PFont getCategoryFont() {
+        return cfont;
+    }
+    public static PFont getMoneyFont() {
+        return mfont;
+    }
 
     private static boolean containsDialogue(String s) {
         return s.contains("(") || s.contains(")");
@@ -463,6 +493,7 @@ public class Game extends PApplet {
     private static String removeAlexDialogue(String s) {
         return s.substring(0, s.indexOf("(")) + s.substring(s.lastIndexOf(")")+((s.lastIndexOf(")")!=s.length()-1)?(1):(0)), s.length() - 1);
     }
+
     public static String getDialogue(String s) {
         String n = s.substring(s.indexOf("("), s.indexOf(")")+1);
         System.out.println("Dialogue for " + removeAlexDialogue(s).trim() + ": " + n);
@@ -573,7 +604,7 @@ public class Game extends PApplet {
                         }
                     }
                     if(c.getQuestions() != null) {
-                        if((c.getYear() >= r.getFilterYear() || c.getYear() == -1) && c.getQuestions().size() == categoryQuestionCount) {
+                        if(c.getYear() == -1 || (c.getYear() >= filterYear && c.getYear() <= upperFilterYear && c.getQuestions().size() == categoryQuestionCount)) {
                             r.addCategory(c);
                             for (Question cq : c.getQuestions()) {
                                 if (c.hasDialogue()) {

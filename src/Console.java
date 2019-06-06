@@ -41,16 +41,19 @@ public class Console extends PApplet {
                 if(Question.getSelected().hasMedia() && Question.getSelected().getMedia().getType() != Media.MediaType.AUDIO) {
                     text((Question.getSelected().isShowMedia()) ? ("(Showing Media:  ") : ("(Unshown Media: ") + Question.getSelected().getMedia().getName() + ")", width/2.0f - 0.5f * textWidth("(Unshown Media: " + Question.getSelected().getMedia().getName() + ")"),  height/4.0f + height/20.0f);
                 }
-
                 fill(255);
-                if(Question.getSelected().getCategory() != null && !Question.getSelected().getCategory().equals(""))
+                if(Question.getSelected().getCategory() != null && !Question.getSelected().getCategory().equals("")) {
                     text(Question.getSelected().getCategory(), width / 2.0f - 0.5f * textWidth(Question.getSelected().getCategory()), 0 + height / 5.0f);
-                if(Question.getSelected().getQuestion() != null && !Question.getSelected().getQuestion().equals(""))
+                }
+                if(Question.getSelected().getQuestion() != null && !Question.getSelected().getQuestion().equals("")) {
                     text(Question.getSelected().getQuestion(), width / 8.0f, height / 3.0f, width - width / 3.0f, height);
-                if(Question.getSelected().getAnswer() != null && !Question.getSelected().getAnswer().equals(""))
+                }
+                if(Question.getSelected().getAnswer() != null && !Question.getSelected().getAnswer().equals("")) {
                     text(Question.getSelected().getAnswer(), width / 8.0f, height - height / 5.0f);
-                if(Question.getSelected().getDate() != null && !Question.getSelected().getDate().equals(""))
-                    text(Question.getSelected().getDate(), width - 2*textWidth(Question.getSelected().getDate()), height - height/ 5.0f);
+                }
+                if(Question.getSelected().getDate() != null && !Question.getSelected().getDate().equals("")) {
+                    text(Question.getSelected().getDate(), width - 2 * textWidth(Question.getSelected().getDate()), height - height / 5.0f);
+                }
             } else {
                 textSize(25);
                 fill(255);
@@ -73,7 +76,9 @@ public class Console extends PApplet {
                 }
             }
         } catch(NullPointerException e) {
-            System.out.println(e.getStackTrace()[0]);
+            for(Object o : e.getStackTrace()) {
+                System.out.println(o);
+            }
             System.out.println("Encountered NullPointerException in Console, despite null checks");
         }
     }

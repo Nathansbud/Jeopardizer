@@ -60,6 +60,10 @@ public class Question {
             if(!showMedia) {
                 gui.fill(PApplet.unhex(JConstants.JEOPARDY_BLUE));
                 gui.rect(0, 0, gui.width, gui.height);
+
+                if (Game.getCategoryFont() != null) {
+                    gui.textFont(Game.getCategoryFont());
+                }
                 gui.textSize(35);
 
                 if (wagerable) {
@@ -72,15 +76,18 @@ public class Question {
                 }
                 if (showQuestion) {
                     gui.fill(PApplet.unhex(JConstants.JEOPARDY_YELLOW));
-                    gui.text(valueText, gui.width / 2.0f - 0.5f * gui.textWidth(valueText), 0 + gui.height / 7.2f); //Need to handle final jeopardy here
+                    gui.text(valueText, gui.width / 2.0f - 0.5f * gui.textWidth(valueText), 0 + gui.height / 6.92f); //Need to handle final jeopardy here
                 }
                 gui.fill(255);
                 if(category != null) {
                     gui.text(category, gui.width / 2.0f - 0.5f * gui.textWidth(category), 0 + gui.height / 5.0f);
                 }
-                gui.textSize(40);
+                if (Game.getQuestionFont() != null) {
+                    gui.textFont(Game.getQuestionFont());
+                }
+                gui.textSize(60);
                 if (!dailyDouble || (showQuestion)) {
-                    gui.text(question, gui.width / 8.0f, gui.height / 3.0f, gui.width - gui.width / 3.0f, gui.height);
+                    gui.text(question.toUpperCase(), gui.width / 8.0f, gui.height / 3.0f, gui.width - gui.width / 3.0f, gui.height);
                 }
             } else {
                 switch(media.getType()) {
@@ -103,10 +110,13 @@ public class Question {
             }
         } else {
             if (!answered) {
+                if(Game.getMoneyFont() != null) {
+                    gui.textFont(Game.getMoneyFont());
+                }
                 gui.fill(PApplet.unhex(JConstants.JEOPARDY_BLUE));
                 gui.rect(x, y, width, height);
                 gui.fill(255);
-                gui.textSize(45);
+                gui.textSize(60);
                 gui.fill(PApplet.unhex(JConstants.JEOPARDY_YELLOW));
                 gui.text(valueText, x + width / 2.0f - 0.5f * gui.textWidth(valueText), y + height / 2.0f + 0.5f * gui.textAscent());
             } else {

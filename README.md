@@ -47,6 +47,7 @@ By default, rounds in Jeopardizer are loaded from the single, double, and final 
         Processing (Maven: org.processing:pdf:3.3.7)
         <ul>
             <li>All graphics-related code in this program is handled by Processing as the main graphics library.</li>
+            <li>Java 1.7 or 1.8 must be used, as 1.9 is non-functional with Processing, and ThreadLocalRandom was only implemented in 1.8.</li>
         </ul>
     </li>
     <li>
@@ -71,4 +72,5 @@ By default, rounds in Jeopardizer are loaded from the single, double, and final 
         <ul><li>BeautifulSoup is used for to scrape J-Archive's game files, so install this in order to run the scraper</ul>
     </li>
 </ul>
+
 

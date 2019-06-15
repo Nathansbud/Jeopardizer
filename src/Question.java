@@ -61,7 +61,7 @@ public class Question {
                 gui.fill(PApplet.unhex(JConstants.JEOPARDY_BLUE));
                 gui.rect(0, 0, gui.width, gui.height);
 
-                if (Game.getCategoryFont() != null) {
+                if (Game.getCategoryFont() != null && Game.isUseCustomFonts()) {
                     gui.textFont(Game.getCategoryFont());
                 }
                 gui.textSize(35);
@@ -82,10 +82,12 @@ public class Question {
                 if(category != null) {
                     gui.text(category, gui.width / 2.0f - 0.5f * gui.textWidth(category), 0 + gui.height / 5.0f);
                 }
-                if (Game.getQuestionFont() != null) {
+                if (Game.getQuestionFont() != null && Game.isUseCustomFonts()) {
                     gui.textFont(Game.getQuestionFont());
+                    gui.textSize(60);
+                } else {
+                    gui.textSize(40);
                 }
-                gui.textSize(60);
                 if (!dailyDouble || (showQuestion)) {
                     gui.text(question.toUpperCase(), gui.width / 8.0f, gui.height / 3.0f, gui.width - gui.width / 3.0f, gui.height);
                 }
@@ -110,13 +112,16 @@ public class Question {
             }
         } else {
             if (!answered) {
-                if(Game.getMoneyFont() != null) {
+                if(Game.getMoneyFont() != null && Game.isUseCustomFonts()) {
                     gui.textFont(Game.getMoneyFont());
+                    gui.textSize(60);
+                } else {
+                    gui.textSize(45);
                 }
+
                 gui.fill(PApplet.unhex(JConstants.JEOPARDY_BLUE));
                 gui.rect(x, y, width, height);
                 gui.fill(255);
-                gui.textSize(60);
                 gui.fill(PApplet.unhex(JConstants.JEOPARDY_YELLOW));
                 gui.text(valueText, x + width / 2.0f - 0.5f * gui.textWidth(valueText), y + height / 2.0f + 0.5f * gui.textAscent());
             } else {

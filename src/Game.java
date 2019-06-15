@@ -55,6 +55,8 @@ public class Game extends PApplet {
     private static boolean isCustom = false;
     private static boolean isScraped = true;
 
+    private static boolean useCustomFonts = false;
+
     @Override
     public void settings() {
         fullScreen(1);
@@ -93,18 +95,20 @@ public class Game extends PApplet {
 
         Round.setCurrentRound(progressionPath.poll());
         String pathToFont = "data" + File.separator + "fonts";
-        for(File f : new File(pathToFont).listFiles()) {
-            String fontName = f.getName().substring(0, f.getName().indexOf("."));
-            switch(fontName) {
-                case "Question":
-                    qfont = createFont(f.getAbsolutePath(), 12, true);
-                    break;
-                case "Category":
-                    cfont = createFont(f.getAbsolutePath(), 12, true);
-                    break;
-                case "Values":
-                    mfont = createFont(f.getAbsolutePath(), 12, true);
-                    break;
+        if(useCustomFonts) {
+            for (File f : new File(pathToFont).listFiles()) {
+                String fontName = f.getName().substring(0, f.getName().indexOf("."));
+                switch (fontName) {
+                    case "Question":
+                        qfont = createFont(f.getAbsolutePath(), 12, true);
+                        break;
+                    case "Category":
+                        cfont = createFont(f.getAbsolutePath(), 12, true);
+                        break;
+                    case "Values":
+                        mfont = createFont(f.getAbsolutePath(), 12, true);
+                        break;
+                }
             }
         }
     }
@@ -118,8 +122,13 @@ public class Game extends PApplet {
             background(PApplet.unhex(JConstants.JEOPARDY_BLUE));
             fill(255);
 
-            textFont(cfont);
-            textSize(60);
+            if(useCustomFonts) {
+                textFont(cfont);
+                textSize(60);
+            } else {
+                textSize(35);
+            }
+
             for(int i = 0; i < players.size(); i++) {
                 text(players.get(i).getName() + ": $" + String.valueOf(players.get(i).getScore()), width/3.0f, height/5.0f*(i+1));
             }
@@ -487,6 +496,10 @@ public class Game extends PApplet {
         return mfont;
     }
 
+    public static boolean isUseCustomFonts() {
+        return useCustomFonts;
+    }
+
     private static boolean containsDialogue(String s) {
         return s.contains("(") || s.contains(")");
     }
@@ -649,7 +662,7 @@ public class Game extends PApplet {
     public static void makeCustoms() {
         try {
             Process p = Runtime.getRuntime().exec("scripts" + File.separator + "customs.py");
-            p.wait();
+            p.waitFor();
         } catch(IOException | InterruptedException e) {
             System.out.println("Failed to make customs!");
         }

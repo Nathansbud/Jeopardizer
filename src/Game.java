@@ -53,6 +53,7 @@ public class Game extends PApplet {
     private static int upperFilterYear = 2019;
 
     private static boolean isCustom = false;
+    private static boolean isScraped = true;
 
     @Override
     public void settings() {
@@ -637,7 +638,14 @@ public class Game extends PApplet {
         Collections.addAll(progressionPath, roundPath);
     }
 
-
+    public static void scrapeGame(String url) {
+        try {
+            Process p = Runtime.getRuntime().exec("scripts" + File.separator + "scraper.py -s " + url);
+            p.waitFor();
+        } catch(IOException | InterruptedException e) {
+            System.out.println("Scraper call failed!");
+        }
+    }
 
     public static void main(String[] args) {
         if(!isCustom) {
@@ -646,9 +654,18 @@ public class Game extends PApplet {
                 r.setFilterYear(filterYear);
             }
 
-            loadCategories(first, "data" + File.separator + "questions" + File.separator + "all" + File.separator + "single_jeopardy.json", 6, 5);
-            loadCategories(second,"data" + File.separator + "questions" + File.separator + "all" + File.separator + "double_jeopardy.json", 6, 5);
-            loadCategories(third, "data" + File.separator + "questions" + File.separator + "all" + File.separator + "final_jeopardy.json", 1, 1);
+            String append = "";
+            String dir = "all";
+
+            if(isScraped) {
+                scrapeGame("http://www.j-archive.com/showgame.php?game_id=6320");
+                append = "_scraped";
+                dir = "scrape";
+            }
+
+            loadCategories(first, "data" + File.separator + "questions" + File.separator + dir + File.separator + "single_jeopardy" + append + ".json", 6, 5);
+            loadCategories(second,"data" + File.separator + "questions" + File.separator + dir + File.separator + "double_jeopardy" + append + ".json", 6, 5);
+            loadCategories(third, "data" + File.separator + "questions" + File.separator + dir + File.separator + "final_jeopardy" + append + ".json", 1, 1);
 
             for(Round r : progressionPath) {
                 printQuestions(r);

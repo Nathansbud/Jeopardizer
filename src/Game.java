@@ -646,8 +646,17 @@ public class Game extends PApplet {
             System.out.println("Scraper call failed!");
         }
     }
+    public static void makeCustoms() {
+        try {
+            Process p = Runtime.getRuntime().exec("scripts" + File.separator + "customs.py");
+            p.wait();
+        } catch(IOException | InterruptedException e) {
+            System.out.println("Failed to make customs!");
+        }
+    }
 
     public static void main(String[] args) {
+        makeCustoms();
         if(!isCustom) {
             setProgressionPath(first, second, third);
             for(Round r : progressionPath) {

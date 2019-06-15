@@ -2,13 +2,15 @@
 
 ## What?
 
-Jeopardy is awesome, and Jeopardy fans are even cooler! J-Archive has an archive of (nearly) every Jeopardy game to date, and thanks to a shoddily made scraper, so do I!
-
-Jeopardizer random games of Jeopardy (Single, Double, and Final), and is designed 2 screens (one for host console, one for questions) and to be played by 3 players + 4th acting as host. Custom games/categories can be easily implemented, as categories/questions are simply read in by specifying JSON file, category count, and date filter.
+Jeopardizer is a tool to create and play games of Jeopardy, randomly (with past categories from games throughout history), from a specific past game via J-Archive link, or by creating custom categories! Jeopardizer is designed for 2 screens in mind (one for host console, and one for questions), and is ideally played with with 3 players and 1 host.
 
 ## Categories
 
-By default, rounds in Jeopardizer are loaded from the single, double, and final jeopardy files located in the data folder. However, the Round class can take any number of categories loaded in from custom folders, provided categories are loaded in using the following JSON structure:
+By default, rounds in Jeopardizer are loaded from the single, double, and final jeopardy files located in data/questions/all, which are created by scraping J-Archive. Categories are randomly selected from these past files to create a standard Jeopardy game (6 categories for Single Jeopardy, 6 categories for Double Jeopardy, 1 category for Final Jeopardy), with the option for user-specified category count and date range are provided. Content-based filters are unlikely to be implemented as J-Archive is untagged.
+
+Specific games are require a J-Archive URL, which is then scraped to create files in data/questions/custom, rather than the random category selection. This requires an internet connection.
+
+Custom games can be created by adding custom JSON files to data/questions/custom, based on the following structure:
 
 ```javascript
 [
@@ -17,7 +19,7 @@ By default, rounds in Jeopardizer are loaded from the single, double, and final 
         {
             "Question":"QuestionText", //Required
             "Answer":"AnswerText", //Required
-            "Media":{ //Optional; Parameters required
+            "Media":{ //Optional; parameters required
                 "Name":"MediaName",
                 "Type":"Audio | Video | Image", //Must be one of these
                 "Path":"Filepath", 
@@ -32,11 +34,21 @@ By default, rounds in Jeopardizer are loaded from the single, double, and final 
         }
         ...
      ], 
-     "Date":"MM/DD/YYYY" //Optional
+     "Date":"MM/DD/YYYY" //Optional, used for date filter
     }, 
     ...
 ]
 ```
+
+Alternatively, simple categories can be created by adding plain text files to the process folder, with the following format:
+
+```css
+Category1|Q1|A1|Q2|A2|Q3|A3|Q4|A4|Q5|A5
+Category2|Q1|A1|Q2|A2|Q3|A3|Q4|A4|Q5|A5
+...
+CategoryN|Q1|A1|Q2|A2|Q3|A3|Q4|A4|Q5|A5
+```
+Running either customs.py or Jeopardizer will move these files to data/questions/custom, where they can be loaded in as custom categories; this does not yet support media specifications, though those can be manually added to the generated JSON files. 
 
 ## Dependencies
 

@@ -224,9 +224,9 @@ def scrape_game(link, path, name, individual=False):
         add_end_bracket(path)
 
 def read_season(episode_list, season_name): #Episode list should be beautifulsoup, season_name is the name of the outputted file
-    with open(os.path.join(os.path.dirname(__file__), "..", "process", "by_season", "single_jeopardy_" + season_name + ".json"), "w+") as sj: sj.write("[")
-    with open(os.path.join(os.path.dirname(__file__), "..", "process", "by_season", "double_jeopardy_" + season_name + ".json"), "w+") as dj: dj.write("[")
-    with open(os.path.join(os.path.dirname(__file__), "..", "process", "by_season", "final_jeopardy_" + season_name + ".json"), "w+") as fj: fj.write("[")
+    with open(os.path.join(os.path.dirname(__file__), "..", "process", "by_season", "single_jeopardy_season" + season_name + ".json"), "w+") as sj: sj.write("[")
+    with open(os.path.join(os.path.dirname(__file__), "..", "process", "by_season", "double_jeopardy_season" + season_name + ".json"), "w+") as dj: dj.write("[")
+    with open(os.path.join(os.path.dirname(__file__), "..", "process", "by_season", "final_jeopardy_season" + season_name + ".json"), "w+") as fj: fj.write("[")
 
     for episode in episode_list:
         li = episode.get("href")
@@ -237,11 +237,6 @@ def read_season(episode_list, season_name): #Episode list should be beautifulsou
                 print("Something went wrong and an exception was thrown! Link was " + li[li.find("showgame.php"):])
 
     add_end_bracket(os.path.join(os.path.dirname(__file__), "..", "process", "by_season"))
-
-def read_json(file):
-    with open(file, "r") as f:
-        data = json.load(f)
-    return data
 
 def add_end_bracket(path):
     files = os.listdir(path)
@@ -272,12 +267,13 @@ def combine_files(path=os.path.join(os.path.dirname(__file__), "..", "data", "qu
 if __name__ == "__main__":
     # read_season(BeautifulSoup(simple_get("http://www.j-archive.com/showseason.php?season=superjeopardy"), parse_only=SoupStrainer('a'),features="html.parser"), "superjeopardy")
     # scrape_game("http://wwreaw.j-archive.com/showgame.php?game_id=6302", "/Users/zackamiton/Code/Jeopardizer/data/questions/scrape", "scraped", True)
-    if len(sys.argv) == 3:
+    if len(sys.argv) == 3: #Mode called from the Game script
         if str(sys.argv[1]).lower() == "-s":
             scrape_game(sys.argv[2], os.path.join(os.path.dirname(__file__), "..", "data", "questions", "scrape"), "scraped", True)
     else:
-        # read_season(BeautifulSoup(simple_get("http://www.j-archive.com/showseason.php?season=35"), parse_only=SoupStrainer('a'), features="html.parser"), "35")
+        read_season(BeautifulSoup(simple_get("http://www.j-archive.com/showseason.php?season=35"), parse_only=SoupStrainer('a'), features="html.parser"), "35")
         pass
+
     pass
 
 

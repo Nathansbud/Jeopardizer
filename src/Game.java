@@ -1,5 +1,4 @@
 import processing.core.PApplet;
-import processing.core.PImage;
 import processing.event.KeyEvent;
 import processing.core.PFont;
 
@@ -26,10 +25,6 @@ public class Game extends PApplet {
     private static Game app = new Game();
     private static Console console = new Console();
 
-    private static PFont qfont = null; //Korinna
-    private static PFont cfont = null; //Helvetica Inserat
-    private static PFont mfont = null; //Swiss 911
-
     private static Round first = new Round(Round.RoundType.SINGLE);
     private static Round second = new Round(Round.RoundType.DOUBLE);
     private static Round third = new Round(Round.RoundType.FINAL);
@@ -39,31 +34,34 @@ public class Game extends PApplet {
 
     private static ArrayList<Player> players = new ArrayList<Player>();
     private static String[] playerNames = {
-            "Aneekha", "Dev", "Zack"
+            "Nina", "Scott", "Sophie"
     };
 
     private static Timer timer = new Timer();
     private static boolean timerState = false;
 
     private static Minim minim;
-    public static AudioPlayer tracks[] = new AudioPlayer[4];
+    private static AudioPlayer tracks[] = new AudioPlayer[4]; //Stores Jeopardy SFXs
 
     private static String wager = "";
     private static int filterYear = 2008;
     private static int upperFilterYear = 2019;
 
     private static boolean isCustom = false;
-    private static boolean isScraped = true;
+    private static boolean isScraped = false;
 
     private static boolean useCustomFonts = false;
+    private static PFont qfont = null; //Korinna, used for custom question font
+    private static PFont cfont = null; //Helvetica Inserat, used for custom category font
+    private static PFont mfont = null; //Swiss 911, used for price value font
 
-    @Override
-    public void settings() {
+//    private static Settings settings = null;
+
+    @Override public void settings() {
         fullScreen(1);
     }
 
-    @Override
-    public void setup() {
+    @Override public void setup() {
         minim = new Minim(app);
 
         Question.setConstants(app);
@@ -113,8 +111,7 @@ public class Game extends PApplet {
         }
     }
 
-    @Override
-    public void draw() {
+    @Override public void draw() {
         background(0);
         if(Round.getGameState() != Round.GameState.SCORES) {
             Round.getCurrentRound().draw();
@@ -135,8 +132,7 @@ public class Game extends PApplet {
         }
     }
 
-    @Override
-    public void mouseClicked() {
+    @Override public void mouseClicked() {
         if(Round.getGameState() != Round.GameState.SCORES) {
             if (Question.getSelected() == null) {
                 for (Category c : Round.getCurrentRound().getCategories()) {
@@ -155,8 +151,7 @@ public class Game extends PApplet {
         }
     }
 
-    @Override
-    public void keyPressed(KeyEvent event) {
+    @Override public void keyPressed(KeyEvent event) {
 //        System.out.println(event.getKeyCode());
         if(event.getKeyCode() == 192 && Round.getCurrentRound().getRoundType() == Round.RoundType.FINAL) {
             tracks[2].play();
@@ -343,8 +338,7 @@ public class Game extends PApplet {
                     if(timerState) {
                         System.out.println("Timer started");
                         timer.schedule(new TimerTask() {
-                            @Override
-                            public void run() {
+                            @Override public void run() {
                                 System.out.println("Timer called");
                                 tracks[0].play();
                                 timerState = false;
@@ -671,7 +665,7 @@ public class Game extends PApplet {
     public static void main(String[] args) {
         makeCustoms();
         if(!isCustom) {
-            setProgressionPath(first, second, third);
+            setProgressionPath(first, second, third); //Shouldn't have named round object, should migrate this to have loadCategories return Round objects to pass in
             for(Round r : progressionPath) {
                 r.setFilterYear(filterYear);
             }

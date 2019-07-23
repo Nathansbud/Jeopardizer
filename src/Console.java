@@ -3,7 +3,7 @@ import processing.core.PApplet;
 public class Console extends PApplet {
     @Override
     public void settings() {
-        fullScreen(2);
+        fullScreen(1);
     }
 
     @Override

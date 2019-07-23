@@ -7,6 +7,7 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 import ddf.minim.*;
+import processing.event.MouseEvent;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -32,6 +33,7 @@ public class Game extends PApplet {
     private static ArrayList<Round> customRounds = new ArrayList<>(); //To be used for custom rounds
     private static Queue<Round> progressionPath = new LinkedList<>(); //Used to set path of rounds; 1st->2nd-3rd is classic, but opens up to new possibilities
 
+
     private static ArrayList<Player> players = new ArrayList<Player>();
     private static String[] playerNames = {
             "Nina", "Scott", "Sophie"
@@ -55,7 +57,12 @@ public class Game extends PApplet {
     private static PFont cfont = null; //Helvetica Inserat, used for custom category font
     private static PFont mfont = null; //Swiss 911, used for price value font
 
-//    private static Settings settings = null;
+    private static boolean testMode = false;
+
+
+    //Unfinished Zone
+    private static Settings settings;
+    private static ScrollableScreen settingSelect = new ScrollableScreen();
 
     @Override public void settings() {
         fullScreen(1);
@@ -66,6 +73,7 @@ public class Game extends PApplet {
 
         Question.setConstants(app);
         Category.setGui(app);
+        ScrollableScreen.setGui(app);
 
 
         if(!isCustom) {
@@ -112,23 +120,27 @@ public class Game extends PApplet {
     }
 
     @Override public void draw() {
-        background(0);
-        if(Round.getGameState() != Round.GameState.SCORES) {
-            Round.getCurrentRound().draw();
-        } else {
-            background(PApplet.unhex(JConstants.JEOPARDY_BLUE));
-            fill(255);
-
-            if(useCustomFonts) {
-                textFont(cfont);
-                textSize(60);
+        if(!testMode) {
+            background(0);
+            if (Round.getGameState() != Round.GameState.SCORES) {
+                Round.getCurrentRound().draw();
             } else {
-                textSize(35);
-            }
+                background(PApplet.unhex(JConstants.JEOPARDY_BLUE));
+                fill(255);
 
-            for(int i = 0; i < players.size(); i++) {
-                text(players.get(i).getName() + ": $" + String.valueOf(players.get(i).getScore()), width/3.0f, height/5.0f*(i+1));
+                if (useCustomFonts) {
+                    textFont(cfont);
+                    textSize(60);
+                } else {
+                    textSize(35);
+                }
+
+                for (int i = 0; i < players.size(); i++) {
+                    text(players.get(i).getName() + ": $" + String.valueOf(players.get(i).getScore()), width / 3.0f, height / 5.0f * (i + 1));
+                }
             }
+        } else {
+            settingSelect.draw();
         }
     }
 
@@ -149,6 +161,10 @@ public class Game extends PApplet {
                 }
             }
         }
+    }
+
+    @Override public void mouseWheel(MouseEvent event) {
+        settingSelect.changeViewY(event.getCount());
     }
 
     @Override public void keyPressed(KeyEvent event) {
@@ -662,8 +678,17 @@ public class Game extends PApplet {
         }
     }
 
+    public static void setSettings() {
+        Settings ds = new Settings();
+
+        ds.setSfx(true);
+        ds.setBackgroundColor(JConstants.JEOPARDY_BLUE);
+        ds.setPlayerCount(3);
+    }
+
+
     public static void main(String[] args) {
-        makeCustoms();
+//      makeCustoms();
         if(!isCustom) {
             setProgressionPath(first, second, third); //Shouldn't have named round object, should migrate this to have loadCategories return Round objects to pass in
             for(Round r : progressionPath) {
@@ -704,6 +729,6 @@ public class Game extends PApplet {
         console.args = new String[]{"Console"};
 
         PApplet.runSketch(app.args, app);
-        PApplet.runSketch(console.args, new Console());
+//        PApplet.runSketch(console.args, new Console());
     }
 }

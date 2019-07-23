@@ -24,7 +24,7 @@ public class Category {
             gui.fill(PApplet.unhex(JConstants.JEOPARDY_BLUE));
             gui.rect(x, y, Question.getWidth(), Question.getHeight());
             gui.fill(255);
-            gui.textSize(24);
+            gui.textSize(18);
             gui.text(name.trim(), x + 0.1f * Question.getWidth(), y + Question.getHeight() / 3.0f, Question.getWidth() * 0.9f, Question.getHeight());
             for (Question q : questions) {
                 q.draw();

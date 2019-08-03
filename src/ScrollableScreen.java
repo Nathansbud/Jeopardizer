@@ -12,13 +12,10 @@ public class ScrollableScreen {
     private float viewX = 0;
     private float viewY = 0;
 
-    private Settings settings;
-
     public void draw() {
         gui.fill(PApplet.unhex(JConstants.JEOPARDY_BLUE));
         gui.rect(0, 0, gui.width, gui.height);
         gui.fill(PApplet.unhex(JConstants.JEOPARDY_YELLOW));
-        gui.rect(gui.width/2.0f, gui.height/2.0f + viewY, 10,20);
     }
 
     public static PApplet getGui() {

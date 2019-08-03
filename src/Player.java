@@ -1,13 +1,22 @@
 public class Player {
-    private String name;
-    private int score;
     private static Player active = null;
+    private String name;
+
+    private int score;
+    private int wins;
 
     public Player(String _name) {
         name = _name;
     }
+    public Player(String _name, int _wins) {
+        name = _name;
+        wins = _wins;
+    }
 
     public String getName() {
+        return name.split(" ")[0];
+    }
+    public String getFullName() {
         return name;
     }
     public void setName(String _name) {
@@ -33,5 +42,12 @@ public class Player {
     }
     public static void setActive(Player _active) {
         active = _active;
+    }
+
+    public int getWins() {
+        return wins;
+    }
+    public void setWins(int _wins) {
+        wins = _wins;
     }
 }

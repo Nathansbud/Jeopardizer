@@ -1,14 +1,16 @@
 import processing.core.PApplet;
-import processing.event.KeyEvent;
 import processing.core.PFont;
+
+import processing.event.KeyEvent;
+import processing.event.MouseEvent;
 
 import org.json.simple.*;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 import ddf.minim.*;
-import processing.event.MouseEvent;
 
+import java.io.BufferedReader;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Queue;
@@ -22,9 +24,41 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 
+
+/*-------------------------------------------------------------------------------------------------*\
+
+TO DO ZONE:
+    - Settings Class
+        - More flexibility
+        - More "releasable"
+    - Player Records
+        - Log "created" players to player data file
+        - Differentiate by full name (i.e. John Smith) but display "John" as player name (Jeopardy only does first name)
+        - Present select screen to setup game's players, if none exist present option to ADD player
+        - Log wins for a player, for stuff like "returning champion"
+    - Screen Class:
+        - Rework "round" to be contained by a greater screen class
+        - Allows for more flexibility to have things removed from "game" logic
+        - Menu systems, player select, settings select, select scrape game...abstract pure code logic -> GUI
+    - ScrollableScreen Class:
+        - Screen-type which inherits from Screen but is scrollable
+        - Might require abstract "JObject" parent class or interface which things inherit from, which contains X/Y/ScrollableArea
+        - Allows for things like selectable list
+\*------------------------------------------------------------------------------------------------*/
+
 public class Game extends PApplet {
+    public enum GameState {
+        ROUND(),
+        QUESTION(),
+        SCORES(),
+        SETTINGS(),
+        PLAYER_SETUP()
+    }
+
     private static Game app = new Game();
     private static Console console = new Console();
+
+    private static GameState gameState = GameState.ROUND;
 
     private static Round first = new Round(Round.RoundType.SINGLE);
     private static Round second = new Round(Round.RoundType.DOUBLE);
@@ -34,9 +68,11 @@ public class Game extends PApplet {
     private static Queue<Round> progressionPath = new LinkedList<>(); //Used to set path of rounds; 1st->2nd-3rd is classic, but opens up to new possibilities
 
 
+    private static ArrayList<Player> playerSet = new ArrayList<Player>();
     private static ArrayList<Player> players = new ArrayList<Player>();
+
     private static String[] playerNames = {
-            "Nina", "Scott", "Sophie"
+            "Scott", "Sophie", "Maggie", "Douglas"
     };
 
     private static Timer timer = new Timer();
@@ -56,18 +92,50 @@ public class Game extends PApplet {
     private static PFont qfont = null; //Korinna, used for custom question font
     private static PFont cfont = null; //Helvetica Inserat, used for custom category font
     private static PFont mfont = null; //Swiss 911, used for price value font
-
+    
     private static boolean testMode = false;
 
-
     //Unfinished Zone
-    private static Settings settings;
-    private static ScrollableScreen settingSelect = new ScrollableScreen();
+//    private static ScrollableScreen settingSelect = new ScrollableScreen();
 
-    @Override public void settings() {
-        fullScreen(1);
+    //Game Setter/Getter Zone//
+    public static GameState getGameState() {
+        return gameState;
+    }
+    public static ArrayList<Player> getPlayers() {
+        return players;
+    }
+    public static String getWager() {
+        return wager;
+    }
+    public static PApplet getGUI() {
+        return app;
+    }
+    public static Minim getMinim() {
+        return minim;
+    }
+    public static boolean getTimerState() {
+        return timerState;
     }
 
+    public static PFont getQuestionFont() {
+        return qfont;
+    }
+    public static PFont getCategoryFont() {
+        return cfont;
+    }
+    public static PFont getMoneyFont() {
+        return mfont;
+    }
+    public static boolean isUseCustomFonts() {
+        return useCustomFonts;
+    }
+
+
+
+    @Override public void settings() {
+        fullScreen(2);
+    }
     @Override public void setup() {
         minim = new Minim(app);
 
@@ -120,11 +188,15 @@ public class Game extends PApplet {
     }
 
     @Override public void draw() {
-        if(!testMode) {
-            background(0);
-            if (Round.getGameState() != Round.GameState.SCORES) {
+        switch(gameState) {
+            case ROUND:
+                background(0);
                 Round.getCurrentRound().draw();
-            } else {
+                break;
+            case QUESTION:
+                Question.getSelected().draw();
+                break;
+            case SCORES:
                 background(PApplet.unhex(JConstants.JEOPARDY_BLUE));
                 fill(255);
 
@@ -136,286 +208,185 @@ public class Game extends PApplet {
                 }
 
                 for (int i = 0; i < players.size(); i++) {
-                    text(players.get(i).getName() + ": $" + String.valueOf(players.get(i).getScore()), width / 3.0f, height / 5.0f * (i + 1));
+                    text(players.get(i).getName() + ": $" + (players.get(i).getScore()), width / 3.0f, height / 8.0f * (i + 1));
                 }
-            }
-        } else {
-            settingSelect.draw();
+                break;
+            case PLAYER_SETUP:
+                background(PApplet.unhex(JConstants.JEOPARDY_BLUE));
+                fill(255);
+                textSize(35);
+                for (int i = 0; i < playerSet.size(); i++) {
+                    text(playerSet.get(i).getName() + " (Wins: " + playerSet.get(i).getWins() + ")", width / 3.0f, height / 8.0f * (i + 1));
+                }
+                break;
         }
     }
 
     @Override public void mouseClicked() {
-        if(Round.getGameState() != Round.GameState.SCORES) {
-            if (Question.getSelected() == null) {
-                for (Category c : Round.getCurrentRound().getCategories()) {
-                    for (Question q : c.getQuestions()) {
-                        if (mouseX > q.getX() && mouseX < (q.getX() + Question.getWidth()) && mouseY > q.getY() && mouseY < q.getY() + Question.getHeight() && !q.isAnswered()) {
-                            if(q.isDailyDouble()) {
-                                tracks[1].play();
+        switch(gameState) {
+            case ROUND:
+                if(Question.getSelected() == null) {
+                    for (Category c : Round.getCurrentRound().getCategories()) {
+                        for (Question q : c.getQuestions()) {
+                            if (mouseX > q.getX() && mouseX < (q.getX() + Question.getWidth()) && mouseY > q.getY() && mouseY < q.getY() + Question.getHeight() && !q.isAnswered()) {
+                                for (Player p : Game.getPlayers()) {
+                                    System.out.println(p.getName() + ": " + p.getScore());
+                                }
+
+                                if (q.isDailyDouble()) {
+                                    tracks[1].play();
+                                }
+                                q.setAnswered(true);
+                                Question.setSelected(q);
+                                gameState = GameState.QUESTION;
+                                return;
                             }
-                            q.setAnswered(true);
-                            Question.setSelected(q);
-                            break;
                         }
                     }
                 }
-            }
+                break;
+            default:
+                break;
         }
     }
 
-    @Override public void mouseWheel(MouseEvent event) {
-        settingSelect.changeViewY(event.getCount());
-    }
 
     @Override public void keyPressed(KeyEvent event) {
+//        System.out.println(gameState);
 //        System.out.println(event.getKeyCode());
-        if(event.getKeyCode() == 192 && Round.getCurrentRound().getRoundType() == Round.RoundType.FINAL) {
-            tracks[2].play();
-        }
-        if(Round.getCurrentRound().getRoundType() != Round.RoundType.FINAL && Question.getSelected() == null) { //Question select screen
-            ArrayList<Category> c = Round.getCurrentRound().getCategories();
-            Question q = null;
-            switch (event.getKeyCode()) { //To-do: make this less hardcoded for custom categories
-                case 81: //q
-                    q = c.get(0).getQuestions().get(0);
-                    break;
-                case 87: //w
-                    q = c.get(1).getQuestions().get(0);
-                    break;
-                case 69: //e
-                    q = c.get(2).getQuestions().get(0);
-                    break;
-                case 82: //r
-                    q = c.get(3).getQuestions().get(0);
-                    break;
-                case 84: //t
-                    q = c.get(4).getQuestions().get(0);
-                    break;
-                case 89: //y
-                    q = c.get(5).getQuestions().get(0);
-                    break;
-                case 85: //u
-                    q = c.get(0).getQuestions().get(1);
-                    break;
-                case 73: //i
-                    q = c.get(1).getQuestions().get(1);
-                    break;
-                case 79: //o
-                    q = c.get(2).getQuestions().get(1);
-                    break;
-                case 80: //p
-                    q = c.get(3).getQuestions().get(1);
-                    break;
-                case 91: //[
-                    q = c.get(4).getQuestions().get(1);
-                    break;
-                case 93: //]
-                    q = c.get(5).getQuestions().get(1);
-                    break;
-                case 65: //a
-                    q = c.get(0).getQuestions().get(2);
-                    break;
-                case 83: //s
-                    q = c.get(1).getQuestions().get(2);
-                    break;
-                case 68: //d
-                    q = c.get(2).getQuestions().get(2);
-                    break;
-                case 70: //f
-                    q = c.get(3).getQuestions().get(2);
-                    break;
-                case 71: //g
-                    q = c.get(4).getQuestions().get(2);
-                    break;
-                case 72: //h
-                    q = c.get(5).getQuestions().get(2);
-                    break;
-                case 74: //j
-                    q = c.get(0).getQuestions().get(3);
-                    break;
-                case 75: //k
-                    q = c.get(1).getQuestions().get(3);
-                    break;
-                case 76: //l
-                    q = c.get(2).getQuestions().get(3);
-                    break;
-                case 59: //;
-                    q = c.get(3).getQuestions().get(3);
-                    break;
-                case 222: //'
-                    q = c.get(4).getQuestions().get(3);
-                    break;
-                case 92: //\
-                    q = c.get(5).getQuestions().get(3);
-                    break;
-                case 90: //z
-                    q = c.get(0).getQuestions().get(4);
-                    break;
-                case 88: //x
-                    q = c.get(1).getQuestions().get(4);
-                    break;
-                case 67: //c
-                    q = c.get(2).getQuestions().get(4);
-                    break;
-                case 86: //v
-                    q = c.get(3).getQuestions().get(4);
-                    break;
-                case 66: //b
-                    q = c.get(4).getQuestions().get(4);
-                    break;
-                case 78: //n
-                    q = c.get(5).getQuestions().get(4);
-                    break;
-                case 16: //LShift
-                    if(Round.getGameState() != Round.GameState.SCORES) {
-                        Round.setGameState(Round.GameState.SCORES);
-                    } else {
-                        Round.setGameState(Round.GameState.ROUND);
-                    }
-                    break;
-                case 192:
-                    Round.setGameState(Round.GameState.ROUND);
-                    progressRound();
-                    break;
-            }
-
-            if(q != null && !q.isAnswered()) {
-                q.setAnswered(true);
-                Question.setSelected(q);
-                if(q.isDailyDouble()) {
-                    tracks[1].play();
+        switch(gameState) {
+            case ROUND:
+                switch (event.getKeyCode()) { //To-do: make this less hardcoded for custom categories
+                    case 16: //LShift
+                        gameState = GameState.SCORES;
+                        break;
+                    case 192:
+                        progressRound();
+                        break;
                 }
-                Round.setGameState(Round.GameState.QUESTION);
-            }
-        } else if(Question.getSelected() != null) {  //Only on during question up
-            switch(event.getKeyCode()) {
-                case 8: //DELETE, HANDLE INCORRECT RESPONSE
-                    if(Player.getActive() != null) {
-                        Player.getActive().changeScore(-Question.getSelected().getValue());
-                        System.out.println(Player.getActive().getScore());
-                    }
-                    wager = "";
-                    break;
-                case 9: //TAB
-                    if(Question.getSelected().hasMedia()) {
-                        if(Question.getSelected().getMedia().getType() == Media.MediaType.AUDIO) {
-                            ((AudioPlayer)Question.getSelected().getMedia().getMedia()).pause();
+                break;
+            case SCORES:
+                switch(event.getKeyCode()) {
+                    case 16:
+                        gameState = GameState.ROUND;
+                        break;
+                }
+                break;
+            case QUESTION:
+                switch(event.getKeyCode()) {
+                    case 8: //DELETE, HANDLE INCORRECT RESPONSE
+                        if(Player.getActive() != null) {
+                            Player.getActive().changeScore(-Question.getSelected().getValue());
+                            System.out.println(Player.getActive().getScore());
                         }
-                    }
-                    Question.setSelected(null);
-                    Round.setGameState(Round.GameState.ROUND);
-                    wager = "";
-                    if(timerState) {
-                        System.out.println("Timer cancelled, question closed");
-                        timer.cancel();
-                        timerState = false;
-                        timer = new Timer();
-                    }
-                    for(AudioPlayer t : tracks) {
-                        t.pause();
-                        t.rewind();
-                    }
-                    break;
-                case 10: //ENTER
-                    if(Question.getSelected().hasMedia()) {
-                        if(Question.getSelected().getMedia().getType() == Media.MediaType.AUDIO) {
-                            ((AudioPlayer)Question.getSelected().getMedia().getMedia()).pause();
+                        wager = "";
+                        break;
+                    case 9: //TAB
+                        if(Question.getSelected().hasMedia()) {
+                            if(Question.getSelected().getMedia().getType() == Media.MediaType.AUDIO) {
+                                ((AudioPlayer)Question.getSelected().getMedia().getMedia()).pause();
+                            }
                         }
-                    }
-
-                    if(Player.getActive() != null) {
-                        Player.getActive().changeScore(Question.getSelected().getValue());
-                        System.out.println(Player.getActive().getName() + ": " + Player.getActive().getScore());
-                    }
-                    if(Round.getCurrentRound().getRoundType() != Round.RoundType.FINAL) {
                         Question.setSelected(null);
-                        Round.setGameState(Round.GameState.ROUND);
-                    }
-                    wager = "";
+                        gameState = GameState.ROUND;
 
-                    if(timerState) {
-                        timer.cancel();
-                        timerState = false;
-                        timer = new Timer();
-                    }
-
-                    for(AudioPlayer t : tracks) {
-                        t.pause();
-                        t.rewind();
-                    }
-                    break;
-                case 17: //Control
-                    timerState = !timerState;
-                    if(tracks[0].position() > 0) {
-                        tracks[0].pause();
-                        tracks[0].rewind();
-
-                    }
-                    if(timerState) {
-                        System.out.println("Timer started");
-                        timer.schedule(new TimerTask() {
-                            @Override public void run() {
-                                System.out.println("Timer called");
-                                tracks[0].play();
-                                timerState = false;
-                                timer = new Timer();
-                            }
-                        }, 5000);
-                    } else {
-                        System.out.println("Timer stopped");
-                        timer.cancel();
-                        timerState = false;
-                        timer = new Timer();
-
-                    }
-                    break;
-                case 18: //Option
-                    if(Question.getSelected().hasMedia()) {
-                        Question.getSelected().setShowMedia(!Question.getSelected().isShowMedia());
-                    }
-                    break;
-                case 61:
-                    if(Question.getSelected().isWagerable()) {
-                        if(wager.length() == 0) {
-                            Question.getSelected().setValue(0);
-                        } else {
-                            try {
-                                Question.getSelected().setValue(Integer.valueOf(wager));
-                                Question.getSelected().setShowQuestion(true);
-                            } catch(NumberFormatException e) {
-                                System.out.println("Failed to set value of wager due to string error");
+                        wager = "";
+                        if(timerState) {
+                            System.out.println("Timer cancelled, question closed");
+                            timer.cancel();
+                            timerState = false;
+                            timer = new Timer();
+                        }
+                        for(AudioPlayer t : tracks) {
+                            t.pause();
+                            t.rewind();
+                        }
+                        break;
+                    case 10: //ENTER
+                        if(Question.getSelected().hasMedia()) {
+                            if(Question.getSelected().getMedia().getType() == Media.MediaType.AUDIO) {
+                                ((AudioPlayer)Question.getSelected().getMedia().getMedia()).pause();
                             }
                         }
-                    }
-                    break;
-                case 192:
-                    if(Round.getCurrentRound().getRoundType() != Round.RoundType.FINAL) {
+
+                        if(Player.getActive() != null) {
+                            Player.getActive().changeScore(Question.getSelected().getValue());
+                            System.out.println(Player.getActive().getName() + ": " + Player.getActive().getScore());
+                        }
+
+                        if(Round.getCurrentRound().getRoundType() != Round.RoundType.FINAL) {
+                            Question.setSelected(null);
+                            gameState = GameState.ROUND;
+                        }
+                        wager = "";
+
+                        if(timerState) {
+                            timer.cancel();
+                            timerState = false;
+                            timer = new Timer();
+                        }
+
+                        for(AudioPlayer t : tracks) {
+                            t.pause();
+                            t.rewind();
+                        }
+                        break;
+                    case 17: //Control
+                        timerState = !timerState;
                         if(tracks[0].position() > 0) {
                             tracks[0].pause();
                             tracks[0].rewind();
                         }
-                        tracks[0].play();
-                    }
-                    break;
-            }
-        } else {
-            switch(event.getKeyCode()) {
-                case 16:
-                    if (Round.getGameState() != Round.GameState.QUESTION) {
-                        Round.setGameState(Round.GameState.SCORES);
-                    } else {
-                        Round.setGameState(Round.GameState.ROUND);
-                    }
-                    break;
-                case 192:
-                    tracks[2].play();
-                    break;
-                default:
-                    Question finalQ = Round.getCurrentRound().getCategories().get(0).getQuestions().get(0);
-                    finalQ.setAnswered(true);
-                    Question.setSelected(finalQ);
-                    break;
-            }
+                        if(timerState) {
+                            System.out.println("Timer started");
+                            timer.schedule(new TimerTask() {
+                                @Override public void run() {
+                                    System.out.println("Timer called");
+                                    tracks[0].play();
+                                    timerState = false;
+                                    timer = new Timer();
+                                }
+                            }, 5000);
+                        } else {
+                            System.out.println("Timer stopped");
+                            timer.cancel();
+                            timerState = false;
+                            timer = new Timer();
+                        }
+                        break;
+                    case 18: //Option
+                        if(Question.getSelected().hasMedia()) {
+                            Question.getSelected().setShowMedia(!Question.getSelected().isShowMedia());
+                        }
+                        break;
+                    case 61:
+                        if(Question.getSelected().isWagerable()) {
+                            if(wager.length() == 0) {
+                                Question.getSelected().setValue(0);
+                            } else {
+                                try {
+                                    Question.getSelected().setValue(Integer.valueOf(wager));
+                                    Question.getSelected().setShowQuestion(true);
+                                } catch(NumberFormatException e) {
+                                    System.out.println("Failed to set value of wager due to string error");
+                                }
+                            }
+                        }
+                        break;
+                    case 192:
+                        if(Round.getCurrentRound().getRoundType() != Round.RoundType.FINAL) {
+                            if(tracks[0].position() > 0) {
+                                tracks[0].pause();
+                                tracks[0].rewind();
+                            }
+                            tracks[0].play();
+                        } else {
+                            tracks[2].play();
+                        }
+                        break;
+                }
+            break;
+
         }
 
         switch(event.getKeyCode()) { //Always On
@@ -476,55 +447,24 @@ public class Game extends PApplet {
     private static void progressRound() {
         if(progressionPath.peek() != null) {
             Round.setCurrentRound(progressionPath.poll());
-        } else {
-            tracks[2].play();
+        }
+        if(Round.getCurrentRound().getRoundType() == Round.RoundType.FINAL) {
+            Question finalQ = Round.getCurrentRound().getCategories().get(0).getQuestions().get(0);
+            finalQ.setAnswered(true);
+            Question.setSelected(finalQ);
+            gameState = GameState.QUESTION;
         }
     }
 
-    public static ArrayList<Player> getPlayers() {
-        return players;
-    }
-    public static String getWager() {
-        return wager;
-    }
-    public static boolean getTimerState() {
-        return timerState;
-    }
-    public static PApplet getGUI() {
-        return app;
-    }
-    public static Minim getMinim() {
-        return minim;
-    }
-    public static PFont getQuestionFont() {
-        return qfont;
-    }
-    public static PFont getCategoryFont() {
-        return cfont;
-    }
-    public static PFont getMoneyFont() {
-        return mfont;
-    }
-
-    public static boolean isUseCustomFonts() {
-        return useCustomFonts;
-    }
 
     private static boolean containsDialogue(String s) {
         return s.contains("(") || s.contains(")");
     }
-
     private static String removeAlexDialogue(String s) {
         return s.substring(0, s.indexOf("(")) + s.substring(s.lastIndexOf(")")+((s.lastIndexOf(")")!=s.length()-1)?(1):(0)), s.length() - 1);
     }
 
-    public static String getDialogue(String s) {
-        String n = s.substring(s.indexOf("("), s.indexOf(")")+1);
-        System.out.println("Dialogue for " + removeAlexDialogue(s).trim() + ": " + n);
-        return s.substring(s.indexOf("("), s.indexOf(")")+1);
-    }
-
-    private static void loadCategories(Round r, String filePath, int categoryCount, int categoryQuestionCount) { //Should refactor this to be recursive
+    private static void loadCategories(Round r, String filePath, int categoryCount, int categoryQuestionCount) {
         JSONParser jsonParser = new JSONParser();
 
         try {
@@ -642,7 +582,24 @@ public class Game extends PApplet {
         } catch(ParseException | IOException e){
             System.out.println("Failed to exist life is hard and i don't like functions");
         }
-     }
+    }
+    private static ArrayList<Player> loadPlayerData(String filePath) {
+        try(BufferedReader f = new BufferedReader(new FileReader(filePath))) {
+            ArrayList<Player> ps = new ArrayList<Player>();
+            String line;
+
+            while((line = f.readLine()) != null) {
+                if(!line.isEmpty()) {
+                    String[] parts = line.split("\\|");
+                    ps.add(new Player(parts[0].trim(), Integer.parseInt(parts[1].trim())));
+                }
+            }
+            return ps;
+        } catch(IOException e) {
+            System.out.println("Could not locate player file!");
+            return null;
+        }
+    }
 
     public static void printQuestions(Round r) {
         System.out.println(r.getRoundType().toString());
@@ -677,15 +634,6 @@ public class Game extends PApplet {
             System.out.println("Failed to make customs!");
         }
     }
-
-    public static void setSettings() {
-        Settings ds = new Settings();
-
-        ds.setSfx(true);
-        ds.setBackgroundColor(JConstants.JEOPARDY_BLUE);
-        ds.setPlayerCount(3);
-    }
-
 
     public static void main(String[] args) {
 //      makeCustoms();
@@ -728,7 +676,10 @@ public class Game extends PApplet {
         app.args = new String[]{"Game"};
         console.args = new String[]{"Console"};
 
+        playerSet = loadPlayerData("data" + File.separator + "players" + File.separator + "data.txt");
+
+
         PApplet.runSketch(app.args, app);
-//        PApplet.runSketch(console.args, new Console());
+        PApplet.runSketch(console.args, new Console());
     }
 }

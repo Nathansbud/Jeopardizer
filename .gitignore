@@ -1,4 +1,5 @@
 .idea/
 out/
-redata/
 *.iml
+
+data/players/data.txt

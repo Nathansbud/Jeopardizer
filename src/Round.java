@@ -10,14 +10,7 @@ public class Round {
         CUSTOM(),
     }
 
-    enum GameState {
-        ROUND(),
-        QUESTION(),
-        SCORES()
-    }
-
     private static Round CURRENT_ROUND = null;
-    private static GameState gameState = GameState.ROUND;
 
     private RoundType round;
     private ArrayList<Category> categories = new ArrayList<Category>();
@@ -34,13 +27,6 @@ public class Round {
     }
     public void setRoundType(RoundType _round) {
         round = _round;
-    }
-
-    public static GameState getGameState() {
-        return gameState;
-    }
-    public static void setGameState(GameState _gameState) {
-        gameState = _gameState;
     }
 
     public void setup() {

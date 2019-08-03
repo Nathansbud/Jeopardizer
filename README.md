@@ -69,7 +69,7 @@ Running either customs.py or Jeopardizer will move these files to data/questions
         </ul>
     </li>
     <li>
-        Minim
+        Minim (Maven: net.compartmental.code:minim:2.2.2)
         <ul>
             <li>Minim is used to play Jeopardy SFX—possibly overkill, but JavaSound felt like an ordeal</li>
         </ul>

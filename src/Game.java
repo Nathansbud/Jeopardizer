@@ -10,7 +10,12 @@ import org.json.simple.parser.ParseException;
 
 import ddf.minim.*;
 
+import java.io.File;
+import java.io.FileReader;
 import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.IOException;
+
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Queue;
@@ -19,11 +24,6 @@ import java.util.Collections;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ThreadLocalRandom;
-
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-
 
 /*-------------------------------------------------------------------------------------------------*\
 
@@ -72,7 +72,7 @@ public class Game extends PApplet {
     private static ArrayList<Player> players = new ArrayList<Player>();
 
     private static String[] playerNames = {
-            "Scott", "Sophie", "Maggie", "Douglas"
+            "P1", "P2", "P3"
     };
 
     private static Timer timer = new Timer();
@@ -87,12 +87,13 @@ public class Game extends PApplet {
 
     private static boolean isCustom = false;
     private static boolean isScraped = false;
+    private static boolean musicEnabled = true;
 
     private static boolean useCustomFonts = false;
     private static PFont qfont = null; //Korinna, used for custom question font
     private static PFont cfont = null; //Helvetica Inserat, used for custom category font
     private static PFont mfont = null; //Swiss 911, used for price value font
-    
+
     private static boolean testMode = false;
 
     private static float vOffset = 0.01f;
@@ -140,6 +141,7 @@ public class Game extends PApplet {
         fullScreen(2);
     }
     @Override public void setup() {
+//        minim = new Minim(app);
         minim = new Minim(app);
 
         Question.setConstants(app);
@@ -154,11 +156,12 @@ public class Game extends PApplet {
             first.setup();
         }
 
-
-        tracks[0] = minim.loadFile("data" + File.separator + "audio" + File.separator + "Time Out.mp3");
-        tracks[1] = minim.loadFile("data" + File.separator + "audio" + File.separator + "Daily Double.mp3");
-        tracks[2] = minim.loadFile("data" + File.separator + "audio" + File.separator + "Final Jeopardy.mp3");
-        tracks[3] = minim.loadFile("data" + File.separator + "audio" + File.separator + "Question Open.mp3");
+        if(musicEnabled) {
+            tracks[0] = minim.loadFile("data" + File.separator + "audio" + File.separator + "Time Out.mp3");
+            tracks[1] = minim.loadFile("data" + File.separator + "audio" + File.separator + "Daily Double.mp3");
+            tracks[2] = minim.loadFile("data" + File.separator + "audio" + File.separator + "Final Jeopardy.mp3");
+            tracks[3] = minim.loadFile("data" + File.separator + "audio" + File.separator + "Question Open.mp3");
+        }
 
         for(Round r : progressionPath) {
             for(Category c : r.getCategories()) {
@@ -244,7 +247,7 @@ public class Game extends PApplet {
                                 }
 
                                 if (q.isDailyDouble()) {
-                                    tracks[1].play();
+//                                    tracks[1].play();
                                 }
                                 q.setAnswered(true);
                                 Question.setSelected(q);
@@ -300,7 +303,8 @@ public class Game extends PApplet {
                             }
                         }
                         Question.setSelected(null);
-                        gameState = GameState.ROUND;
+                        if(Round.getCurrentRound().getRoundType() != Round.RoundType.FINAL) gameState = GameState.ROUND;
+                        else gameState = GameState.SCORES;
 
                         wager = "";
                         if(timerState) {
@@ -309,9 +313,11 @@ public class Game extends PApplet {
                             timerState = false;
                             timer = new Timer();
                         }
-                        for(AudioPlayer t : tracks) {
-                            t.pause();
-                            t.rewind();
+                        if(musicEnabled) {
+                            for (AudioPlayer t : tracks) {
+                                t.pause();
+                                t.rewind();
+                            }
                         }
                         break;
                     case 10: //ENTER
@@ -338,23 +344,27 @@ public class Game extends PApplet {
                             timer = new Timer();
                         }
 
-                        for(AudioPlayer t : tracks) {
-                            t.pause();
-                            t.rewind();
+                        if(musicEnabled) {
+                            for(AudioPlayer t : tracks) {
+                                t.pause();
+                                t.rewind();
+                            }
                         }
                         break;
                     case 17: //Control
                         timerState = !timerState;
-                        if(tracks[0].position() > 0) {
-                            tracks[0].pause();
-                            tracks[0].rewind();
+                        if(musicEnabled) {
+                            if(tracks[0].position() > 0) {
+                                tracks[0].pause();
+                                tracks[0].rewind();
+                            }
                         }
                         if(timerState) {
                             System.out.println("Timer started");
                             timer.schedule(new TimerTask() {
                                 @Override public void run() {
                                     System.out.println("Timer called");
-                                    tracks[0].play();
+                                    if(musicEnabled) tracks[0].play();
                                     timerState = false;
                                     timer = new Timer();
                                 }
@@ -386,14 +396,16 @@ public class Game extends PApplet {
                         }
                         break;
                     case 192:
-                        if(Round.getCurrentRound().getRoundType() != Round.RoundType.FINAL) {
-                            if(tracks[0].position() > 0) {
-                                tracks[0].pause();
-                                tracks[0].rewind();
+                        if(musicEnabled) {
+                            if (Round.getCurrentRound().getRoundType() != Round.RoundType.FINAL) {
+                                if (tracks[0].position() > 0) {
+                                    tracks[0].pause();
+                                    tracks[0].rewind();
+                                }
+                                tracks[0].play();
+                            } else {
+                                tracks[2].play();
                             }
-                            tracks[0].play();
-                        } else {
-                            tracks[2].play();
                         }
                         break;
                 }
@@ -505,7 +517,8 @@ public class Game extends PApplet {
         JSONParser jsonParser = new JSONParser();
 
         try {
-            FileReader f = new FileReader(filePath);
+//            BufferedReader f = new BufferedReader(new InputStreamReader(Game.class.getResourceAsStream(filePath)));
+            BufferedReader f = new BufferedReader(new FileReader(new File(filePath)));
             JSONArray categories = (JSONArray) jsonParser.parse(f);
             f.close();
             ArrayList<Integer> choices = new ArrayList<>();
@@ -713,7 +726,7 @@ public class Game extends PApplet {
         app.args = new String[]{"Game"};
         console.args = new String[]{"Console"};
 
-        playerSet = loadPlayerData("data" + File.separator + "players" + File.separator + "data.txt");
+//        playerSet = loadPlayerData("data" + File.separator + "players" + File.separator + "data.txt");
 
 
         PApplet.runSketch(app.args, app);

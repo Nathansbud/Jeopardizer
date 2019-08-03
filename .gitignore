@@ -3,3 +3,5 @@ out/
 *.iml
 
 data/players/data.txt
+
+data/META-INF/MANIFEST.MF

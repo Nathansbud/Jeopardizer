@@ -95,6 +95,9 @@ public class Game extends PApplet {
     
     private static boolean testMode = false;
 
+    private static float vOffset = 0.01f;
+    private static float maxOffset = 0.01f; //Don't want divide by 0s
+
     //Unfinished Zone
 //    private static ScrollableScreen settingSelect = new ScrollableScreen();
 
@@ -213,11 +216,18 @@ public class Game extends PApplet {
                 break;
             case PLAYER_SETUP:
                 background(PApplet.unhex(JConstants.JEOPARDY_BLUE));
-                fill(255);
                 textSize(35);
                 for (int i = 0; i < playerSet.size(); i++) {
-                    text(playerSet.get(i).getName() + " (Wins: " + playerSet.get(i).getWins() + ")", width / 3.0f, height / 8.0f * (i + 1));
+                    fill(50);
+                    //idk why it has to be a % but screw getting textHeight LUL
+                    //this needs to be -> button class, with text, hover, x/y...
+                    rect(width/3.0f, height/8.0f * (i + 1)+vOffset - 0.75f*(textAscent() + textDescent()) , textWidth(playerSet.get(i).getName() + " (Wins: " + playerSet.get(i).getWins() + ")"), textAscent() + textDescent());
+                    fill(255);
+                    text(playerSet.get(i).getName() + " (Wins: " + playerSet.get(i).getWins() + ")", width / 3.0f, height / 8.0f * (i + 1) + vOffset);
                 }
+                System.out.println(vOffset);
+                System.out.println(maxOffset);
+                rect(width - 10, 0f - (vOffset/maxOffset)*(height - 20), 10, 20, 10);
                 break;
         }
     }
@@ -245,11 +255,13 @@ public class Game extends PApplet {
                     }
                 }
                 break;
+            case PLAYER_SETUP:
+                System.out.println("Clicked on player screen");
+                break;
             default:
                 break;
         }
     }
-
 
     @Override public void keyPressed(KeyEvent event) {
 //        System.out.println(gameState);
@@ -437,6 +449,31 @@ public class Game extends PApplet {
                 int rightShift = players.indexOf(Player.getActive())+1;
                 if(rightShift < players.size()) {
                     Player.setActive(players.get(rightShift));
+                }
+                break;
+            default:
+                break;
+        }
+    }
+    @Override public void mouseWheel(MouseEvent event) {
+        if(gameState == GameState.PLAYER_SETUP) boundedScroll(event.getCount());
+    }
+
+    public void boundedScroll(float change) {
+        float maxHeight;
+        float minHeight;
+        float viewMaxHeight;
+
+        switch(gameState) {
+            case PLAYER_SETUP:
+                viewMaxHeight = height;
+                maxHeight = (viewMaxHeight / 8)*(playerSet.size()*0.75f);
+                maxOffset = maxHeight;
+
+                minHeight = 0;
+
+                if((vOffset + change) <= minHeight && (vOffset + change) >= maxHeight*-1 && maxHeight > viewMaxHeight) {
+                    vOffset += change;
                 }
                 break;
             default:

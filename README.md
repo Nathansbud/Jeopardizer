@@ -4,6 +4,17 @@
 
 Jeopardizer is a tool to create and play games of Jeopardy, randomly (with past categories from games throughout history), from a specific past game via J-Archive link, or by creating custom categories! Jeopardizer is designed for 2 screens in mind (one for host console, and one for questions), and is ideally played with with 3 players and 1 host.
 
+## Controls
+
+- Questions can be accessed by clicking their respective squares
+- Backspace will dock a player for a wrong answer, Enter will award points and escape the question. 
+- A 5s timer can be intiated by pressing Control. If the players time out, or otherwise, tab can be used to exit the question without awarding/substracting points
+- The host can hit the left and right arrow keys to switch between players for score awarding
+- The tilde key will switch between rounds, or play sound effects if a question is active (incorrect/buzzer timeout noise, Final Jeopardy music)
+- Shift will pull up the scores for players, but this can only be accessed from the question menu
+- If a Daily Double question is opened, a wager must be input using non-numpad number keys (haven't actually tested with numpad though), hyphen/subtract key will remove the last number (-), and equals key (=) will input that wager, which can then be awarded/subtracted normally
+- As a failsafe for an accidental misclick, a "wager" value can also be inputted outside of a question, and awarded to a player.
+
 ## Categories
 
 By default, rounds in Jeopardizer are loaded from the single, double, and final jeopardy files located in data/questions/all, which are created by scraping J-Archive. Categories are randomly selected from these past files to create a standard Jeopardy game (6 categories for Single Jeopardy, 6 categories for Double Jeopardy, 1 category for Final Jeopardy), with the option for user-specified category count and date range are provided. Content-based filters are unlikely to be implemented as J-Archive is untagged.

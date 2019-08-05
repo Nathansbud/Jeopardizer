@@ -12,7 +12,7 @@ Jeopardizer is a tool to create and play games of Jeopardy, randomly (with past 
 - The host can hit the left and right arrow keys to switch between players for score awarding
 - The tilde key will switch between rounds, or play sound effects if a question is active (incorrect/buzzer timeout noise, Final Jeopardy music)
 - Shift will pull up the scores for players, but this can only be accessed from the question menu
-- If a Daily Double question is opened, a wager must be input using non-numpad number keys (haven't actually tested with numpad though), hyphen/subtract key will remove the last number (-), and equals key (=) will input that wager, which can then be awarded/subtracted normally
+- If a Daily Double question is opened, a wager must be input using non-numpad number keys (haven't actually tested with numpad though), hyphen/subtract key will remove the last number (-), and equals key (=) will input that wager, which can then be awarded/subtracted normally. Slash (/) will show the question if not visible after wager is input, or during Final Jeopardy.
 - As a failsafe for an accidental misclick, a "wager" value can also be inputted outside of a question, and awarded to a player.
 
 ## Categories

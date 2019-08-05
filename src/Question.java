@@ -88,7 +88,7 @@ public class Question {
                 } else {
                     gui.textSize(40);
                 }
-                if (!dailyDouble || (showQuestion)) {
+                if(showQuestion) {
                     gui.text(question.toUpperCase(), gui.width / 8.0f, gui.height / 3.0f, gui.width - gui.width / 3.0f, gui.height);
                 }
             } else {
@@ -182,6 +182,7 @@ public class Question {
     }
     public void setWagerable(boolean _wagerable) {
         wagerable = _wagerable;
+        showQuestion = false;
         value = 0;
     }
 

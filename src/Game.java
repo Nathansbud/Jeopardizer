@@ -395,6 +395,11 @@ public class Game extends PApplet {
                             }
                         }
                         break;
+                    case 47: /* / */
+                        if(Question.getSelected().isWagerable()) {
+                            Question.getSelected().setShowQuestion(true);
+                        }
+                        break;
                     case 192:
                         if(musicEnabled) {
                             if (Round.getCurrentRound().getRoundType() != Round.RoundType.FINAL) {
@@ -711,8 +716,10 @@ public class Game extends PApplet {
                 r.setWagerables();
             }
         } else {
-            setProgressionPath(first);
-            loadCategories(first, "data" + File.separator + "questions" + File.separator + "custom" + File.separator + "custom_media.json", 1, 5);
+            setProgressionPath(first, second, third);
+            loadCategories(first, "data" + File.separator + "questions" + File.separator + "custom" + File.separator + "test_customs_1.json", 6, 5);
+            loadCategories(first, "data" + File.separator + "questions" + File.separator + "custom" + File.separator + "test_customs_2.json", 6, 5);
+            loadCategories(first, "data" + File.separator + "questions" + File.separator + "custom" + File.separator + "test_customs_3.json", 1, 1);
         }
 
         for (String p : playerNames) {

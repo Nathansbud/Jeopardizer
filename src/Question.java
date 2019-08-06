@@ -27,8 +27,6 @@ public class Question {
     private static float width, height;
     private static float widthBuffer, heightBuffer;
 
-
-
     private float x, y;
 
     public Question(String _question, String _answer) {

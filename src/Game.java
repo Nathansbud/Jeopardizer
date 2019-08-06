@@ -85,6 +85,7 @@ public class Game extends PApplet {
     private static int filterYear = 2008;
     private static int upperFilterYear = 2019;
 
+    private static boolean useFilter = true;
     private static boolean isCustom = false;
     private static boolean isScraped = false;
     private static boolean musicEnabled = true;
@@ -135,11 +136,10 @@ public class Game extends PApplet {
         return useCustomFonts;
     }
 
-
-
     @Override public void settings() {
         fullScreen(2);
     }
+
     @Override public void setup() {
 //        minim = new Minim(app);
         minim = new Minim(app);
@@ -623,7 +623,7 @@ public class Game extends PApplet {
                         }
                     }
                     if(c.getQuestions() != null) {
-                        if(c.getYear() == -1 || (c.getYear() >= filterYear && c.getYear() <= upperFilterYear && c.getQuestions().size() == categoryQuestionCount)) {
+                        if(!useFilter || (c.getYear() >= filterYear && c.getYear() <= upperFilterYear && c.getQuestions().size() == categoryQuestionCount)) {
                             r.addCategory(c);
                             for (Question cq : c.getQuestions()) {
                                 if (c.hasDialogue()) {
@@ -638,6 +638,34 @@ public class Game extends PApplet {
             System.out.println("Failed to exist life is hard and i don't like functions");
         }
     }
+    private static void loadCategories(Round r, int season) {
+        useFilter = false;
+        loadCategories(r, "data" + File.separator + "questions" + File.separator + "by_season" + File.separator + r.getRoundType().toString().toLowerCase() +"_jeopardy_season_"+season+".json", (r.getRoundType() == Round.RoundType.FINAL) ? (1) : (6), (r.getRoundType() == Round.RoundType.FINAL) ? (1) : (5));
+        useFilter = true;
+    }
+    private static void loadCategories(Round r, Object[][] categories) { //Bad form to use 2d object array rather than 3 unique arrays (or an object) but EH
+        Round[] choiceRounds = new Round[categories.length];
+        for(int i = 0; i < categories.length; i++) {
+            choiceRounds[i] = new Round(r.getRoundType());
+            if (categories[i].length != 3){
+                System.out.println("Mismatched argument lengths! Loading round from random season...");
+                loadCategories(r, (int) (Math.random() * 35) + 1);
+                return;
+            } else {
+                try {
+                    loadCategories(choiceRounds[i], (String)categories[i][0], (int)categories[i][1], (int)categories[i][2]);
+                } catch(ClassCastException e) {
+                    System.out.println("Incorrect argument types! Loading round from a random season...");
+                    loadCategories(r, (int) (Math.random() * 35) + 1);
+                    return;
+                }
+                for(Category c : choiceRounds[i].getCategories()) {
+                    r.addCategory(c);
+                }
+            }
+        }
+    }
+
     private static ArrayList<Player> loadPlayerData(String filePath) {
         try(BufferedReader f = new BufferedReader(new FileReader(filePath))) {
             ArrayList<Player> ps = new ArrayList<Player>();
@@ -702,10 +730,18 @@ public class Game extends PApplet {
             String dir = "all";
 
             if(isScraped) {
-                scrapeGame("http://www.j-archive.com/showgame.php?game_id=6320");
+                scrapeGame("http://www.j-archive.com/showgame.php?game_id=6370");
                 append = "_scraped";
                 dir = "scrape";
+                useFilter = false;
+
             }
+
+//            loadCategories(first, new Object[][]{
+//                    {"data" + File.separator + "questions" + File.separator + "by_season" + File.separator + "single_jeopardy_season_35.json", 1, 5},
+//                    {"data" + File.separator + "questions" + File.separator + "by_season" + File.separator + "single_jeopardy_season_34.json", 2, 5},
+//                    {"data" + File.separaftor + "questions" + File.separator + "by_season" + File.separator + "single_jeopardy_season_33.json", 3, 5},
+//            }); //Template for loading from multiple files, should improve this but oh well
 
             loadCategories(first, "data" + File.separator + "questions" + File.separator + dir + File.separator + "single_jeopardy" + append + ".json", 6, 5);
             loadCategories(second,"data" + File.separator + "questions" + File.separator + dir + File.separator + "double_jeopardy" + append + ".json", 6, 5);

@@ -1,8 +1,12 @@
 # Jeopardizer: Jeopardy, for the folks at home!
 
+![Question Image](https://i.imgur.com/JVKhtRI.png)
+
 ## What?
 
 Jeopardizer is a tool to create and play games of Jeopardy, randomly (with past categories from games throughout history), from a specific past game via J-Archive link, or by creating custom categories! Jeopardizer is designed for 2 screens in mind (one for host console, and one for questions), and is ideally played with with 3 players and 1 host.
+
+![Console Image](https://i.imgur.com/PZmUn0F.png)
 
 ## Controls
 
@@ -16,6 +20,8 @@ Jeopardizer is a tool to create and play games of Jeopardy, randomly (with past 
 - As a failsafe for an accidental misclick, a "wager" value can also be inputted outside of a question, and awarded to a player.
 
 ## Categories
+
+![Category Image](https://i.imgur.com/BSJtmJl.png)
 
 By default, rounds in Jeopardizer are loaded from the single, double, and final jeopardy files located in data/questions/all, which are created by scraping J-Archive. Categories are randomly selected from these past files to create a standard Jeopardy game (6 categories for Single Jeopardy, 6 categories for Double Jeopardy, 1 category for Final Jeopardy), with the option for user-specified category count and date range are provided. Content-based filters are unlikely to be implemented as J-Archive is untagged.
 

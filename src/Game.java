@@ -72,7 +72,7 @@ public class Game extends PApplet {
     private static ArrayList<Player> players = new ArrayList<Player>();
 
     private static String[] playerNames = {
-            "P1", "P2", "P3"
+            "Player 1", "Player 2", "Player 3"
     };
 
     private static Timer timer = new Timer();

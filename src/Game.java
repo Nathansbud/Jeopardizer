@@ -72,7 +72,7 @@ public class Game extends PApplet {
     private static ArrayList<Player> players = new ArrayList<Player>();
 
     private static String[] playerNames = {
-            "Player 1", "Player 2", "Player 3"
+           "Player 1", "Player 2", "Player 3"
     };
 
     private static Timer timer = new Timer();
@@ -522,15 +522,13 @@ public class Game extends PApplet {
         JSONParser jsonParser = new JSONParser();
 
         try {
-//            BufferedReader f = new BufferedReader(new InputStreamReader(Game.class.getResourceAsStream(filePath)));
             BufferedReader f = new BufferedReader(new FileReader(new File(filePath)));
+
             JSONArray categories = (JSONArray) jsonParser.parse(f);
-            f.close();
             ArrayList<Integer> choices = new ArrayList<>();
 
             while (r.getCategories().size() < categoryCount) {
                 int rand = ThreadLocalRandom.current().nextInt(0, categories.size());
-
                 if (!choices.contains(rand)) {
                     choices.add(rand);
                     JSONObject cat = (JSONObject) categories.get(rand);
@@ -622,8 +620,9 @@ public class Game extends PApplet {
                                 break;
                         }
                     }
+
                     if(c.getQuestions() != null) {
-                        if(!useFilter || (c.getYear() >= filterYear && c.getYear() <= upperFilterYear && c.getQuestions().size() == categoryQuestionCount)) {
+                        if(!useFilter || isCustom || (c.getYear() >= filterYear && c.getYear() <= upperFilterYear && c.getQuestions().size() == categoryQuestionCount)) {
                             r.addCategory(c);
                             for (Question cq : c.getQuestions()) {
                                 if (c.hasDialogue()) {
@@ -635,7 +634,7 @@ public class Game extends PApplet {
                 }
             }
         } catch(ParseException | IOException e){
-            System.out.println("Failed to exist life is hard and i don't like functions");
+            e.printStackTrace();
         }
     }
     private static void loadCategories(Round r, int season) {
@@ -730,7 +729,7 @@ public class Game extends PApplet {
             String dir = "all";
 
             if(isScraped) {
-                scrapeGame("http://www.j-archive.com/showgame.php?game_id=6370");
+                scrapeGame("http://www.j-archive.com/showgame.php?game_id=6682");
                 append = "_scraped";
                 dir = "scrape";
                 useFilter = false;
@@ -752,10 +751,8 @@ public class Game extends PApplet {
                 r.setWagerables();
             }
         } else {
-            setProgressionPath(first, second, third);
-            loadCategories(first, "data" + File.separator + "questions" + File.separator + "custom" + File.separator + "test_customs_1.json", 6, 5);
-            loadCategories(first, "data" + File.separator + "questions" + File.separator + "custom" + File.separator + "test_customs_2.json", 6, 5);
-            loadCategories(first, "data" + File.separator + "questions" + File.separator + "custom" + File.separator + "test_customs_3.json", 1, 1);
+            setProgressionPath(first);
+            loadCategories(first, "/Users/zackamiton/Code/Jeopardizer/data/questions/custom/custom.json", 1, 1);
         }
 
         for (String p : playerNames) {
@@ -770,7 +767,6 @@ public class Game extends PApplet {
         console.args = new String[]{"Console"};
 
 //        playerSet = loadPlayerData("data" + File.separator + "players" + File.separator + "data.txt");
-
 
         PApplet.runSketch(app.args, app);
         PApplet.runSketch(console.args, new Console());

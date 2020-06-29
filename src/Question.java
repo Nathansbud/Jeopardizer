@@ -285,7 +285,6 @@ public class Question {
         heightBuffer = gui.height/150.0f;
     }
 
-
     public static boolean isSelected(Question q) {
         return q.equals(selected);
     }

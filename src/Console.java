@@ -7,7 +7,7 @@ public class Console extends PApplet {
 
     @Override public void draw() {
         background(PApplet.unhex(JConstants.JEOPARDY_BLUE));
-        textSize(40);
+        textSize(20);
 
 
         for (int i = 0; i < Game.getPlayers().size(); i++) {
@@ -16,8 +16,9 @@ public class Console extends PApplet {
             } else {
                 fill(255);
             }
-            text(Game.getPlayers().get(i).getName() + ": $" + (Game.getPlayers().get(i).getScore()), width / 10.0f + width / 5.0f * (i), height / 18.0f);
+            text(Game.getPlayers().get(i).getName() + ": $" + (Game.getPlayers().get(i).getScore()), width / 10.0f + width / 8.0f * (i), height / 18.0f);
         }
+        textSize(40);
 
         try {
             if(Question.getSelected() != null) {

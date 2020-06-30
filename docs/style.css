@@ -1,11 +1,21 @@
-body {
-    background: rgb(5, 20, 129);
-    color: rgb(226, 176, 114);
+:root {
+    --jeopardy-blue: rgb(5, 20, 129);
+    --jeopardy-gold: rgb(226, 176, 114);
+}
+
+body, body:fullscreen {
+    background: var(--jeopardy-blue);
+    color: var(--jeopardy-gold);
     text-align: center;
     font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
 }
 
-div:not(#start) {
+body, div, .game_table {
+    background: var(--jeopardy-blue);
+}
+
+
+div:not(#start):not(#fullscreen) {
     display: none;
 }
 
@@ -15,6 +25,7 @@ div:not(#start) {
 
 
 .game_table, .game_table td, .game_table th {
+    background: var(--jeopardy-blue);
     table-layout: fixed;
     border: 6px solid  black;
     border-collapse: collapse;
@@ -25,7 +36,7 @@ div:not(#start) {
 }
 
 .game_table td {
-    color: rgb(226, 176, 114);
+    color: var(--jeopardy-gold);
 }
 
 .game_table {

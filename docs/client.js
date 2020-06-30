@@ -1,4 +1,5 @@
-const bc = new BroadcastChannel('test_channel');
+//Todo: Establish some sort of unique connection between client and console
+const bc = new BroadcastChannel('Jeopardizer');
 const corsUrl = "https://cors-anywhere.herokuapp.com"
 const answerCapture = new RegExp(`(?<=<em class=\\\\?"correct_response\\\\?">)(.*)(?=</em>)`)
 
@@ -9,19 +10,39 @@ const startDiv = document.getElementById("start")
 const startForm = document.getElementById('start_form')
 const gameId = document.querySelector("input[name='game_id']")
 const startButton = document.querySelector("input[name='start_button']")
-
 const gameDiv = document.getElementById("game")
-
 const questionDiv = document.getElementById("question")
 
 let currentCategory = document.getElementById("question_category")
 let currentQuestion = document.getElementById("question_text")
-let currentAnswer = document.getElementById('question_answer')
+
 let backButton = document.getElementById('back_button')
 
 let scoresDiv = document.getElementById("scores")
-
 let divs = [startDiv, gameDiv, questionDiv, scoresDiv]
+
+const validActions = ["CLOSE_QUESTION", "WRONG_ANSWER", "RIGHT_ANSWER"]
+bc.onmessage = function(msg) {
+    const action = msg.data.action
+    const data = msg.data.response
+
+    switch(action) {
+        case "WRONG_ANSWER":
+            break
+        case "RIGHT_ANSWER":
+            break
+        case "CLOSE_QUESTION":
+            setState(gameDiv)
+            break
+        default:
+            if(action in validActions) {
+                console.log("Received unimplemented action: ", msg.data)
+            } else {
+                console.log("Invalid action: ", msg.data)
+            }
+            break
+    }
+}
 
 window.onload = function() {
     gameId.value = randInt(parseInt(gameId.min), parseInt(gameId.max), true)
@@ -33,6 +54,12 @@ window.onload = function() {
                 loadGame(value)           
                 setState(gameDiv)
             })
+            /*
+            if(!document.fullscreenElement) {
+                document.querySelector('#fullscreen').requestFullscreen().catch(err => {
+                    alert(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
+                })
+            }*/
         }
     })
     backButton.addEventListener('click', function(){
@@ -77,6 +104,7 @@ function loadGame(roundSet) {
             newCell.setAttribute('data-answer', qa.answer)
             newCell.setAttribute('class', 'question_cell')
             newCell.setAttribute('data-category', round[indq].category)
+            newCell.setAttribute('data-comments', round[indq].comments)
 
             newCell.textContent = "$"+newCell.getAttribute('data-value')
             newCell.addEventListener('click', function() {
@@ -101,8 +129,17 @@ function showQuestion(cell) {
     
     currentCategory.textContent = cell.getAttribute('data-category')
     currentQuestion.textContent = cell.getAttribute('data-question')
-    currentAnswer.textContent = cell.getAttribute('data-answer')
 
+    bc.postMessage({
+        "action":"LOAD_QUESTION",
+        "response":{
+            question: cell.getAttribute('data-question'),
+            category: cell.getAttribute('data-category'), 
+            answer: cell.getAttribute('data-answer'), 
+            comment: cell.getAttribute('data-comments')
+        }
+    })
+    
     setState(questionDiv)
 }
 

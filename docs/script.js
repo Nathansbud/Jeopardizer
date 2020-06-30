@@ -1,5 +1,110 @@
-var corsUrl = "https://cors-anywhere.herokuapp.com"
-var answerCapture = new RegExp(`(?<=<em class=\\\\?"correct_response\\\\?">)(.*)(?=</em>)`)
+const bc = new BroadcastChannel('test_channel');
+const corsUrl = "https://cors-anywhere.herokuapp.com"
+const answerCapture = new RegExp(`(?<=<em class=\\\\?"correct_response\\\\?">)(.*)(?=</em>)`)
+
+const randInt = (max, min, incl=false) => Math.floor(Math.random()*(max - min)) + min + incl 
+//const moneyFormatter = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD'})
+
+const startDiv = document.getElementById("start")
+const startForm = document.getElementById('start_form')
+const gameId = document.querySelector("input[name='game_id']")
+const startButton = document.querySelector("input[name='start_button']")
+
+const gameDiv = document.getElementById("game")
+
+const questionDiv = document.getElementById("question")
+
+let currentCategory = document.getElementById("question_category")
+let currentQuestion = document.getElementById("question_text")
+let currentAnswer = document.getElementById('question_answer')
+let backButton = document.getElementById('back_button')
+
+let scoresDiv = document.getElementById("scores")
+
+let divs = [startDiv, gameDiv, questionDiv, scoresDiv]
+
+window.onload = function() {
+    gameId.value = randInt(parseInt(gameId.min), parseInt(gameId.max), true)
+    startForm.addEventListener('submit', function() {
+        let queryId = gameId.value
+        if(queryId && queryId >= gameId.min && queryId <= gameId.max) {
+            startButton.disabled = true
+            getGame(queryId).then((value) => {
+                loadGame(value)           
+                setState(gameDiv)
+            })
+        }
+    })
+    backButton.addEventListener('click', function(){
+        setState(gameDiv)
+    })
+}
+
+function setState(div) {
+    divs.forEach(d => {
+        if(d != div) d.style.display = 'none';
+        else d.style.display = 'block';
+    })
+}
+
+
+
+function loadGame(roundSet) {
+    let ids = ['single_jeopardy', 'double_jeopardy', 'final_jeopardy', 'tiebreaker']
+    for(let [i, round] of roundSet.entries()) {
+        let table = document.getElementById(ids[i])
+        let headerRow = document.createElement('tr')
+        let questionSet = {}
+        
+        round.forEach(r => {
+            let catName = document.createElement('th')
+            catName.textContent = r['category']
+            headerRow.appendChild(catName)
+            r.clues.forEach((qa, idx) => {
+                if(questionSet[idx]) questionSet[idx].push(qa)
+                else {
+                    questionSet[idx] = [qa]
+                }
+            })
+        })
+        
+        table.appendChild(headerRow)
+        let newCells = Object.entries(questionSet).map(([ind, qs]) => qs.map((qa, indq) => {
+            let newCell = document.createElement('td')
+            
+            newCell.setAttribute('data-value', 200*(i+1)*(parseInt(ind)+1))
+            newCell.setAttribute('data-question', qa.question)
+            newCell.setAttribute('data-answer', qa.answer)
+            newCell.setAttribute('class', 'question_cell')
+            newCell.setAttribute('data-category', round[indq].category)
+
+            newCell.textContent = "$"+newCell.getAttribute('data-value')
+            newCell.addEventListener('click', function() {
+                if(!this.getAttribute('disabled')) {
+                    showQuestion(newCell)
+                }
+            })    
+            return newCell
+        }))
+
+        newCells.forEach(tr => {
+            let newRow = document.createElement('tr')
+            tr.forEach(t => newRow.appendChild(t))
+            table.append(newRow)
+        })
+    }
+}
+
+function showQuestion(cell) {
+    cell.setAttribute('disabled', true)
+    cell.textContent = ""
+    
+    currentCategory.textContent = cell.getAttribute('data-category')
+    currentQuestion.textContent = cell.getAttribute('data-question')
+    currentAnswer.textContent = cell.getAttribute('data-answer')
+
+    setState(questionDiv)
+}
 
 function extractAnswer(clue) {
     let aa = clue?.querySelector('div')?.getAttribute('onmouseover')
@@ -43,7 +148,7 @@ async function getGame(gid) {
     for(let [i, r] of categories.entries()) {
         for(let [j, cat] of Array.from(r).entries()) {
             if(i < 2) cat['clues'] = questions[i].filter((elem, idx) => ((idx - j) % 6) == 0)
-            else cat['clues'] = {question: questions[i][0]['question'], answer: cat['answer']}
+            else cat['clues'] = [{question: questions[i][0]['question'], answer: cat['answer']}]
             delete cat['answer']
         }             
         roundSet.push(r)
@@ -52,4 +157,3 @@ async function getGame(gid) {
     return roundSet
 }
 
-getGame(6000).then(console.log)

@@ -4,8 +4,44 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Jeopardizer</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <div id='start'>
+    <h1>Welcome to Jeopardizer!</h1>
+    <form id='start_form' action="javascript:void(0);">
+        <label for="game_id">Game ID</label>
+        <input name="game_id" type='number' min='1' max='6699'>
+        <input name='start_button' type='submit' value='Start Game'>
+    </form>
+    </div>
+    <div id="game">
+        <table class='game_table' id='single_jeopardy'>
+
+        </table>
+        <table class='game_table' id='double_jeopardy'>
+
+        </table>
+        <table class='game_table' id='final_jeopardy'>
+            
+        </table>
+        <table class='game_table' id='tiebreaker'>
+
+        </table>
+    </div>
+    <div id="question">
+        <span id='daily_double'>Daily Double</span>
+        <span id='question_value'></span>
+        
+        <h2 id="question_category"></h2>
+        <h2 id='question_text'></h2>
+        
+        <h3 id='question_answer'></h2>
+        <button id='back_button'>Back</button>
+    </div>
+    <div id="scores">
+       
+    </div>
     <script src="script.js"></script>
 </body>
 </html>

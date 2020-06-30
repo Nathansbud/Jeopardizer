@@ -1,0 +1,54 @@
+body {
+    background: rgb(5, 20, 129);
+    color: rgb(226, 176, 114);
+    text-align: center;
+    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+}
+
+div:not(#start) {
+    display: none;
+}
+
+.game_table:not(#single_jeopardy) {
+    display: none;
+}
+
+
+.game_table, .game_table td, .game_table th {
+    table-layout: fixed;
+    border: 6px solid  black;
+    border-collapse: collapse;
+}
+
+.game_table th {
+    color: white;
+}
+
+.game_table td {
+    color: rgb(226, 176, 114);
+}
+
+.game_table {
+    position: absolute; 
+    top: 0; 
+    bottom: 0; 
+    left: 0; 
+    right: 0;
+    width: 100%;
+    height: 100%;
+    font-weight: bold;
+} 
+
+
+.question_cell {
+    cursor: grab;
+}
+
+#daily_double {
+    display: none;
+}
+
+.question_cell[disabled='true'] {
+    cursor: auto; /* might wanna use like not-allowed? */
+}
+

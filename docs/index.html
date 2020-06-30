@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jeopardizer</title>
+    <title>Client - Jeopardizer</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -11,8 +11,14 @@
         <div id='start'>
         <h1>Welcome to Jeopardizer!</h1>
         <form id='start_form' action="javascript:void(0);">
-            <label for="game_id">Game ID</label>
-            <input name="game_id" type='number' min='1' max='6699'>
+            <p>
+                <label for="game_id">Game ID:</label>
+                <input name="game_id" type='number' min='1' max='6699'>
+            </p>
+            <p>
+                <label for="player_names" value='Separate using commas...   '>Player Names:</label>
+                <input name="player_names" placeholder="Use commas!" type='text'><br>
+             </p>
             <input name='start_button' type='submit' value='Start Game'>
         </form>
         </div>
@@ -36,8 +42,6 @@
             
             <h2 id="question_category"></h2>
             <h2 id='question_text'></h2>
-
-            <button id='back_button'>Back</button>
         </div>
         <div id="scores">
         

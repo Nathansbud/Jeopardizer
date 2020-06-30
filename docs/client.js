@@ -9,6 +9,8 @@ const randInt = (max, min, incl=false) => Math.floor(Math.random()*(max - min)) 
 const startDiv = document.getElementById("start")
 const startForm = document.getElementById('start_form')
 const gameId = document.querySelector("input[name='game_id']")
+const playerInput = document.querySelector("input[name='player_names']")
+
 const startButton = document.querySelector("input[name='start_button']")
 const gameDiv = document.getElementById("game")
 const questionDiv = document.getElementById("question")
@@ -20,6 +22,17 @@ let backButton = document.getElementById('back_button')
 
 let scoresDiv = document.getElementById("scores")
 let divs = [startDiv, gameDiv, questionDiv, scoresDiv]
+let uid = Date.now() /* todo: localStorage this and link it to the console */
+let players = {}
+
+//let currentState = "START"
+
+let roundTables = [
+    document.getElementById('single_jeopardy'), 
+    document.getElementById('double_jeopardy'),
+    document.getElementById('final_jeopardy'),
+    document.getElementById('tiebreaker')
+]
 
 const validActions = ["CLOSE_QUESTION", "WRONG_ANSWER", "RIGHT_ANSWER"]
 bc.onmessage = function(msg) {
@@ -34,6 +47,9 @@ bc.onmessage = function(msg) {
         case "CLOSE_QUESTION":
             setState(gameDiv)
             break
+        case "PROGRESS_ROUND":
+            progressRound()
+            break
         default:
             if(action in validActions) {
                 console.log("Received unimplemented action: ", msg.data)
@@ -44,12 +60,29 @@ bc.onmessage = function(msg) {
     }
 }
 
+function progressRound() {
+    
+}
+
 window.onload = function() {
     gameId.value = randInt(parseInt(gameId.min), parseInt(gameId.max), true)
+
     startForm.addEventListener('submit', function() {
+        let consoleLoc = new String(window.location).replace("/index.html", "")+"/console.html"
         let queryId = gameId.value
-        if(queryId && queryId >= gameId.min && queryId <= gameId.max) {
+        let playerNames = (playerInput.value) ? (playerInput.value.split(",").map(pn => pn.trim())) : (playerInput.value)
+
+        if(playerNames && queryId && queryId >= gameId.min && queryId <= gameId.max) {
             startButton.disabled = true
+            window.open(consoleLoc, "_blank")
+            
+            playerNames.forEach(pn => players[pn] = 0)
+            bc.postMessage({
+                "action":"UPDATE_PLAYERS",
+                "response":{
+                    players:players
+                }
+            })
             getGame(queryId).then((value) => {
                 loadGame(value)           
                 setState(gameDiv)
@@ -61,9 +94,6 @@ window.onload = function() {
                 })
             }*/
         }
-    })
-    backButton.addEventListener('click', function(){
-        setState(gameDiv)
     })
 }
 

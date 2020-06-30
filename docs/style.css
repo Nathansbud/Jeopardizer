@@ -10,6 +10,27 @@ body, body:fullscreen {
     font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
 }
 
+
+form {
+    display: table;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: left;
+}
+
+p {
+    display: table-row;
+}
+
+label { 
+    display: table-cell; 
+    text-align: right;
+}
+
+input { 
+    display: table-cell;
+}
+
 body, div, .game_table {
     background: var(--jeopardy-blue);
 }

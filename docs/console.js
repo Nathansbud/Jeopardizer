@@ -8,12 +8,11 @@ const playerList = document.getElementById('player_list')
 
 const currentCategory = document.getElementById("question_category")
 const currentQuestion = document.getElementById("question_text")
-const currentValue = document.getElementById("question_text")
+const currentValue = document.getElementById("question_value")
 const currentAnswer = document.getElementById("question_answer")
+let questionValue = 0
 
 const scoreInput = document.getElementById("score_input")
-const questionValue = 0
-
 const dailyDoubleText = document.getElementById('daily_double')
 const wagerControls = document.getElementById('wager_controls')
 
@@ -23,9 +22,8 @@ const backButton = document.getElementById('back_button')
 const progressButton = document.getElementById('progress_button')
 const scoresButton = document.getElementById('scores_button')
 
-
-
 const divs = [mainDiv, questionDiv]
+const states = ["Main", "Question"]
 
 let cid = null
 let coid = Date.now()
@@ -38,6 +36,16 @@ function setState(div) {
         else d.style.display = 'block';
     })
 }
+
+function getState() {
+    for(let i = 0; i < divs.length; i++) {
+        if(divs[i].style.display != 'none') return states[i]
+    }
+}
+
+const isQuestion = () => getState() == "Question"
+const isMain = () => getState() == "Main"
+
 
 window.onload = function() {
     backButton.addEventListener('click', () => {
@@ -98,9 +106,13 @@ bc.onmessage = function(msg) {
                 break
             case "LOAD_QUESTION":
                 if(data.cid == cid) {
-                    currentQuestion.textContent = data.question
-                    currentCategory.textContent = data.category
                     currentAnswer.textContent = data.answer
+                    currentQuestion.textContent = data.question
+                    console.log(data.question)
+                    currentCategory.textContent = data.category
+                    currentValue.textContent = "$"+data.value
+                    questionValue = data.value
+
                     if(data.dd) {
                         dailyDoubleText.style.display = 'block'
                         showWager(true)
@@ -143,10 +155,14 @@ function updatePlayerList() {
             scoreButton.setAttribute('data-player', pe[0])
             let scoreCallback = ({
                 0:function() {
-                    players[scoreButton.getAttribute('data-player')] += questionValue
+                    if(isQuestion()) players[scoreButton.getAttribute('data-player')] -= questionValue
                 },
                 1:function() {
-                    players[scoreButton.getAttribute('data-player')] -= questionValue
+                    if(isQuestion()) {
+                        players[scoreButton.getAttribute('data-player')] += questionValue
+                        sendMessage("CLOSE_QUESTION")
+                        setState(mainDiv)
+                    }
                 },
                 2:function() {
                     if(scoreInput.value) players[scoreButton.getAttribute('data-player')] += parseInt(scoreInput.value)
@@ -156,6 +172,7 @@ function updatePlayerList() {
             scoreButton.addEventListener('click', function() {
                 scoreCallback()
                 sendMessage("UPDATE_PLAYERS", [['players', players]])
+                updatePlayerList()
             })
             return scoreButton
         })

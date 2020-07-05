@@ -6,6 +6,9 @@ const lastSeason = [6699,6697,6695,6694,6691,6686,6684,6682,6680,6678,6672,6670,
 const [dailyDoubleSFX, finalJeopardySFX, questionOpenSFX, timeOutSFX] = ["Daily Double", "Final Jeopardy", "Question Open", "Time Out"].map(sfx => new Audio(`./data/${sfx}.mp3`))
 
 const randInt = (max, min, incl=false) => Math.floor(Math.random()*(max - min)) + min + incl 
+const show = (elem, as='block') => elem.style.display = as
+const hide = (elem, useNone=true) => elem.style.display = (useNone) ? ('none') : ('hidden')
+
 //const moneyFormatter = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD'})
 
 const startDiv = document.getElementById("start")
@@ -13,6 +16,7 @@ const startForm = document.getElementById('start_form')
 const gameId = document.querySelector("input[name='game_id']")
 const playerInput = document.querySelector("input[name='player_names']")
 const footnote = document.querySelector(".footnote")
+
 
 let startButton = document.querySelector("input[name='start_button']")
 const gameDiv = document.getElementById("game")
@@ -22,26 +26,23 @@ let currentCell = null
 let currentCategory = document.getElementById("question_category")
 let currentQuestion = document.getElementById("question_text")
 
-let backButton = document.getElementById('back_button')
 const scoresDiv = document.getElementById("scores")
+const scoreList = document.getElementById('player_scores')
+const endSectionDiv = document.getElementById("end") //not part of divs; on scoresDiv
 
-const endDiv = document.getElementById("end")
 const pauseDiv = document.getElementById("pause")
 
-let divs = [startDiv, gameDiv, questionDiv, scoresDiv, endDiv, pauseDiv]
+let divs = [startDiv, gameDiv, questionDiv, scoresDiv, pauseDiv]
 let cid = Date.now() /* todo: localStorage this and link it to the console */
 let coid = null
+
+let hasTiebreaker = false
 
 let players = {}
 
 //let currentState = "START"
 
-let roundTables = [
-    document.getElementById('single_jeopardy'), 
-    document.getElementById('double_jeopardy'),
-    document.getElementById('final_jeopardy'),
-    document.getElementById('tiebreaker')
-]
+let roundTables = document.getElementsByClassName("game_table")
 
 const linkClient = function() {
     console.log("Sent linking message...")
@@ -101,7 +102,9 @@ bc.onmessage = function(msg) {
                 setState(gameDiv)
                 break
             case "PROGRESS_ROUND":
-                progressRound()
+                if(data.coid == coid) {
+                    progressRound()
+                }
                 break
             default:
                 if(action in validActions) {
@@ -114,19 +117,43 @@ bc.onmessage = function(msg) {
     }
 }
 
+function shouldTiebreaker() {
+    let pv = Object.values(players)
+    return hasTiebreaker && !pv.map(ps => pv.indexOf(ps) == pv.lastIndexOf(ps)).every(s => s)
+}
+
 function progressRound() {
-    if(roundTables[roundTables.length - 1].style.display != 'none') {
-        
-    }  else {
-        for(let i = 0; i < roundTables.length - 1; i++) {
-            if(roundTables[i].style.display != 'none') {
-                roundTables[i].style.display = 'none'
-                roundTables[i+1].style.display = 'block'
-                console.log("Progressed to " + roundTables.getAttribute('id'))
+    let shouldEnd = true
+    for(let i = 0; i < roundTables.length - 1; i++) {
+        if(roundTables[i].style.display != 'none') {
+            if(i == roundTables.length - 2 && !shouldTiebreaker()) {
+                shouldEnd = true
                 break
-            } 
-        }
+            }
+            roundTables[i].style.display = 'none'
+            roundTables[i+1].style.display = 'table'
+            console.log("Progressed to " + roundTables[i+1].getAttribute('id'))
+            shouldEnd = false
+            break
+        } 
     }
+    if(shouldEnd) {
+        show(endSectionDiv)
+        show(document.getElementById('final_text'), 'inline')
+        updateScoreList()
+        setState(scoresDiv)
+    }
+}
+
+function updateScoreList() {
+    while(scoreList.lastChild) {
+        scoreList.removeChild(scoreList.lastChild);
+    }
+    Object.entries(players).sort((a, b) => b[1] - a[1]).forEach(pe => {
+        let pl = document.createElement('li')
+        pl.textContent = `${pe[0]}: ${pe[1]}`
+        scoreList.appendChild(pl)
+    })
 }
 
 window.onload = function() {
@@ -149,6 +176,10 @@ window.onload = function() {
             window.open(consoleLoc,'_blank', 'toolbar=0,location=0,menubar=0')
             getGame(queryId).then((value) => {
                 loadGame(value)
+                Array.from(roundTables).forEach(rt => {
+                    if(rt != document.getElementById('single_jeopardy')) rt.style.display = 'none'
+                    else rt.style.display = 'table'
+                })
                 if(coid) setState(gameDiv)           
                 hasLoaded = true
             })
@@ -189,7 +220,9 @@ function setState(div) {
 
 function loadGame(roundSet) {
     let ids = ['single_jeopardy', 'double_jeopardy', 'final_jeopardy', 'tiebreaker']
-    console.log(roundSet)
+    let rse = roundSet.entries()
+    if(rse.length > 3) hasTiebreaker = true
+    
     for(let [i, round] of roundSet.entries()) {
         let table = document.getElementById(ids[i])
         let headerRow = document.createElement('tr')
@@ -232,7 +265,6 @@ function loadGame(roundSet) {
             count++ 
             return newCell
         }))
-        console.log(count)
 
         newCells.forEach(tr => {
             let newRow = document.createElement('tr')

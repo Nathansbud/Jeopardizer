@@ -49,15 +49,13 @@ body, div, .game_table {
     background: var(--jeopardy-blue);
 }
 
-
-div:not(#start):not(#fullscreen) {
+div:not(#start):not(#fullscreen), .game_table:not(#single_jeopardy), #final_text, .footnote_text, #daily_double {
     display: none;
 }
 
-.game_table:not(#single_jeopardy) {
-    display: none;
+#player_scores {
+    list-style-type: none;
 }
-
 
 .game_table, .game_table td, .game_table th {
     background: var(--jeopardy-blue);
@@ -90,10 +88,6 @@ div:not(#start):not(#fullscreen) {
     cursor: grab;
 }
 
-#daily_double {
-    display: none;
-}
-
 .question_cell[disabled='true'] {
     cursor: auto; /* might wanna use like not-allowed? */
 }
@@ -113,8 +107,4 @@ div:not(#start):not(#fullscreen) {
 
 .footnote:hover {
     cursor: pointer;
-}
-
-.footnote_text {
-    display: none;
 }

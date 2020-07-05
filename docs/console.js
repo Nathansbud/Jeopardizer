@@ -9,6 +9,7 @@ const currentQuestion = document.getElementById("question_text")
 const currentAnswer = document.getElementById("question_answer")
 
 const backButton = document.getElementById('back_button')
+const progressButton = document.getElementById('progress_button')
 
 const divs = [mainDiv, questionDiv]
 
@@ -35,6 +36,17 @@ window.onload = function() {
             }
         })
         setState(mainDiv)
+    })
+
+    progressButton.addEventListener('click', function() {
+        bc.postMessage({
+            action: "PROGRESS_ROUND",
+            response: {
+                src: "CONSOLE",
+                cid: cid, 
+                coid: coid
+            }
+        })
     })
 }
 
@@ -78,8 +90,8 @@ bc.onmessage = function(msg) {
                             coid: coid
                         }
                     })
-                    players = data.players
-                    console.log(players)
+                    setState(mainDiv)
+                    players = data.players   
                 }
                 break
             case "GET_PLAYERS":

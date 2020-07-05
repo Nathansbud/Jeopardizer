@@ -24,9 +24,11 @@ let currentQuestion = document.getElementById("question_text")
 
 let backButton = document.getElementById('back_button')
 const scoresDiv = document.getElementById("scores")
-const endDiv = document.getElementById("scores")
 
-let divs = [startDiv, gameDiv, questionDiv, scoresDiv, endDiv]
+const endDiv = document.getElementById("end")
+const pauseDiv = document.getElementById("pause")
+
+let divs = [startDiv, gameDiv, questionDiv, scoresDiv, endDiv, pauseDiv]
 let cid = Date.now() /* todo: localStorage this and link it to the console */
 let coid = null
 

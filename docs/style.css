@@ -53,6 +53,10 @@ div:not(#start):not(#fullscreen), .game_table:not(#single_jeopardy), #final_text
     display: none;
 }
 
+#daily_double {
+    color: #dc143c
+}
+
 #player_scores {
     list-style-type: none;
 }

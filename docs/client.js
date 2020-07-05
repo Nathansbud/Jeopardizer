@@ -25,6 +25,7 @@ const questionDiv = document.getElementById("question")
 let currentCell = null
 let currentCategory = document.getElementById("question_category")
 let currentQuestion = document.getElementById("question_text")
+let dailyDoubleText = document.getElementById("daily_double")
 
 const scoresDiv = document.getElementById("scores")
 const scoreList = document.getElementById('player_scores')
@@ -44,18 +45,24 @@ let players = {}
 
 let roundTables = document.getElementsByClassName("game_table")
 
-const linkClient = function() {
-    console.log("Sent linking message...")
+function sendMessage(action, params=[]) {
+    let messageResponse = {
+        src: "CLIENT",
+        cid: cid,
+        coid: coid
+    }
+    params.forEach(p => messageResponse[p[0]] = p[1])
     bc.postMessage({
-        action:"LINK_CLIENT",
-        response: {
-            src: "CLIENT",
-            players: players,
-            cid: cid,
-            game: gameId.value //not necessary but might as well broadcast it
-        }        
+        action: action,
+        response: messageResponse
     })
 }
+
+const linkClient = function() {
+    console.log("Sent linking message...")
+    sendMessage("LINK_CLIENT", [['players', players]])
+}
+
 
 let heartbeat = null //setTimeout used to communicate data from client -> console
 let heartbeatLast = null //Time since last heartbeat response (to know if client-console link should take place again)
@@ -89,6 +96,12 @@ bc.onmessage = function(msg) {
                 break
             case "OPEN_QUESTION":
                 if(data.coid == coid) {
+                    if(data.dd) {
+                        dailyDoubleText.style.display = 'block'
+                        currentQuestion.style.display = 'none'
+                    } else {
+                        dailyDoubleText.style.display = 'none'
+                    }
                     setState(questionDiv)
                     currentCell.setAttribute('disabled', true)
                     currentCell.textContent = ""
@@ -160,7 +173,6 @@ window.onload = function() {
     //gameId.value = randInt(parseInt(gameId.min), parseInt(gameId.max), true)
     gameId.value = lastSeason[randInt(0, lastSeason.length, false)]
     startForm.addEventListener('submit', function() {
-        
         let consoleLoc = new String(window.location)
         let queryId = gameId.value
         let playerNames = (playerInput.value) ? (playerInput.value.split(",").map(pn => pn.trim())) : (playerInput.value)
@@ -190,14 +202,7 @@ window.onload = function() {
                 } else if(heartbeatLast == null || heartbeatCurrent - heartbeatLast > 5) {
                     console.log("SKRT")
                 } else {
-                    bc.postMessage({
-                        action: "HEARTBEAT",
-                        response: {
-                            src: "CLIENT",
-                            cid: cid,
-                            coid: coid
-                        }
-                    })
+                    sendMessage("HEARTBEAT")
                 }
             }, 1000);
 
@@ -278,19 +283,12 @@ function showQuestion(cell) {
     currentCell = cell
     currentCategory.textContent = cell.getAttribute('data-category')
     currentQuestion.textContent = cell.getAttribute('data-question')
-
-    bc.postMessage({
-        "action":"LOAD_QUESTION",
-        "response":{
-            src: "CLIENT",
-            cid: cid,
-            coid: coid,
-            question: cell.getAttribute('data-question'),
-            category: cell.getAttribute('data-category'), 
-            answer: cell.getAttribute('data-answer'), 
-            comment: cell.getAttribute('data-comments')
-        }
-    })
+    sendMessage("LOAD_QUESTION", [["question", cell.getAttribute('data-question')], 
+                                  ["category", cell.getAttribute('data-category')],
+                                  ["answer", cell.getAttribute('data-answer')],
+                                  ["comment", cell.getAttribute('data-comments')],
+                                  ["dd", cell.getAttribute('data-dd') == 'true'] 
+                                ])
 }
 
 function extractAnswer(clue) {

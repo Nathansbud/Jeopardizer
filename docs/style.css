@@ -15,13 +15,10 @@ nav {
 }
 nav ul {
     list-style-type: none;
-    margin: 0 2vw;
-
 }
 nav li {
     text-decoration: none;
     color: var(--jeopardy-gold);
-    padding: 2vw;
 }
 
 

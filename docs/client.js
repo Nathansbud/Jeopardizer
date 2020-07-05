@@ -94,6 +94,21 @@ bc.onmessage = function(msg) {
                     setState(pauseDiv)
                 }
                 break
+            case "SHOW_SCORES":
+                if(data.coid == coid) {
+                    updateScoreList()
+                    setState(scoresDiv)
+                }
+                break
+            case "SHOW_BOARD":
+                if(data.coid == coid) setState(gameDiv)
+                break
+            case "UPDATE_PLAYERS":
+                if(data.coid == coid) {
+                    players = data.players
+                    updateScoreList()
+                }
+                break
             case "OPEN_QUESTION":
                 if(data.coid == coid) {
                     if(data.dd) {

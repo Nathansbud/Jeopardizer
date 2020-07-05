@@ -10,6 +10,20 @@ body, body:fullscreen {
     font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
 }
 
+nav {
+    width: 100vw;
+}
+nav ul {
+    list-style-type: none;
+    margin: 0 2vw;
+
+}
+nav li {
+    text-decoration: none;
+    color: var(--jeopardy-gold);
+    padding: 2vw;
+}
+
 
 form {
     display: table;
@@ -84,3 +98,23 @@ div:not(#start):not(#fullscreen) {
     cursor: auto; /* might wanna use like not-allowed? */
 }
 
+#question {
+    padding-top: 25vh;
+    padding-bottom: 25vh;
+}
+
+#question * {
+    margin: 10px;
+}
+
+.footnote {
+    color: lightblue;
+}
+
+.footnote:hover {
+    cursor: pointer;
+}
+
+.footnote_text {
+    display: none;
+}

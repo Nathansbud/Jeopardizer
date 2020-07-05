@@ -2,6 +2,5 @@
 out/
 *.iml
 
-data/players/data.txt
-
-data/META-INF/MANIFEST.MF
+app/data/META-INF/MANIFEST.MF
+app/data/players/data.txt

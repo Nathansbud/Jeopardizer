@@ -8,6 +8,7 @@ body, body:fullscreen {
     color: var(--jeopardy-gold);
     text-align: center;
     font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+    overflow: hidden;
 }
 
 nav {
@@ -45,7 +46,7 @@ body, div, .game_table {
     background: var(--jeopardy-blue);
 }
 
-div:not(#start):not(#fullscreen), .game_table:not(#single_jeopardy), #final_text, .footnote_text, #daily_double {
+div:not(#start):not(#fullscreen), .game_table:not(#single_jeopardy), #final_text, .footnote_text, #daily_double, button[data-manual='false'] {
     display: none;
 }
 
@@ -88,6 +89,7 @@ div:not(#start):not(#fullscreen), .game_table:not(#single_jeopardy), #final_text
     cursor: grab;
 }
 
+
 .question_cell[disabled='true'] {
     cursor: auto; /* might wanna use like not-allowed? */
 }
@@ -95,6 +97,7 @@ div:not(#start):not(#fullscreen), .game_table:not(#single_jeopardy), #final_text
 #question {
     padding-top: 25vh;
     padding-bottom: 25vh;
+    color: white;
 }
 
 #question * {
@@ -107,4 +110,9 @@ div:not(#start):not(#fullscreen), .game_table:not(#single_jeopardy), #final_text
 
 .footnote:hover {
     cursor: pointer;
+}
+
+#notes {
+    text-align: left;
+    font-size: 150%;
 }

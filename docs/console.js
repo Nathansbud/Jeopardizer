@@ -5,25 +5,29 @@ const mainDiv = document.getElementById('main')
 const questionDiv = document.getElementById('question')
 
 const playerList = document.getElementById('player_list')
+const notesList = document.getElementById('notes')
 
 const currentCategory = document.getElementById("question_category")
 const currentQuestion = document.getElementById("question_text")
 const currentValue = document.getElementById("question_value")
 const currentAnswer = document.getElementById("question_answer")
 let questionValue = 0
-
 const scoreInput = document.getElementById("score_input")
+
 const dailyDoubleText = document.getElementById('daily_double')
 const wagerControls = document.getElementById('wager_controls')
-
 const wagerButton = document.getElementById('wager_button')
+const wagerInput = document.getElementById('wager_input')
 const questionButton = document.getElementById('question_button')
+
 const backButton = document.getElementById('back_button')
 const progressButton = document.getElementById('progress_button')
 const scoresButton = document.getElementById('scores_button')
 
 const divs = [mainDiv, questionDiv]
 const states = ["Main", "Question"]
+
+let notes = null
 
 let cid = null
 let coid = Date.now()
@@ -46,15 +50,27 @@ function getState() {
 const isQuestion = () => getState() == "Question"
 const isMain = () => getState() == "Main"
 
+function closeQuestion() {
+    Array.from(document.querySelectorAll('button[data-manual]')).forEach(sb => {
+        sb.style.display = sb.getAttribute('data-manual') == 'true' ? ('inline') : ('none')
+    })
+    sendMessage("CLOSE_QUESTION")
+    setState(mainDiv)
+}
+
 
 window.onload = function() {
-    backButton.addEventListener('click', () => {
-        sendMessage("CLOSE_QUESTION")
-        setState(mainDiv)
-    })
-
+    backButton.addEventListener('click', closeQuestion)
     progressButton.addEventListener('click', () => sendMessage("PROGRESS_ROUND"))
-    wagerButton.addEventListener('click', () => sendMesssage('SHOW_QUESTION'))
+    
+    questionButton.addEventListener('click', () => sendMessage('SHOW_QUESTION'))
+    wagerButton.addEventListener('click', () => {
+        questionValue = parseInt(wagerInput.value || 0)
+        currentValue.textContent = `$${questionValue}`
+        sendMessage("SET_VALUE", [['value', questionValue]])
+        sendMessage('SHOW_QUESTION')
+    })
+    
     scoresButton.addEventListener('click', () => {
         if(scoresButton.textContent == "Show Scores") {
             sendMessage("SHOW_SCORES")
@@ -95,10 +111,12 @@ bc.onmessage = function(msg) {
                 console.log("Received linking message...linking console...")
                 if(!cid) {
                     cid = data.cid
+                    players = data.players  
+                    notes = data.notes 
+                    updatePlayerList()
+                    updateNotes()
                     sendMessage("LINK_CONSOLE")
                     setState(mainDiv)
-                    players = data.players   
-                    updatePlayerList()
                 }
                 break
             case "GET_PLAYERS":
@@ -111,7 +129,7 @@ bc.onmessage = function(msg) {
                     console.log(data.question)
                     currentCategory.textContent = data.category
                     currentValue.textContent = "$"+data.value
-                    questionValue = data.value
+                    questionValue = parseInt(data.value)
 
                     if(data.dd) {
                         dailyDoubleText.style.display = 'block'
@@ -120,6 +138,9 @@ bc.onmessage = function(msg) {
                         dailyDoubleText.style.display = 'none'
                         showWager(false)
                     }
+                    Array.from(document.querySelectorAll("button[data-manual]")).forEach(sb => {
+                        sb.style.display = "inline"
+                    })
                     setState(questionDiv)
                     sendMessage("OPEN_QUESTION", params=[["dd", data.dd]])
                 }
@@ -131,6 +152,47 @@ bc.onmessage = function(msg) {
                 break
         }
     }
+}
+
+function updateNotes() {
+    while(notesList.lastChild) {
+        notesList.removeChild(notesList.lastChild)
+    }
+
+    Object.entries(notes).forEach(r => {
+        const roundName = r[0].split("_").map(p => p[0].toUpperCase() + p.slice(1)).join(" ")
+        const roundData = r[1]
+
+        const hasComments = Object.entries(roundData.comments).length > 0
+        const hasDailyDoubles = roundData.dd.length > 0
+        
+        if(hasComments || hasDailyDoubles) {
+            const rList = document.createElement('li')
+            rList.textContent = roundName
+
+            if(hasComments) {
+                const comList = document.createElement('ul')
+                comList.textContent = "[Comments]"
+                Object.entries(roundData.comments).forEach(([cat, com]) => {
+                    const comElem = document.createElement('li')
+                    comElem.textContent = `${cat}: ${com}`
+                    comList.appendChild(comElem)
+                })
+                rList.appendChild(comList)
+            }  
+            if(hasDailyDoubles) {
+                const doubleList = document.createElement('ul')
+                doubleList.textContent = "[Daily Doubles]"
+                roundData.dd.forEach(d => {
+                    const doubleElem = document.createElement('li')
+                    doubleElem.textContent = d
+                    doubleList.appendChild(doubleElem)
+                })
+                rList.appendChild(doubleList)
+            }
+            notesList.appendChild(rList)
+        }
+    })
 }
 
 function updatePlayerList() {
@@ -147,12 +209,14 @@ function updatePlayerList() {
         let [subtractButton, addButton, addFromInputButton] = new Array(3).fill().map((_, idx) => {
             let scoreButton = document.createElement('button')
             scoreButton.textContent = ({
-                0:"-",
-                1:"+",
+                0:"- (Question)",
+                1:"+ (Question)",
                 2:"+ (Input)"
             })[idx] || ""
             
             scoreButton.setAttribute('data-player', pe[0])
+            scoreButton.setAttribute('data-manual', idx == 2)
+
             let scoreCallback = ({
                 0:function() {
                     if(isQuestion()) players[scoreButton.getAttribute('data-player')] -= questionValue
@@ -160,8 +224,7 @@ function updatePlayerList() {
                 1:function() {
                     if(isQuestion()) {
                         players[scoreButton.getAttribute('data-player')] += questionValue
-                        sendMessage("CLOSE_QUESTION")
-                        setState(mainDiv)
+                        closeQuestion()
                     }
                 },
                 2:function() {

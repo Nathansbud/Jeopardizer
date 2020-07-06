@@ -17,14 +17,14 @@ const gameId = document.querySelector("input[name='game_id']")
 const playerInput = document.querySelector("input[name='player_names']")
 const footnote = document.querySelector(".footnote")
 
-
 let startButton = document.querySelector("input[name='start_button']")
 const gameDiv = document.getElementById("game")
 const questionDiv = document.getElementById("question")
 
 let currentCell = null
-let currentCategory = document.getElementById("question_category")
-let currentQuestion = document.getElementById("question_text")
+const currentCategory = document.getElementById("question_category")
+const currentQuestion = document.getElementById("question_text")
+const currentValue = document.getElementById("question_value")
 
 let dailyDoubleText = document.getElementById("daily_double")
 
@@ -39,12 +39,13 @@ let cid = Date.now() /* todo: localStorage this and link it to the console */
 let coid = null
 
 let hasTiebreaker = false
+let roundTables = document.getElementsByClassName("game_table")
+
+let roundNotes = {}
+const rounds = ['single_jeopardy', 'double_jeopardy', 'final_jeopardy', 'tiebreaker']
+rounds.forEach(r => roundNotes[r] = {dd: [], comments:{}})
 
 let players = {}
-
-//let currentState = "START"
-
-let roundTables = document.getElementsByClassName("game_table")
 
 function sendMessage(action, params=[]) {
     let messageResponse = {
@@ -61,7 +62,7 @@ function sendMessage(action, params=[]) {
 
 const linkClient = function() {
     console.log("Sent linking message...")
-    sendMessage("LINK_CLIENT", [['players', players]])
+    sendMessage("LINK_CLIENT", [['players', players], ['notes', roundNotes]])
 }
 
 
@@ -118,12 +119,24 @@ bc.onmessage = function(msg) {
                     if(data.dd) {
                         dailyDoubleText.style.display = 'block'
                         currentQuestion.style.display = 'none'
+                        currentValue.style.display = 'none'
                     } else {
                         dailyDoubleText.style.display = 'none'
+                        currentQuestion.style.display = 'block'
+                        currentValue.style.display = 'block'
                     }
                     setState(questionDiv)
                     currentCell.setAttribute('disabled', true)
                     currentCell.textContent = ""
+                }
+                break
+            case "SET_VALUE":
+                if(data.coid == coid) currentValue.textContent = `$${data.value}`
+                break
+            case "SHOW_QUESTION":
+                if(data.coid == coid) {
+                    currentQuestion.style.display = 'block'
+                    currentValue.style.display = 'block'
                 }
                 break
             case "CLOSE_QUESTION":
@@ -203,6 +216,7 @@ window.onload = function() {
             window.open(consoleLoc,'_blank', 'toolbar=0,location=0,menubar=0')
             getGame(queryId).then((value) => {
                 loadGame(value)
+                linkClient()
                 Array.from(roundTables).forEach(rt => {
                     if(rt != document.getElementById('single_jeopardy')) rt.style.display = 'none'
                     else rt.style.display = 'table'
@@ -210,23 +224,6 @@ window.onload = function() {
                 if(coid) setState(gameDiv)           
                 hasLoaded = true
             })
-
-            heartbeat = setTimeout(() => {
-                if(!coid) {
-                    linkClient()
-                } else if(heartbeatLast == null || heartbeatCurrent - heartbeatLast > 5) {
-                    console.log("SKRT")
-                } else {
-                    sendMessage("HEARTBEAT")
-                }
-            }, 1000);
-
-            /*
-            if(!document.fullscreenElement) {
-                document.querySelector('#fullscreen').requestFullscreen().catch(err => {
-                    alert(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
-                })
-            }*/
         }
     })
 }
@@ -275,7 +272,15 @@ function loadGame(roundSet) {
             newCell.setAttribute('class', 'question_cell')
             newCell.setAttribute('data-category', round[indq].category)
             newCell.setAttribute('data-comments', round[indq].comments)
+            
+            if(round[indq].comments) {
+                roundNotes[rounds[i]].comments[round[indq].category] = round[indq].comments
+            }
 
+            if(newCell.getAttribute('data-dd') == 'true') {
+                roundNotes[rounds[i]].dd.push(`${round[indq].category} (${200*(i+1)*(parseInt(ind)+1)})`) 
+            }
+            
             newCell.textContent = "$"+newCell.getAttribute('data-value')
             newCell.addEventListener('click', function() {
                 if(!this.getAttribute('disabled')) {
@@ -283,6 +288,7 @@ function loadGame(roundSet) {
                 }
             })   
             count++ 
+            
             return newCell
         }))
 
@@ -296,8 +302,11 @@ function loadGame(roundSet) {
 
 function showQuestion(cell) {
     currentCell = cell
+    
     currentCategory.textContent = cell.getAttribute('data-category')
     currentQuestion.textContent = cell.getAttribute('data-question')
+    currentValue.textContent = `$${cell.getAttribute('data-value')}`
+
     sendMessage("LOAD_QUESTION", [["question", cell.getAttribute('data-question')], 
                                   ["category", cell.getAttribute('data-category')],
                                   ["answer", cell.getAttribute('data-answer')],

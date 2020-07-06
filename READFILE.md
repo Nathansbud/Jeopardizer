@@ -27,6 +27,8 @@ By default, rounds in Jeopardizer are loaded from the single, double, and final 
 
 Specific games are require a J-Archive URL, which is then scraped to create files in data/questions/custom, rather than the random category selection. This requires an internet connection.
 
+## Custom Games
+
 Custom games can be created by adding custom JSON files to data/questions/custom, based on the following structure:
 
 ```javascript

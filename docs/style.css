@@ -11,12 +11,19 @@ body, body:fullscreen {
     overflow: hidden;
 }
 
-nav {
-    width: 100vw;
+body, div, .game_table {background: var(--jeopardy-blue);}
+
+div:not(#start):not(#fullscreen):not(.show), .game_table:not(#single_jeopardy), 
+#final_text, .footnote_text, #daily_double, button[data-manual='false'], .hide {
+    display: none;
 }
-nav ul {
-    list-style-type: none;
+
+button:hover, input[type='submit'] {
+    cursor: pointer;
 }
+
+nav {width: 100vw;}
+nav ul {list-style-type: none;}
 nav li {
     text-decoration: none;
     color: var(--jeopardy-gold);
@@ -28,34 +35,39 @@ form {
     margin-right: auto;
     text-align: left;
 }
-
-p {
-    display: table-row;
+form input, form label {margin: 5px;}
+form input:not([type='number']):not([type='text']):not([type='submit']) {
+    margin: 15px;
 }
 
+p {display: table-row;}
+input {display: table-cell;}
 label { 
     display: table-cell; 
     text-align: right;
 }
 
-input { 
-    display: table-cell;
+#custom_label {
+    text-decoration: underline;
+    color: lightblue;
 }
-
-body, div, .game_table {
-    background: var(--jeopardy-blue);
+#custom_label::before {
+    content: "[";
+    color: var(--jeopardy-gold);
 }
-
-div:not(#start):not(#fullscreen):not(.show), .game_table:not(#single_jeopardy), #final_text, .footnote_text, #daily_double, button[data-manual='false'] {
-    display: none;
+#custom_label::after {
+    content: "]";
+    color: var(--jeopardy-gold);
 }
+#custom_label:hover {cursor: pointer;}
 
-#daily_double {
-    color: #dc143c
-}
 
-#player_scores {
-    list-style-type: none;
+#daily_double {color: #dc143c}
+#player_scores {list-style-type: none;}
+
+#notes {
+    text-align: left;
+    font-size: 150%;
 }
 
 .game_table, .game_table td, .game_table th {
@@ -64,15 +76,8 @@ div:not(#start):not(#fullscreen):not(.show), .game_table:not(#single_jeopardy), 
     border: 6px solid  black;
     border-collapse: collapse;
 }
-
-.game_table th {
-    color: white;
-}
-
-.game_table td {
-    color: var(--jeopardy-gold);
-}
-
+.game_table th {color: white;}
+.game_table td {color: var(--jeopardy-gold);}
 .game_table {
     position: absolute; 
     top: 0; 
@@ -84,46 +89,24 @@ div:not(#start):not(#fullscreen):not(.show), .game_table:not(#single_jeopardy), 
     font-weight: bold;
 } 
 
-
-.question_cell {
-    cursor: grab;
-}
-
-
-.question_cell[disabled='true'] {
-    cursor: auto; /* might wanna use like not-allowed? */
-}
-
 #question {
     padding-top: 25vh;
     padding-bottom: 25vh;
     color: white;
 }
+#question * {margin: 10px;}
+.question_cell {cursor: grab;}
+.question_cell[disabled='true'] {cursor: auto;}
 
-#question * {
-    margin: 10px;
-}
 
-.footnote {
-    color: lightblue;
-}
-
-.footnote:hover {
-    cursor: pointer;
-}
-
-#notes {
-    text-align: left;
-    font-size: 150%;
-}
-
-input[type='file'] {
-    display: inline;
-}
+.footnote {color: lightblue;}
+.footnote:hover {cursor: pointer;}
 
 .center_container {
     display: flex;
     align-items: center;
     justify-content: center;
-    margin: 5px;
 }
+.center_container button {
+    margin: 5px;
+} 

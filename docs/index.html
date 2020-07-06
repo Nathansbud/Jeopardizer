@@ -16,25 +16,27 @@
             <p>
                 <label for="game_id">J-Archive ID:</label>
                 <input name="game_id" id='game_id' type='number' min='1' max='6699'>
-                <a href="#" class='footnote' id='id_footnote' data-child='id_explanation'>*</a>
+                <a target="_blank" class='footnote' id='id_footnote' data-child='id_explanation'>*</a>
             </p>
             <p>
-                <label for="player_names" value='Separate using commas...   '>Player Names:</label>
+                <label for="player_names" value='Separate using commas...   '>Players:</label>
                 <input name="player_names" id="player_names" placeholder="Use commas!" type='text'><br>
             </p>
+            <hr>
             <div id='advanced'>
                 <p>
-                    <label for="game_file">Custom File:</label>
-                    <input name="game_file" id='game_file' type='file'/>
-                    <a href="#" class='footnote' id='file_footnote'>*</a>
+                    <label for="game_file">Custom Game:</label>
+                    <input type="file" id="game_file" name='game_file' class="hide"/>
+                    <span>&nbsp;<label for="game_file" id='custom_label'>Select File...</label></span>
+                    
+                    <a href="https://github.com/Nathansbud/Jeopardizer/blob/master/READFILE.md#custom-games" class='footnote' id='file_footnote'>*</a>
                 </p>
                 <p>
                     <label for="dd_checkbox">Daily Doubles: </label>
-                    <input name="dd_checkbox" id='dd_checkbox' type='checkbox' value='on'/>
-                    <a href="#" class='footnote' id='file_footnote'>*</a>
+                    <input name="dd_checkbox" id='dd_checkbox' type='checkbox' checked/>
                 </p>
+                <hr>
             </div>
-            <hr>
             <div class='center_container show'>
                 <input id='start_button' name='start_button' type='submit' value='Start Game'>  
                 <button id='advanced_button'>Show Advanced</button>          

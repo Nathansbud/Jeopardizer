@@ -1,4 +1,8 @@
 /*Todo:
+- "Heartbeat"  
+    - If the console does not receive the link client message, things go south; could...
+        - Send link messages until a console responds
+        - Have a timeout until console loads (right now custom games load too fast)
 - Custom Games
     - Support media, multiplier (e.g. n -> 200n..1000n), DD #...
 */
@@ -14,14 +18,21 @@ const show = (elem, as='block') => elem.style.display = as
 const hide = (elem, useNone=true) => elem.style.display = (useNone) ? ('none') : ('hidden')
 
 const startDiv = document.getElementById("start")
+const advancedDiv = document.getElementById('advanced')
+
 const startForm = document.getElementById('start_form')
 const gameId = document.getElementById('game_id')
-const customSelector = document.getElementById('game_file')
+const footnoteId = document.getElementById('id_footnote')
 const playerInput = document.getElementById('player_names')
 
-const footnote = document.querySelector(".footnote")
+const advancedButton = document.getElementById('advanced_button')
+
+const customSelector = document.getElementById('game_file')
+const footnoteCustom = document.getElementById('file_footnote')
+const customLabel = document.getElementById('custom_label')
 
 const startButton = document.getElementById('start_button')
+
 const gameDiv = document.getElementById("game")
 const questionDiv = document.getElementById("question")
 const resetButton = document.getElementById('reset_button')
@@ -31,11 +42,12 @@ const currentCategory = document.getElementById("question_category")
 const currentQuestion = document.getElementById("question_text")
 const currentValue = document.getElementById("question_value")
 
+
 let dailyDoubleText = document.getElementById("daily_double")
 
 const scoresDiv = document.getElementById("scores")
 const scoreList = document.getElementById('player_scores')
-const endSectionDiv = document.getElementById("end") //not part of divs; on scoresDiv
+const endSectionDiv = document.getElementById("end")
 
 const pauseDiv = document.getElementById("pause")
 let customGame = null
@@ -69,6 +81,8 @@ let heartbeat = null //setTimeout used to communicate data from client -> consol
 let heartbeatLast = null //Time since last heartbeat response (to know if client-console link should take place again)
 let heartbeatCurrent = 0
 let hasLoaded = false
+
+let debug = true
 
 const validActions = ["CLOSE_QUESTION", "WRONG_ANSWER", "RIGHT_ANSWER"]
 bc.onmessage = function(msg) {
@@ -198,9 +212,17 @@ function updateScoreList() {
     })
 }
 
-window.onload = function() {
-    //gameId.value = randInt(parseInt(gameId.min), parseInt(gameId.max), true)
+function setup() {
+    if(localStorage.getItem('showAdvanced')) {
+        advancedButton.textContent = 'Hide Advanced'
+        advancedDiv.style.display = 'block'
+    }
     gameId.value = lastSeason[randInt(0, lastSeason.length, false)]
+    footnoteId.setAttribute('href', `http://www.j-archive.com/showgame.php?game_id=${gameId.value}`)
+}
+
+window.onload = function() {
+    setup()
     startForm.addEventListener('submit', function() {
         players = {}
         let consoleLoc = new String(window.location)
@@ -250,10 +272,28 @@ function setState(div) {
 
 
 customSelector.addEventListener('change', loadCustom)
+advancedButton.addEventListener('click', () => {
+    if(advancedDiv.style.display == 'block') {
+        advancedDiv.style.display = 'none'
+        advancedButton.textContent = 'Show Advanced'
+        localStorage.setItem('showAdvanced', false)
+    } else {
+        advancedDiv.style.display = 'block'
+        advancedButton.textContent = 'Hide Advanced'
+        localStorage.setItem('showAdvanced', true)
+    }
+})
+
 function loadCustom() {
     const JSONReader = new FileReader()
     JSONReader.onload = function(e) {
-        customGame = Object.values(JSON.parse(e.target.result))
+        try {
+            customGame = Object.values(JSON.parse(e.target.result))
+            customLabel.textContent = customSelector.files[0].name
+        } catch(e) {
+            customGame = null
+            customLabel.textContent = 'Invalid file!'
+        }
     }
     JSONReader.readAsText(customSelector.files[0])
 }
@@ -396,10 +436,8 @@ async function getGame(gid) {
     return roundSet
 }
 
-footnote.addEventListener('click', function() {
-    if(gameId.value) {
-        window.open(`http://www.j-archive.com/showgame.php?game_id=${gameId.value}`, "_blank")
-    }
+footnoteId.addEventListener('change', function() {
+    footnoteId.setAttribute('href', `http://www.j-archive.com/showgame.php?game_id=${gameId.value}`)
 })
 
 function playSFX(sf) {

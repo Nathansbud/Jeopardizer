@@ -89,10 +89,10 @@ bc.onmessage = function(msg) {
     const action = msg.data.action
     const receivedAt = msg.timestamp
     const data = msg.data.response
-    if(data.src == "CONSOLE" && data.cid == cid) { 
+    if(data.src === "CONSOLE" && data.cid === cid) { 
         switch(action) {
             case "HEARTBEAT":
-                if(data.coid == coid) {
+                if(data.coid === coid) {
                     heartbeatLast = heartbeatCurrent
                     heartbeatCurrent = receivedAt
                 }
@@ -104,31 +104,31 @@ bc.onmessage = function(msg) {
                 if(hasLoaded) setState(gameDiv)
                 break
             case "CONSOLE_CLOSE":
-                if(data.coid == coid) {
+                if(data.coid === coid) {
                     coid = null
                     setState(pauseDiv)
                 }
                 break
             case "SHOW_SCORES":
-                if(data.coid == coid) {
+                if(data.coid === coid) {
                     updateScoreList()
                     setState(scoresDiv)
                 }
                 break
             case "SHOW_BOARD":
-                if(data.coid == coid) setState(gameDiv)
+                if(data.coid === coid) setState(gameDiv)
                 break
             case "UPDATE_PLAYERS":
             //unused
             case "WRONG_ANSWER": 
             case "RIGHT_ANSWER":
-                if(data.coid == coid) {
+                if(data.coid === coid) {
                     players = data.players
                     updateScoreList()
                 }
                 break
             case "OPEN_QUESTION":
-                if(data.coid == coid) {
+                if(data.coid === coid) {
                     if(data.dd) {
                         dailyDoubleText.style.display = 'block'
                         currentQuestion.style.display = 'none'
@@ -144,19 +144,19 @@ bc.onmessage = function(msg) {
                 }
                 break
             case "SET_VALUE":
-                if(data.coid == coid) currentValue.textContent = `$${data.value}`
+                if(data.coid === coid) currentValue.textContent = `$${data.value}`
                 break
             case "SHOW_QUESTION":
-                if(data.coid == coid) {
+                if(data.coid === coid) {
                     currentQuestion.style.display = 'block'
                     currentValue.style.display = 'block'
                 }
                 break
             case "CLOSE_QUESTION":
-                if(data.coid == coid) setState(gameDiv)
+                if(data.coid === coid) setState(gameDiv)
                 break
             case "PROGRESS_ROUND":
-                if(data.coid == coid) {
+                if(data.coid === coid) {
                     progressRound()
                 }
                 break
@@ -173,7 +173,7 @@ bc.onmessage = function(msg) {
 
 function shouldTiebreaker() {
     let pv = Object.values(players)
-    return hasTiebreaker && !pv.map(ps => pv.indexOf(ps) == pv.lastIndexOf(ps)).every(s => s)
+    return hasTiebreaker && !pv.map(ps => pv.indexOf(ps) === pv.lastIndexOf(ps)).every(s => s)
 }
 
 function progressRound() {
@@ -182,7 +182,7 @@ function progressRound() {
 
     for(let i = 0; i < roundTables.length - 1; i++) {
         if(roundTables[i].style.display != 'none') {
-            if(i == roundTables.length - 2 && !shouldTiebreaker()) {
+            if(i === roundTables.length - 2 && !shouldTiebreaker()) {
                 shouldEnd = true
                 break
             }
@@ -213,7 +213,7 @@ function updateScoreList() {
 }
 
 function setup() {
-    if(localStorage.getItem('showAdvanced')) {
+    if(localStorage.getItem('showAdvanced') === 'true') {
         advancedButton.textContent = 'Hide Advanced'
         advancedDiv.style.display = 'block'
     }
@@ -273,7 +273,7 @@ function setState(div) {
 
 customSelector.addEventListener('change', loadCustom)
 advancedButton.addEventListener('click', () => {
-    if(advancedDiv.style.display == 'block') {
+    if(advancedDiv.style.display === 'block') {
         advancedDiv.style.display = 'none'
         advancedButton.textContent = 'Show Advanced'
         localStorage.setItem('showAdvanced', false)
@@ -329,7 +329,7 @@ function loadGame(roundSet) {
         let count = 0
         let newCells = Object.entries(questionSet).map(([ind, qs]) => qs.map((qa, indq) => {
             let newCell = document.createElement('td')
-            newCell.setAttribute('data-dd', (i == 0 && count == sjdd || i == 1 && djdd.includes(count)))
+            newCell.setAttribute('data-dd', (i === 0 && count === sjdd || i === 1 && djdd.includes(count)))
             newCell.setAttribute('data-value', 200*(i+1)*(parseInt(ind)+1))
             newCell.setAttribute('data-question', qa.question)
             newCell.setAttribute('data-answer', qa.answer)
@@ -342,7 +342,7 @@ function loadGame(roundSet) {
                 roundNotes[rounds[i]].comments[round[indq].category] = round[indq].comments
             }
 
-            if(newCell.getAttribute('data-dd') == 'true') {
+            if(newCell.getAttribute('data-dd') === 'true') {
                 roundNotes[rounds[i]].dd.push(`${round[indq].category} (${200*(i+1)*(parseInt(ind)+1)})`) 
             }
             
@@ -380,7 +380,7 @@ function showQuestion(cell) {
                                   ["category", cell.getAttribute('data-category')],
                                   ["answer", cell.getAttribute('data-answer')],
                                   ["comment", cell.getAttribute('data-comments')],
-                                  ["dd", cell.getAttribute('data-dd') == 'true'],
+                                  ["dd", cell.getAttribute('data-dd') === 'true'],
                                   ['value', cell.getAttribute('data-dd') != 'true' ? parseInt(cell.getAttribute('data-value')) : 0]
                                 ])
 }
@@ -426,7 +426,7 @@ async function getGame(gid) {
     let roundSet = []
     for(let [i, r] of categories.entries()) {
         for(let [j, cat] of Array.from(r).entries()) {
-            if(i < 2) cat['clues'] = questions[i].filter((elem, idx) => ((idx - j) % 6) == 0)
+            if(i < 2) cat['clues'] = questions[i].filter((elem, idx) => ((idx - j) % 6) === 0)
             else cat['clues'] = [{question: questions[i][0]['question'], answer: cat['answer']}]
             delete cat['answer']
         }             

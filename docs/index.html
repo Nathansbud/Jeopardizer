@@ -11,16 +11,35 @@
         <div id='start'>
         <h1>Welcome to Jeopardizer!</h1>
         <form id='start_form' action="javascript:void(0);">
+            <fieldset>
+            <legend>Game Setup</legend>
             <p>
                 <label for="game_id">J-Archive ID:</label>
-                <input name="game_id" type='number' min='1' max='6699'>
+                <input name="game_id" id='game_id' type='number' min='1' max='6699'>
                 <a href="#" class='footnote' id='id_footnote' data-child='id_explanation'>*</a>
             </p>
             <p>
                 <label for="player_names" value='Separate using commas...   '>Player Names:</label>
-                <input name="player_names" placeholder="Use commas!" type='text'><br>
-             </p>
-            <input name='start_button' type='submit' value='Start Game'>
+                <input name="player_names" id="player_names" placeholder="Use commas!" type='text'><br>
+            </p>
+            <div id='advanced'>
+                <p>
+                    <label for="game_file">Custom File:</label>
+                    <input name="game_file" id='game_file' type='file'/>
+                    <a href="#" class='footnote' id='file_footnote'>*</a>
+                </p>
+                <p>
+                    <label for="dd_checkbox">Daily Doubles: </label>
+                    <input name="dd_checkbox" id='dd_checkbox' type='checkbox' value='on'/>
+                    <a href="#" class='footnote' id='file_footnote'>*</a>
+                </p>
+            </div>
+            <hr>
+            <div class='center_container show'>
+                <input id='start_button' name='start_button' type='submit' value='Start Game'>  
+                <button id='advanced_button'>Show Advanced</button>          
+            </div>
+            </fieldset>
         </form>
         </div>
         <div id="game">

@@ -46,7 +46,7 @@ body, div, .game_table {
     background: var(--jeopardy-blue);
 }
 
-div:not(#start):not(#fullscreen), .game_table:not(#single_jeopardy), #final_text, .footnote_text, #daily_double, button[data-manual='false'] {
+div:not(#start):not(#fullscreen):not(.show), .game_table:not(#single_jeopardy), #final_text, .footnote_text, #daily_double, button[data-manual='false'] {
     display: none;
 }
 
@@ -115,4 +115,15 @@ div:not(#start):not(#fullscreen), .game_table:not(#single_jeopardy), #final_text
 #notes {
     text-align: left;
     font-size: 150%;
+}
+
+input[type='file'] {
+    display: inline;
+}
+
+.center_container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 5px;
 }

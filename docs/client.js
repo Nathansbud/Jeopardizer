@@ -1,4 +1,8 @@
-//Todo: Establish some sort of unique connection between client and console
+/*Todo:
+- Custom Games
+    - Support media, multiplier (e.g. n -> 200n..1000n), DD #...
+*/
+
 const bc = new BroadcastChannel('Jeopardizer');
 const corsUrl =  "https://dork.nathansbud-cors.workers.dev/?" //Credit to: https://github.com/Zibri/cloudflare-cors-anywhere/blob/master/index.js
 const answerCapture = new RegExp(`(?<=<em class=\\\\?"correct_response\\\\?">)(.*)(?=</em>)`)
@@ -9,17 +13,18 @@ const randInt = (max, min, incl=false) => Math.floor(Math.random()*(max - min)) 
 const show = (elem, as='block') => elem.style.display = as
 const hide = (elem, useNone=true) => elem.style.display = (useNone) ? ('none') : ('hidden')
 
-//const moneyFormatter = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD'})
-
 const startDiv = document.getElementById("start")
 const startForm = document.getElementById('start_form')
-const gameId = document.querySelector("input[name='game_id']")
-const playerInput = document.querySelector("input[name='player_names']")
+const gameId = document.getElementById('game_id')
+const customSelector = document.getElementById('game_file')
+const playerInput = document.getElementById('player_names')
+
 const footnote = document.querySelector(".footnote")
 
-let startButton = document.querySelector("input[name='start_button']")
+const startButton = document.getElementById('start_button')
 const gameDiv = document.getElementById("game")
 const questionDiv = document.getElementById("question")
+const resetButton = document.getElementById('reset_button')
 
 let currentCell = null
 const currentCategory = document.getElementById("question_category")
@@ -33,6 +38,7 @@ const scoreList = document.getElementById('player_scores')
 const endSectionDiv = document.getElementById("end") //not part of divs; on scoresDiv
 
 const pauseDiv = document.getElementById("pause")
+let customGame = null
 
 let divs = [startDiv, gameDiv, questionDiv, scoresDiv, pauseDiv]
 let cid = Date.now() /* todo: localStorage this and link it to the console */
@@ -46,7 +52,6 @@ const rounds = ['single_jeopardy', 'double_jeopardy', 'final_jeopardy', 'tiebrea
 rounds.forEach(r => roundNotes[r] = {dd: [], comments:{}})
 
 let players = {}
-
 function sendMessage(action, params=[]) {
     let messageResponse = {
         src: "CLIENT",
@@ -59,12 +64,6 @@ function sendMessage(action, params=[]) {
         response: messageResponse
     })
 }
-
-const linkClient = function() {
-    console.log("Sent linking message...")
-    sendMessage("LINK_CLIENT", [['players', players], ['notes', roundNotes]])
-}
-
 
 let heartbeat = null //setTimeout used to communicate data from client -> console
 let heartbeatLast = null //Time since last heartbeat response (to know if client-console link should take place again)
@@ -165,6 +164,8 @@ function shouldTiebreaker() {
 
 function progressRound() {
     let shouldEnd = true
+    const hasClues = Array.from(roundTables).map(rt => rt.children.length > 0)
+
     for(let i = 0; i < roundTables.length - 1; i++) {
         if(roundTables[i].style.display != 'none') {
             if(i == roundTables.length - 2 && !shouldTiebreaker()) {
@@ -201,31 +202,43 @@ window.onload = function() {
     //gameId.value = randInt(parseInt(gameId.min), parseInt(gameId.max), true)
     gameId.value = lastSeason[randInt(0, lastSeason.length, false)]
     startForm.addEventListener('submit', function() {
+        players = {}
         let consoleLoc = new String(window.location)
         let queryId = gameId.value
         let playerNames = (playerInput.value) ? (playerInput.value.split(",").map(pn => pn.trim())) : (playerInput.value)
-
-        if(playerNames && queryId && queryId >= gameId.min && queryId <= gameId.max) {
+        if(playerNames) {
             startButton.disabled = true
             playerNames.forEach(pn => players[pn] = 0)
+            if(customSelector.files.length > 0) {
+                startGame(customGame)
+            } else if(queryId && queryId >= gameId.min && queryId <= gameId.max) {
+                getGame(queryId).then((value) => {
+                    startGame(value)
+                })
+            } else {
+                startButton.disabled = false
+                return 
+            }
             if(consoleLoc.includes('nathansbud.github.io')) {
                 consoleLoc = 'https://nathansbud.github.io/Jeopardizer/console.html'
             } else {
                 consoleLoc = 'file:///Users/zackamiton/Code/Jeopardizer/docs/console.html'   
             }
             window.open(consoleLoc,'_blank', 'toolbar=0,location=0,menubar=0')
-            getGame(queryId).then((value) => {
-                loadGame(value)
-                linkClient()
-                Array.from(roundTables).forEach(rt => {
-                    if(rt != document.getElementById('single_jeopardy')) rt.style.display = 'none'
-                    else rt.style.display = 'table'
-                })
-                if(coid) setState(gameDiv)           
-                hasLoaded = true
-            })
         }
     })
+}
+
+function startGame(gameObj) {
+    loadGame(gameObj)
+    sendMessage("LINK_CLIENT", [['players', players], ['notes', roundNotes]])
+    console.log("Sent linking message...")
+    Array.from(roundTables).forEach(rt => {
+        if(rt != document.getElementById('single_jeopardy')) rt.style.display = 'none'
+        else rt.style.display = 'table'
+    })
+    if(coid) setState(gameDiv)           
+    hasLoaded = true
 }
 
 function setState(div) {
@@ -233,6 +246,16 @@ function setState(div) {
         if(d != div) d.style.display = 'none';
         else d.style.display = 'block';
     })
+}
+
+
+customSelector.addEventListener('change', loadCustom)
+function loadCustom() {
+    const JSONReader = new FileReader()
+    JSONReader.onload = function(e) {
+        customGame = Object.values(JSON.parse(e.target.result))
+    }
+    JSONReader.readAsText(customSelector.files[0])
 }
 
 function loadGame(roundSet) {
@@ -258,7 +281,8 @@ function loadGame(roundSet) {
         })
         
         table.appendChild(headerRow)
-        //SJ -> 1DD, DJ -> 2DD
+    
+        //Gonna need to rewrite this to interface with custom categories
         let sjdd = randInt(0, 30)
         let djdd = shuffle(getRange(30)).slice(0, 2)
 
@@ -273,6 +297,7 @@ function loadGame(roundSet) {
             newCell.setAttribute('data-category', round[indq].category)
             newCell.setAttribute('data-comments', round[indq].comments)
             
+            
             if(round[indq].comments) {
                 roundNotes[rounds[i]].comments[round[indq].category] = round[indq].comments
             }
@@ -281,7 +306,11 @@ function loadGame(roundSet) {
                 roundNotes[rounds[i]].dd.push(`${round[indq].category} (${200*(i+1)*(parseInt(ind)+1)})`) 
             }
             
-            newCell.textContent = "$"+newCell.getAttribute('data-value')
+            if(qa.question) newCell.textContent = "$"+newCell.getAttribute('data-value')
+            else {
+                newCell.setAttribute('disabled', true)
+            }
+
             newCell.addEventListener('click', function() {
                 if(!this.getAttribute('disabled')) {
                     showQuestion(newCell)
@@ -363,7 +392,7 @@ async function getGame(gid) {
         }             
         roundSet.push(r)
     }
-    
+        
     return roundSet
 }
 

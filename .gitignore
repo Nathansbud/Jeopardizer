@@ -4,3 +4,5 @@ out/
 
 app/data/META-INF/MANIFEST.MF
 app/data/players/data.txt
+
+docs/custom.json

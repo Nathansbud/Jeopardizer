@@ -22,7 +22,9 @@ button:hover, input[type='submit'] {
     cursor: pointer;
 }
 
-nav {width: 100vw;}
+nav {
+    width: 100vw;
+}
 nav ul {list-style-type: none;}
 nav li {
     text-decoration: none;
@@ -41,8 +43,8 @@ form input:not([type='number']):not([type='text']):not([type='submit']) {
 }
 
 p {display: table-row;}
-input {display: table-cell;}
-label { 
+form input {display: table-cell;}
+form label { 
     display: table-cell; 
     text-align: right;
 }
@@ -67,7 +69,7 @@ label {
 
 #notes {
     text-align: left;
-    font-size: 150%;
+    font-size: 115%;
 }
 
 .game_table, .game_table td, .game_table th {

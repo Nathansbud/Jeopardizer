@@ -23,6 +23,7 @@ const questionButton = document.getElementById('question_button')
 const backButton = document.getElementById('back_button')
 const progressButton = document.getElementById('progress_button')
 const scoresButton = document.getElementById('scores_button')
+const resetButton = document.getElementById('reset_button')
 
 const divs = [mainDiv, questionDiv]
 const states = ["Main", "Question"]
@@ -55,6 +56,7 @@ function closeQuestion() {
         sb.style.display = sb.getAttribute('data-manual') == 'true' ? ('inline') : ('none')
     })
     sendMessage("CLOSE_QUESTION")
+    notesList.style.display = 'block'
     setState(mainDiv)
 }
 
@@ -80,6 +82,22 @@ window.onload = function() {
             scoresButton.textContent = "Show Scores"
         }
     })
+
+    resetButton.addEventListener('click', () => {
+        restart()
+    })
+}
+
+function restart() {
+    while(notesList.lastChild) {
+        notesList.removeChild(notesList.lastChild)
+    }
+    while(playerList.lastChild) {
+        playerList.removeChild(playerList.lastChild)
+    }
+    mainDiv.style.display = 'none'
+    document.querySelector('nav').style.display = 'none'
+    sendMessage("RESTART")
 }
 
 function sendMessage(action, params=[]) {
@@ -111,12 +129,18 @@ bc.onmessage = function(msg) {
                 console.log("Received linking message...linking console...")
                 if(!cid) {
                     cid = data.cid
+                    sendMessage("LINK_CONSOLE")
+                }
+                break
+            case "START_GAME":
+                if(cid == data.cid) {
                     players = data.players  
                     notes = data.notes 
                     updatePlayerList()
                     updateNotes()
-                    sendMessage("LINK_CONSOLE")
                     setState(mainDiv)
+                    mainDiv.style.display = 'block'
+                    document.querySelector('nav').style.display = 'block'
                 }
                 break
             case "GET_PLAYERS":
@@ -142,6 +166,7 @@ bc.onmessage = function(msg) {
                         sb.style.display = "inline"
                     })
                     setState(questionDiv)
+                    notesList.style.display = 'none'
                     sendMessage("OPEN_QUESTION", params=[["dd", data.dd]])
                 }
                 break

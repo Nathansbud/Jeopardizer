@@ -35,7 +35,6 @@ const startButton = document.getElementById('start_button')
 
 const gameDiv = document.getElementById("game")
 const questionDiv = document.getElementById("question")
-const resetButton = document.getElementById('reset_button')
 
 let currentCell = null
 const currentCategory = document.getElementById("question_category")
@@ -84,6 +83,9 @@ let hasLoaded = false
 
 let debug = true
 
+let useStacked = false
+
+
 const validActions = ["CLOSE_QUESTION", "WRONG_ANSWER", "RIGHT_ANSWER"]
 bc.onmessage = function(msg) {
     const action = msg.data.action
@@ -102,6 +104,7 @@ bc.onmessage = function(msg) {
                 console.log("Loading game...")
                 coid = data.coid
                 if(hasLoaded) setState(gameDiv)
+                sendMessage("START_GAME", [['players', players], ['notes', roundNotes]])
                 break
             case "CONSOLE_CLOSE":
                 if(data.coid === coid) {
@@ -160,6 +163,9 @@ bc.onmessage = function(msg) {
                     progressRound()
                 }
                 break
+            case "RESTART":
+                if(data.coid === coid) setup()
+                break
             default:
                 if(action in validActions) {
                     console.log("Received unimplemented action: ", msg.data)
@@ -213,12 +219,34 @@ function updateScoreList() {
 }
 
 function setup() {
+    hasLoaded = false
     if(localStorage.getItem('showAdvanced') === 'true') {
         advancedButton.textContent = 'Hide Advanced'
         advancedDiv.style.display = 'block'
     }
-    gameId.value = lastSeason[randInt(0, lastSeason.length, false)]
+    
+    let playedList = localStorage.getItem('playedList')
+    let unusedIds;
+
+    if(playedList) {
+        unusedIds = lastSeason.filter(lsid => !JSON.parse(playedList).map(gid => parseInt(gid)).includes(lsid))
+    }
+    else unusedIds = lastSeason
+    
+    gameId.value = unusedIds[randInt(0, unusedIds.length, false)]
     footnoteId.setAttribute('href', `http://www.j-archive.com/showgame.php?game_id=${gameId.value}`)
+
+    if(startButton.getAttribute('disabled')) startButton.removeAttribute('disabled')
+    if(customSelector.files.length > 0) customSelector.files = []
+    if(!useStacked) {
+        Array.from(roundTables).forEach(rt => {
+            while(rt.lastChild) {
+                rt.removeChild(rt.lastChild);
+            }
+        })
+    }
+
+    setState(startDiv)
 }
 
 window.onload = function() {
@@ -229,32 +257,44 @@ window.onload = function() {
         let queryId = gameId.value
         let playerNames = (playerInput.value) ? (playerInput.value.split(",").map(pn => pn.trim())) : (playerInput.value)
         if(playerNames) {
-            startButton.disabled = true
+            startButton.setAttribute('disabled', true)
             playerNames.forEach(pn => players[pn] = 0)
             if(customSelector.files.length > 0) {
                 startGame(customGame)
             } else if(queryId && queryId >= gameId.min && queryId <= gameId.max) {
                 getGame(queryId).then((value) => {
                     startGame(value)
+                    if(localStorage.getItem('playedList')) {
+                        let pl = JSON.parse(localStorage.getItem('playedList'))
+                        pl.push(queryId)
+                        localStorage.setItem('playedList', JSON.stringify(pl))
+                    } else {
+                        localStorage.setItem('playedList', JSON.stringify([queryId]))
+                    }
                 })
             } else {
                 startButton.disabled = false
                 return 
             }
-            if(consoleLoc.includes('nathansbud.github.io')) {
-                consoleLoc = 'https://nathansbud.github.io/Jeopardizer/console.html'
-            } else {
-                consoleLoc = 'file:///Users/zackamiton/Code/Jeopardizer/docs/console.html'   
+            if(!coid) {
+                if(consoleLoc.includes('nathansbud.github.io')) {
+                    consoleLoc = 'https://nathansbud.github.io/Jeopardizer/console.html'
+                } else {
+                    consoleLoc = 'file:///Users/zackamiton/Code/Jeopardizer/docs/console.html'   
+                }
+                window.open(consoleLoc,'_blank', 'toolbar=0,location=0,menubar=0')
             }
-            window.open(consoleLoc,'_blank', 'toolbar=0,location=0,menubar=0')
         }
     })
 }
 
 function startGame(gameObj) {
     loadGame(gameObj)
-    sendMessage("LINK_CLIENT", [['players', players], ['notes', roundNotes]])
+    if(!coid) sendMessage("LINK_CLIENT")
+    else sendMessage("START_GAME", [['players', players], ['notes', roundNotes]])
+
     console.log("Sent linking message...")
+    
     Array.from(roundTables).forEach(rt => {
         if(rt != document.getElementById('single_jeopardy')) rt.style.display = 'none'
         else rt.style.display = 'table'

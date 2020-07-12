@@ -136,7 +136,7 @@ bc.onmessage = function(msg) {
                 if(cid == data.cid) {
                     players = data.players  
                     notes = data.notes 
-                    updatePlayerList()
+                    updatePlayerList(restart=true)
                     updateNotes()
                     setState(mainDiv)
                     mainDiv.style.display = 'block'
@@ -220,57 +220,64 @@ function updateNotes() {
     })
 }
 
-function updatePlayerList() {
-    while(playerList.lastChild) {
-        playerList.removeChild(playerList.lastChild)
-    }
+function updatePlayerList(restart=false) {
+    if(restart) {
+        while(playerList.lastChild) {
+            playerList.removeChild(playerList.lastChild)
+        }
 
-    Object.entries(players).forEach(pe => {
-        let pl = document.createElement('li')
-        
-        let playerSpan = document.createElement('span')
-        playerSpan.textContent = `${pe[0]}: ${pe[1]}`
-
-        let [subtractButton, addButton, addFromInputButton] = new Array(3).fill().map((_, idx) => {
-            let scoreButton = document.createElement('button')
-            scoreButton.textContent = ({
-                0:"- (Question)",
-                1:"+ (Question)",
-                2:"+ (Input)"
-            })[idx] || ""
+        Object.entries(players).forEach(pe => {
+            let pl = document.createElement('li')
             
-            scoreButton.setAttribute('data-player', pe[0])
-            scoreButton.setAttribute('data-manual', idx == 2)
+            let playerSpan = document.createElement('span')
+            playerSpan.textContent = `${pe[0]}: ${pe[1]}`
 
-            let scoreCallback = ({
-                0:function() {
-                    if(isQuestion()) players[scoreButton.getAttribute('data-player')] -= questionValue
-                },
-                1:function() {
-                    if(isQuestion()) {
-                        players[scoreButton.getAttribute('data-player')] += questionValue
-                        closeQuestion()
+            let [subtractButton, addButton, addFromInputButton] = new Array(3).fill().map((_, idx) => {
+                let scoreButton = document.createElement('button')
+                scoreButton.textContent = ({
+                    0:"- (Question)",
+                    1:"+ (Question)",
+                    2:"+ (Input)"
+                })[idx] || ""
+                
+                scoreButton.setAttribute('data-player', pe[0])
+                scoreButton.setAttribute('data-manual', idx == 2)
+
+                let scoreCallback = ({
+                    0:function() {
+                        if(isQuestion()) players[scoreButton.getAttribute('data-player')] -= questionValue
+                    },
+                    1:function() {
+                        if(isQuestion()) {
+                            players[scoreButton.getAttribute('data-player')] += questionValue
+                            closeQuestion()
+                        }
+                    },
+                    2:function() {
+                        if(scoreInput.value) players[scoreButton.getAttribute('data-player')] += parseInt(scoreInput.value)
                     }
-                },
-                2:function() {
-                    if(scoreInput.value) players[scoreButton.getAttribute('data-player')] += parseInt(scoreInput.value)
-                }
-            })[idx] || ""
+                })[idx] || ""
 
-            scoreButton.addEventListener('click', function() {
-                scoreCallback()
-                sendMessage("UPDATE_PLAYERS", [['players', players]])
-                updatePlayerList()
+                scoreButton.addEventListener('click', function() {
+                    scoreCallback()
+                    sendMessage("UPDATE_PLAYERS", [['players', players]])
+                    updatePlayerList()
+                })
+                return scoreButton
             })
-            return scoreButton
+            
+            pl.appendChild(playerSpan)
+            pl.appendChild(subtractButton)
+            pl.appendChild(addButton)
+            pl.appendChild(addFromInputButton)
+            playerList.appendChild(pl)
         })
-        
-        pl.appendChild(playerSpan)
-        pl.appendChild(subtractButton)
-        pl.appendChild(addButton)
-        pl.appendChild(addFromInputButton)
-        playerList.appendChild(pl)
-    })
+    } else {
+        const ps = Object.entries(players)
+        Array.from(playerList.getElementsByTagName('span')).forEach((s, idx) => {
+            s.textContent = `${ps[idx][0]}: ${ps[idx][1]}`
+        })
+    }
 }
 
 function showWager(shouldShow) {

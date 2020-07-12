@@ -78,8 +78,14 @@ form label {
     border: 6px solid  black;
     border-collapse: collapse;
 }
-.game_table th {color: white;}
-.game_table td {color: var(--jeopardy-gold);}
+.game_table th {
+    color: white;
+    font-size: 125%;
+}
+.game_table td {
+    color: var(--jeopardy-gold);
+    font-size: 200%;
+}
 .game_table {
     position: absolute; 
     top: 0; 

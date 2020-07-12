@@ -122,9 +122,6 @@ bc.onmessage = function(msg) {
                 if(data.coid === coid) setState(gameDiv)
                 break
             case "UPDATE_PLAYERS":
-            //unused
-            case "WRONG_ANSWER": 
-            case "RIGHT_ANSWER":
                 if(data.coid === coid) {
                     players = data.players
                     updateScoreList()

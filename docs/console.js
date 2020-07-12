@@ -22,8 +22,13 @@ const questionButton = document.getElementById('question_button')
 
 const backButton = document.getElementById('back_button')
 const progressButton = document.getElementById('progress_button')
+const regressButton = document.getElementById('regress_button')
 const scoresButton = document.getElementById('scores_button')
 const resetButton = document.getElementById('reset_button')
+
+const sfxDropdown = document.getElementById('sfx_dropdown')
+const playButton = document.getElementById('play_sfx')
+const pauseButton = document.getElementById('pause_sfx')
 
 const divs = [mainDiv, questionDiv]
 const states = ["Main", "Question"]
@@ -63,7 +68,17 @@ function closeQuestion() {
 
 window.onload = function() {
     backButton.addEventListener('click', closeQuestion)
-    progressButton.addEventListener('click', () => sendMessage("PROGRESS_ROUND"))
+    progressButton.addEventListener('click', () => {
+        sendMessage("PROGRESS_ROUND")
+        sendMessage("SHOW_BOARD")
+        scoresButton.textContent = "Show Scores"
+    })
+
+    regressButton.addEventListener('click', () => {
+        sendMessage("REGRESS_ROUND")
+        sendMessage("SHOW_BOARD")
+        scoresButton.textContent = "Show Scores"
+    })
     
     questionButton.addEventListener('click', () => sendMessage('SHOW_QUESTION'))
     wagerButton.addEventListener('click', () => {
@@ -85,6 +100,14 @@ window.onload = function() {
 
     resetButton.addEventListener('click', () => {
         restart()
+    })
+
+    playButton.addEventListener('click', function() {
+        sendMessage("PLAY_SFX", [['sfx', sfxDropdown.options[sfxDropdown.selectedIndex].value]])
+    })
+
+    pauseButton.addEventListener('click', function() {
+        sendMessage("PAUSE_SFX")
     })
 }
 

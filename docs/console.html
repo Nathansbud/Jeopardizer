@@ -14,11 +14,22 @@
             <label for='score_input'>Score Input: </label>
             <input type='number' min='0' step='100' value='0' id='score_input'/><br>
         </nav>
+        <hr>
     </header>
     <div id="main">
         <button id="scores_button">Show Scores</button>
         <button id='progress_button'>Progress Round</button>
+        <button id='regress_button'>Regress Round</button>
         <button id='reset_button'>New Game</button>
+        <hr>
+        <select id='sfx_dropdown'>
+            <option name="Time Out">Time Out</option>
+            <option name='Daily Double'>Daily Double</option>
+            <option name="Final Jeopardy">Final Jeopardy</option>
+            <option name="Question Open">Question Open</option>
+        </select>
+        <button id='play_sfx'>Play SFX</button>
+        <button id='pause_sfx'>Pause</button>
         </div>
         <ul id='notes'>
             <li> SINGLE JEOPARDY: 
@@ -32,7 +43,7 @@
     <div id="question">
         <h2 id='daily_double'>DAILY DOUBLE</h2>        
         <div id='wager_controls'>
-            <span>Amount: </span><input id='wager_input' min='0' value='0' step='100' type='number'/>
+            <span>Amount: </span><input id='wager_input' min='0' value='0' step='any' type='number'/>
             <button id='wager_button'>Set Wager</button>
             <button id='question_button'>Show Question</button>
         </div>

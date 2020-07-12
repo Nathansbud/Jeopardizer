@@ -28,12 +28,16 @@
                     <label for="game_file">Custom Game:</label>
                     <input type="file" id="game_file" name='game_file' class="hide"/>
                     <span>&nbsp;<label for="game_file" id='custom_label'>Select File...</label></span>
-                    
                     <a href="https://github.com/Nathansbud/Jeopardizer/blob/master/READFILE.md#custom-games" class='footnote' id='file_footnote'>*</a>
                 </p>
                 <p>
                     <label for="dd_checkbox">Daily Doubles: </label>
                     <input name="dd_checkbox" id='dd_checkbox' type='checkbox' checked/>
+                </p>
+                <p>
+                    <label for="time_limit">Round Time (Secs): </label>
+                    <input name="time_checkbox" id='time_checkbox' type='checkbox'/>
+                    <input name="time_limit" id='time_limit' type='number' min='60' step='1' value='600'/>
                 </p>
                 <hr>
             </div>

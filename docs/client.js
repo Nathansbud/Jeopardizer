@@ -5,13 +5,17 @@
         - Have a timeout until console loads (right now custom games load too fast)
 - Custom Games
     - Support media, multiplier (e.g. n -> 200n..1000n), DD #...
+- Timer/Time Limit 
+
 */
 
 const bc = new BroadcastChannel('Jeopardizer');
 const corsUrl =  "https://dork.nathansbud-cors.workers.dev/?" //Credit to: https://github.com/Zibri/cloudflare-cors-anywhere/blob/master/index.js
 const answerCapture = new RegExp(`(?<=<em class=\\\\?"correct_response\\\\?">)(.*)(?=</em>)`)
 const lastSeason = [6699,6697,6695,6694,6691,6686,6684,6682,6680,6678,6672,6670,6667,6666,6664,6659,6657,6655,6653,6651,6623,6622,6620,6618,6616,6614,6612,6610,6608,6607,6605,6604,6603,6602,6601,6600,6599,6598,6597,6596,6593,6592,6591,6590,6589,6588,6587,6586,6585,6584,6583,6582,6581,6580,6579,6578,6577,6576,6575,6574,6571,6570,6569,6568,6567,6565,6564,6562,6561,6557,6556,6555,6554,6553,6552,6551,6550,6549,6548,6547,6545,6544,6543,6542,6541,6540,6539,6538,6537,6536,6535,6534,6533,6532,6531,6530,6529,6528,6525,6524,6523,6520,6517,6514,6513,6512,6511,6510,6509,6508,6507,6506,6505,6504,6503,6502,6501,6500,6499,6498,6497,6496,6495,6493,6491,6486,6485,6484,6483,6482,6481,6480,6479,6478,6477,6473,6472,6471,6470,6469,6468,6467,6466,6465,6464,6463,6462,6461,6460,6459,6456,6455,6454,6453,6452,6451,6450,6449,6448,6447,6446,6445,6444,6443,6442,6441,6440,6439,6438,6437,6434,6433,6432,6431,6429,6426,6425,6424,6423,6422,6420,6419,6418,6417,6416,6414,6413,6412,6411,6410]
-const [dailyDoubleSFX, finalJeopardySFX, questionOpenSFX, timeOutSFX] = ["Daily Double", "Final Jeopardy", "Question Open", "Time Out"].map(sfx => new Audio(`./data/${sfx}.mp3`))
+
+const sfxNames = ["Daily Double", "Final Jeopardy", "Question Open", "Time Out"]
+const SFX = sfxNames.map(n => new Audio(`./data/${n}.mp3`))
 
 const randInt = (max, min, incl=false) => Math.floor(Math.random()*(max - min)) + min + incl 
 const show = (elem, as='block') => elem.style.display = as
@@ -110,6 +114,7 @@ bc.onmessage = function(msg) {
                 if(data.coid === coid) {
                     coid = null
                     setState(pauseDiv)
+                    playSFX(null)
                 }
                 break
             case "SHOW_SCORES":
@@ -160,6 +165,15 @@ bc.onmessage = function(msg) {
                     progressRound()
                 }
                 break
+            case "REGRESS_ROUND":
+                if(data.coid === coid) {
+                    regressRound()
+                }
+                break
+            case "PLAY_SFX":
+            case "PAUSE_SFX":
+                if(data.coid === coid) playSFX(data.sfx) //null if pause
+                break
             case "RESTART":
                 if(data.coid === coid) setup()
                 break
@@ -191,7 +205,7 @@ function progressRound() {
             }
             roundTables[i].style.display = 'none'
             roundTables[i+1].style.display = 'table'
-            console.log("Progressed to " + roundTables[i+1].getAttribute('id'))
+            console.log(`Progressed to ${roundTables[i+1].getAttribute('id')}`)
             shouldEnd = false
             break
         } 
@@ -201,6 +215,17 @@ function progressRound() {
         show(document.getElementById('final_text'), 'inline')
         updateScoreList()
         setState(scoresDiv)
+    }
+}
+
+function regressRound() {
+    for(let i = roundTables.length - 1; i > 0; i--) {
+        if(roundTables[i].style.display != 'none') {
+            roundTables[i].style.display = 'none'
+            roundTables[i - 1].style.display = 'table'
+            console.log(`Regressed to ${roundTables[i - 1].getAttribute('id')}`)
+            break
+        }
     }
 }
 
@@ -478,13 +503,13 @@ footnoteId.addEventListener('change', function() {
 })
 
 function playSFX(sf) {
-    for(let s of [dailyDoubleSFX, finalJeopardySFX, questionOpenSFX, timeOutSFX]) {
+    for(let s of SFX) {
         if(!s.paused) {
             s.pause()
             s.currentTime = 0
         }
     }
-    sf.play()
+    if(sf) SFX[sfxNames.indexOf(sf)].play()
 }
 
 

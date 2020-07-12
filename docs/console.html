@@ -9,8 +9,8 @@
 <body>
     <header>
         <nav>
-            <ul id='player_list'>            
-            </ul>
+            <span id='timer' class='hide'>Round Time: <span id='round_timer'>Disabled</span><button id='timer_button'>Start Timer</button><br></span>
+            <ul id='player_list'></ul>
             <label for='score_input'>Score Input: </label>
             <input type='number' min='0' step='100' value='0' id='score_input'/><br>
         </nav>
@@ -27,6 +27,7 @@
             <option name='Daily Double'>Daily Double</option>
             <option name="Final Jeopardy">Final Jeopardy</option>
             <option name="Question Open">Question Open</option>
+            <option name="Round Over">Round Over</option>
         </select>
         <button id='play_sfx'>Play SFX</button>
         <button id='pause_sfx'>Pause</button>

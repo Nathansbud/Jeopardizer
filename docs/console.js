@@ -30,8 +30,15 @@ const sfxDropdown = document.getElementById('sfx_dropdown')
 const playButton = document.getElementById('play_sfx')
 const pauseButton = document.getElementById('pause_sfx')
 
+const timerControls = document.getElementById('timer')
+const timerText = document.getElementById('round_timer')
+const timerButton = document.getElementById('timer_button')
+let timerCallback;
+
 const divs = [mainDiv, questionDiv]
 const states = ["Main", "Question"]
+
+
 
 let notes = null
 
@@ -39,6 +46,8 @@ let cid = null
 let coid = Date.now()
 
 let players = {}
+let timeLimit = null
+let currentTime = null
 
 function setState(div) {
     divs.forEach(d => {
@@ -72,6 +81,11 @@ window.onload = function() {
         sendMessage("PROGRESS_ROUND")
         sendMessage("SHOW_BOARD")
         scoresButton.textContent = "Show Scores"
+        
+        currentTime = timeLimit
+        timerText.textContent = getTimeText(timeLimit)
+        clearInterval(timerCallback)            
+        timerButton.textContent = 'Start Timer'
     })
 
     regressButton.addEventListener('click', () => {
@@ -98,17 +112,26 @@ window.onload = function() {
         }
     })
 
-    resetButton.addEventListener('click', () => {
-        restart()
+    resetButton.addEventListener('click', () => restart())
+    playButton.addEventListener('click', () => sendMessage("PLAY_SFX", [['sfx', sfxDropdown.options[sfxDropdown.selectedIndex].value]]))
+    pauseButton.addEventListener('click', () => sendMessage("PAUSE_SFX"))
+    timerButton.addEventListener('click', () => {
+        if(timerButton.textContent == 'Start Timer') {
+            timerButton.textContent = 'Pause Timer'
+            timerCallback = setInterval(countdown, 1000)
+        } else {
+            clearInterval(timerCallback)            
+            timerButton.textContent = 'Start Timer'
+        }
     })
+}
 
-    playButton.addEventListener('click', function() {
-        sendMessage("PLAY_SFX", [['sfx', sfxDropdown.options[sfxDropdown.selectedIndex].value]])
-    })
-
-    pauseButton.addEventListener('click', function() {
-        sendMessage("PAUSE_SFX")
-    })
+function countdown() {
+    if(currentTime > 0) {
+        if(currentTime == 1) sendMessage("PLAY_SFX", [['sfx', "Round Over"]])
+        currentTime -= 1
+    } 
+    timerText.textContent = getTimeText(currentTime)
 }
 
 function restart() {
@@ -121,6 +144,10 @@ function restart() {
     mainDiv.style.display = 'none'
     document.querySelector('nav').style.display = 'none'
     sendMessage("RESTART")
+}
+
+function getTimeText(secs) {
+    return new Date(secs*1000).toISOString().slice((secs < 3600) ? 14 : 11, 19)
 }
 
 function sendMessage(action, params=[]) {
@@ -159,6 +186,13 @@ bc.onmessage = function(msg) {
                 if(cid == data.cid) {
                     players = data.players  
                     notes = data.notes 
+                    timeLimit = data.limit
+                    if(timeLimit) {
+                        timerControls.style.display = 'block'
+                        currentTime = timeLimit
+                        timerText.textContent = getTimeText(currentTime)
+                    }
+
                     updatePlayerList(restart=true)
                     updateNotes()
                     setState(mainDiv)

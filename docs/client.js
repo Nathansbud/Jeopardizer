@@ -14,12 +14,8 @@ const corsUrl =  "https://dork.nathansbud-cors.workers.dev/?" //Credit to: https
 const answerCapture = new RegExp(`(?<=<em class=\\\\?"correct_response\\\\?">)(.*)(?=</em>)`)
 const lastSeason = [6699,6697,6695,6694,6691,6686,6684,6682,6680,6678,6672,6670,6667,6666,6664,6659,6657,6655,6653,6651,6623,6622,6620,6618,6616,6614,6612,6610,6608,6607,6605,6604,6603,6602,6601,6600,6599,6598,6597,6596,6593,6592,6591,6590,6589,6588,6587,6586,6585,6584,6583,6582,6581,6580,6579,6578,6577,6576,6575,6574,6571,6570,6569,6568,6567,6565,6564,6562,6561,6557,6556,6555,6554,6553,6552,6551,6550,6549,6548,6547,6545,6544,6543,6542,6541,6540,6539,6538,6537,6536,6535,6534,6533,6532,6531,6530,6529,6528,6525,6524,6523,6520,6517,6514,6513,6512,6511,6510,6509,6508,6507,6506,6505,6504,6503,6502,6501,6500,6499,6498,6497,6496,6495,6493,6491,6486,6485,6484,6483,6482,6481,6480,6479,6478,6477,6473,6472,6471,6470,6469,6468,6467,6466,6465,6464,6463,6462,6461,6460,6459,6456,6455,6454,6453,6452,6451,6450,6449,6448,6447,6446,6445,6444,6443,6442,6441,6440,6439,6438,6437,6434,6433,6432,6431,6429,6426,6425,6424,6423,6422,6420,6419,6418,6417,6416,6414,6413,6412,6411,6410]
 
-const sfxNames = ["Daily Double", "Final Jeopardy", "Question Open", "Time Out"]
+const sfxNames = ["Time Out", "Daily Double", "Final Jeopardy", "Question Open", "Round Over"]
 const SFX = sfxNames.map(n => new Audio(`./data/${n}.mp3`))
-
-const randInt = (max, min, incl=false) => Math.floor(Math.random()*(max - min)) + min + incl 
-const show = (elem, as='block') => elem.style.display = as
-const hide = (elem, useNone=true) => elem.style.display = (useNone) ? ('none') : ('hidden')
 
 const startDiv = document.getElementById("start")
 const advancedDiv = document.getElementById('advanced')
@@ -30,10 +26,12 @@ const footnoteId = document.getElementById('id_footnote')
 const playerInput = document.getElementById('player_names')
 
 const advancedButton = document.getElementById('advanced_button')
-
 const customSelector = document.getElementById('game_file')
 const footnoteCustom = document.getElementById('file_footnote')
 const customLabel = document.getElementById('custom_label')
+const dailyDoubleCheckbox = document.getElementById('dd_checkbox')
+const timerCheckbox = document.getElementById('time_checkbox')
+const timerInput = document.getElementById('time_limit')
 
 const startButton = document.getElementById('start_button')
 
@@ -45,13 +43,13 @@ const currentCategory = document.getElementById("question_category")
 const currentQuestion = document.getElementById("question_text")
 const currentValue = document.getElementById("question_value")
 
-
-let dailyDoubleText = document.getElementById("daily_double")
+const dailyDoubleText = document.getElementById("daily_double")
 
 const scoresDiv = document.getElementById("scores")
 const scoreList = document.getElementById('player_scores')
 const endSectionDiv = document.getElementById("end")
 
+let timeLimit = null
 const pauseDiv = document.getElementById("pause")
 let customGame = null
 
@@ -79,6 +77,7 @@ function sendMessage(action, params=[]) {
         response: messageResponse
     })
 }
+const sendStartMessage = () => sendMessage("START_GAME", [['players', players], ['notes', roundNotes], ['limit', timeLimit]])
 
 let heartbeat = null //setTimeout used to communicate data from client -> console
 let heartbeatLast = null //Time since last heartbeat response (to know if client-console link should take place again)
@@ -89,6 +88,9 @@ let debug = true
 
 let useStacked = false
 
+const randInt = (max, min, incl=false) => Math.floor(Math.random()*(max - min)) + min + incl 
+const show = (elem, as='block') => elem.style.display = as
+const hide = (elem, useNone=true) => elem.style.display = (useNone) ? ('none') : ('hidden')
 
 const validActions = ["CLOSE_QUESTION", "WRONG_ANSWER", "RIGHT_ANSWER"]
 bc.onmessage = function(msg) {
@@ -108,7 +110,7 @@ bc.onmessage = function(msg) {
                 console.log("Loading game...")
                 coid = data.coid
                 if(hasLoaded) setState(gameDiv)
-                sendMessage("START_GAME", [['players', players], ['notes', roundNotes]])
+                sendStartMessage()
                 break
             case "CONSOLE_CLOSE":
                 if(data.coid === coid) {
@@ -275,6 +277,7 @@ window.onload = function() {
     setup()
     startForm.addEventListener('submit', function() {
         players = {}
+        timeLimit = (timerCheckbox.checked && timerInput.value >= timerInput.min) ? (timerInput.value) : (null)
         let consoleLoc = new String(window.location)
         let queryId = gameId.value
         let playerNames = (playerInput.value) ? (playerInput.value.split(",").map(pn => pn.trim())) : (playerInput.value)
@@ -313,7 +316,7 @@ window.onload = function() {
 function startGame(gameObj) {
     loadGame(gameObj)
     if(!coid) sendMessage("LINK_CLIENT")
-    else sendMessage("START_GAME", [['players', players], ['notes', roundNotes]])
+    else sendStartMessage()
 
     console.log("Sent linking message...")
     

@@ -38,8 +38,6 @@ let timerCallback;
 const divs = [mainDiv, questionDiv]
 const states = ["Main", "Question"]
 
-
-
 let notes = null
 
 let cid = null

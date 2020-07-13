@@ -394,7 +394,7 @@ function loadGame(roundSet) {
         let count = 0
         let newCells = Object.entries(questionSet).map(([ind, qs]) => qs.map((qa, indq) => {
             let newCell = document.createElement('td')
-            newCell.setAttribute('data-dd', (i === 0 && count === sjdd || i === 1 && djdd.includes(count)))
+            newCell.setAttribute('data-dd', (dailyDoubleCheckbox.checked && (i === 0 && count === sjdd || i === 1 && djdd.includes(count))))
             newCell.setAttribute('data-value', 200*(i+1)*(parseInt(ind)+1))
             newCell.setAttribute('data-question', qa.question)
             newCell.setAttribute('data-answer', qa.answer)

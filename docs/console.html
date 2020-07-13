@@ -12,7 +12,17 @@
             <span id='timer' class='hide'>Round Time: <span id='round_timer'>Disabled</span><button id='timer_button'>Start Timer</button><br></span>
             <ul id='player_list'></ul>
             <label for='score_input'>Score Input: </label>
-            <input type='number' min='0' step='100' value='0' id='score_input'/><br>
+            <input type='number' min='0' step='100' value='0' id='score_input'/>
+            <hr>
+            <select id='sfx_dropdown'>
+                <option name="Time Out">Time Out</option>
+                <option name='Daily Double'>Daily Double</option>
+                <option name="Final Jeopardy">Final Jeopardy</option>
+                <option name="Question Open">Question Open</option>
+                <option name="Round Over">Round Over</option>
+            </select>
+            <button id='play_sfx'>Play SFX</button>
+            <button id='pause_sfx'>Pause</button>
         </nav>
         <hr>
     </header>
@@ -22,16 +32,6 @@
         <button id='regress_button'>Regress Round</button>
         <button id='reset_button'>New Game</button>
         <hr>
-        <select id='sfx_dropdown'>
-            <option name="Time Out">Time Out</option>
-            <option name='Daily Double'>Daily Double</option>
-            <option name="Final Jeopardy">Final Jeopardy</option>
-            <option name="Question Open">Question Open</option>
-            <option name="Round Over">Round Over</option>
-        </select>
-        <button id='play_sfx'>Play SFX</button>
-        <button id='pause_sfx'>Pause</button>
-        </div>
         <ul id='notes'>
             <li> SINGLE JEOPARDY: 
                 <ul id='daily_doubles'></ul>

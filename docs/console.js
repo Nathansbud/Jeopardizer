@@ -1,8 +1,9 @@
-const bc = new BroadcastChannel('Jeopardizer');
+const bc = new BroadcastChannel('Jeopardizer')
 const validActions = ["LOAD_GAME", "LOAD_QUESTION", "LINK_CLIENT"]
 
 const mainDiv = document.getElementById('main')
 const questionDiv = document.getElementById('question')
+const pauseDiv = document.getElementById('pause')
 
 const playerList = document.getElementById('player_list')
 const notesList = document.getElementById('notes')
@@ -35,7 +36,7 @@ const timerText = document.getElementById('round_timer')
 const timerButton = document.getElementById('timer_button')
 let timerCallback;
 
-const divs = [mainDiv, questionDiv]
+const divs = [mainDiv, questionDiv, pauseDiv]
 const states = ["Main", "Question"]
 
 let notes = null
@@ -49,8 +50,8 @@ let currentTime = null
 
 function setState(div) {
     divs.forEach(d => {
-        if(d != div) d.style.display = 'none';
-        else d.style.display = 'block';
+        if(d != div) d.style.display = 'none'
+        else d.style.display = 'block'
     })
 }
 
@@ -110,7 +111,7 @@ window.onload = function() {
         }
     })
 
-    resetButton.addEventListener('click', () => restart())
+    resetButton.addEventListener('click', restart)
     playButton.addEventListener('click', () => sendMessage("PLAY_SFX", [['sfx', sfxDropdown.options[sfxDropdown.selectedIndex].value]]))
     pauseButton.addEventListener('click', () => sendMessage("PAUSE_SFX"))
     timerButton.addEventListener('click', () => {
@@ -141,6 +142,7 @@ function restart() {
     }
     mainDiv.style.display = 'none'
     document.querySelector('nav').style.display = 'none'
+    setState(pauseDiv)
     sendMessage("RESTART")
 }
 
@@ -210,7 +212,8 @@ bc.onmessage = function(msg) {
                     currentValue.textContent = "$"+data.value
                     questionValue = parseInt(data.value)
 
-                    if(data.dd) {
+                    if(data.dd || data.final) {
+                        dailyDoubleText.textContent = (data.dd) ? ("DAILY DOUBLE") : ("FINAL JEOPARDY")
                         dailyDoubleText.style.display = 'block'
                         showWager(true)
                     } else {
@@ -222,7 +225,7 @@ bc.onmessage = function(msg) {
                     })
                     setState(questionDiv)
                     notesList.style.display = 'none'
-                    sendMessage("OPEN_QUESTION", params=[["dd", data.dd]])
+                    sendMessage("OPEN_QUESTION", params=[["dd", data.dd], ["final", data.final]])
                 }
                 break
             case "NEW_GAME":

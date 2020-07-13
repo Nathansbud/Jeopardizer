@@ -1,12 +1,7 @@
 /*Todo:
-- "Heartbeat"  
-    - If the console does not receive the link client message, things go south; could...
-        - Send link messages until a console responds
-        - Have a timeout until console loads (right now custom games load too fast)
+
 - Custom Games
     - Support media, multiplier (e.g. n -> 200n..1000n), DD #...
-- Timer/Time Limit 
-
 */
 
 const bc = new BroadcastChannel('Jeopardizer');
@@ -34,6 +29,7 @@ const timerCheckbox = document.getElementById('time_checkbox')
 const timerInput = document.getElementById('time_limit')
 
 const startButton = document.getElementById('start_button')
+const relaunchButton = document.getElementById('relaunch_button')
 
 const gameDiv = document.getElementById("game")
 const questionDiv = document.getElementById("question")
@@ -79,14 +75,23 @@ function sendMessage(action, params=[]) {
 }
 const sendStartMessage = () => sendMessage("START_GAME", [['players', players], ['notes', roundNotes], ['limit', timeLimit]])
 
-let heartbeat = null //setTimeout used to communicate data from client -> console
-let heartbeatLast = null //Time since last heartbeat response (to know if client-console link should take place again)
-let heartbeatCurrent = 0
+let pulse = null //setTimeout used to communicate data from client -> console
 let hasLoaded = false
 
 let debug = true
-
 let useStacked = false
+
+window.addEventListener('beforeunload', (event) => {
+    sendMessage("CLIENT_CLOSE")
+})
+
+function heartbeat() {
+    if(!coid) sendMessage("LINK_CLIENT")
+    return setInterval(() => {
+        if(!coid) sendMessage("LINK_CLIENT")
+        else clearInterval(pulse)
+    }, 1000)
+}
 
 const randInt = (max, min, incl=false) => Math.floor(Math.random()*(max - min)) + min + incl 
 const show = (elem, as='block') => elem.style.display = as
@@ -163,14 +168,10 @@ bc.onmessage = function(msg) {
                 if(data.coid === coid) setState(gameDiv)
                 break
             case "PROGRESS_ROUND":
-                if(data.coid === coid) {
-                    progressRound()
-                }
+                if(data.coid === coid) progressRound()
                 break
             case "REGRESS_ROUND":
-                if(data.coid === coid) {
-                    regressRound()
-                }
+                if(data.coid === coid) regressRound()
                 break
             case "PLAY_SFX":
             case "PAUSE_SFX":
@@ -260,8 +261,9 @@ function setup() {
     gameId.value = unusedIds[randInt(0, unusedIds.length, false)]
     footnoteId.setAttribute('href', `http://www.j-archive.com/showgame.php?game_id=${gameId.value}`)
 
+    customSelector.files = null
+
     if(startButton.getAttribute('disabled')) startButton.removeAttribute('disabled')
-    if(customSelector.files.length > 0) customSelector.files = []
     if(!useStacked) {
         Array.from(roundTables).forEach(rt => {
             while(rt.lastChild) {
@@ -273,12 +275,25 @@ function setup() {
     setState(startDiv)
 }
 
+function launchConsole() {
+    let consoleLoc = new String(window.location)
+    if(consoleLoc.includes('nathansbud.github.io')) {
+        consoleLoc = 'https://nathansbud.github.io/Jeopardizer/console.html'
+    } else {
+        consoleLoc = 'file:///Users/zackamiton/Code/Jeopardizer/docs/console.html'   
+    }
+    window.open(consoleLoc,'_blank', 'toolbar=0,location=0,menubar=0')
+}
+
 window.onload = function() {
     setup()
+    relaunchButton.addEventListener('click', () => {
+        pulse = heartbeat()
+        launchConsole()
+    })
     startForm.addEventListener('submit', function() {
         players = {}
         timeLimit = (timerCheckbox.checked && timerInput.value >= timerInput.min) ? (timerInput.value) : (null)
-        let consoleLoc = new String(window.location)
         let queryId = gameId.value
         let playerNames = (playerInput.value) ? (playerInput.value.split(",").map(pn => pn.trim())) : (playerInput.value)
         if(playerNames) {
@@ -301,21 +316,16 @@ window.onload = function() {
                 startButton.disabled = false
                 return 
             }
-            if(!coid) {
-                if(consoleLoc.includes('nathansbud.github.io')) {
-                    consoleLoc = 'https://nathansbud.github.io/Jeopardizer/console.html'
-                } else {
-                    consoleLoc = 'file:///Users/zackamiton/Code/Jeopardizer/docs/console.html'   
-                }
-                window.open(consoleLoc,'_blank', 'toolbar=0,location=0,menubar=0')
-            }
         }
     })
 }
 
 function startGame(gameObj) {
     loadGame(gameObj)
-    if(!coid) sendMessage("LINK_CLIENT")
+    if(!coid) {
+        launchConsole()
+        pulse = heartbeat()
+    }
     else sendStartMessage()
 
     console.log("Sent linking message...")

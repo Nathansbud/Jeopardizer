@@ -227,6 +227,9 @@ bc.onmessage = function(msg) {
                 break
             case "NEW_GAME":
                 break
+            case "CLIENT_CLOSE":
+                window.close()
+                break
             default:
                 console.log("Invalid action at console: ", msg)
                 break

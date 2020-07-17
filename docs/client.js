@@ -12,13 +12,16 @@ const lastSeason = [6699,6697,6695,6694,6691,6686,6684,6682,6680,6678,6672,6670,
 const sfxNames = ["Time Out", "Daily Double", "Final Jeopardy", "Question Open", "Round Over"]
 const SFX = sfxNames.map(n => new Audio(`./data/${n}.mp3`))
 
+const fullscreenDiv = document.getElementById('fullscreen')
 const startDiv = document.getElementById("start")
 const advancedDiv = document.getElementById('advanced')
+
 
 const startForm = document.getElementById('start_form')
 const gameId = document.getElementById('game_id')
 const footnoteId = document.getElementById('id_footnote')
 const playerInput = document.getElementById('player_names')
+const errorText = document.getElementById('error_text')
 
 const advancedButton = document.getElementById('advanced_button')
 const customSelector = document.getElementById('game_file')
@@ -288,7 +291,8 @@ function launchConsole() {
     } else {
         consoleLoc = 'file:///Users/zackamiton/Code/Jeopardizer/docs/console.html'   
     }
-    window.open(consoleLoc,'_blank', 'toolbar=0,location=0,menubar=0')
+    window.open(consoleLoc, '_blank', 'toolbar=0,location=0,menubar=0')
+    self.focus()
 }
 
 window.onload = function() {
@@ -297,7 +301,7 @@ window.onload = function() {
         pulse = heartbeat()
         launchConsole()
     })
-    startForm.addEventListener('submit', function() {
+    startButton.addEventListener('click', function() {
         players = {}
         timeLimit = (timerCheckbox.checked && timerInput.value >= timerInput.min) ? (timerInput.value) : (null)
         let queryId = gameId.value
@@ -307,6 +311,7 @@ window.onload = function() {
             playerNames.forEach(pn => players[pn] = 0)
             if(customSelector.files.length > 0) {
                 startGame(customGame)
+                // fullscreenDiv.requestFullscreen().catch(() => console.log("SKRT"))
             } else if(queryId && queryId >= gameId.min && queryId <= gameId.max) {
                 getGame(queryId).then((value) => {
                     startGame(value)
@@ -317,7 +322,13 @@ window.onload = function() {
                     } else {
                         localStorage.setItem('playedList', JSON.stringify([queryId]))
                     }
+                }).catch((error) => {
+                    setup()
+                    errorText.style.display = 'block'
+                    const storedId = queryId
+                    gameId.value = storedId
                 })
+            
             } else {
                 startButton.disabled = false
                 return 
@@ -340,7 +351,7 @@ function startGame(gameObj) {
         if(rt != document.getElementById('single_jeopardy')) rt.style.display = 'none'
         else rt.style.display = 'table'
     })
-    if(coid) setState(gameDiv)           
+    if(coid) setState(gameDiv)          
     hasLoaded = true
 }
 
@@ -352,7 +363,10 @@ function setState(div) {
 }
 
 
-customSelector.addEventListener('change', loadCustom)
+customSelector.addEventListener('change', () => {
+    console.log("ma'am")
+    loadCustom()
+})
 advancedButton.addEventListener('click', () => {
     if(advancedDiv.style.display === 'block') {
         advancedDiv.style.display = 'none'
@@ -491,6 +505,9 @@ function getCategories(tables) {
 async function getGame(gid) {
     const response = await fetch(`${corsUrl}https://www.j-archive.com/showgame.php?game_id=${gid}`)
     const pageContent = new DOMParser().parseFromString(await response.text(), 'text/html')
+    
+    if(pageContent.querySelector('.error')) throw Error("J-Archive error, game could not be loaded")
+
     const header = pageContent.getElementById("game_title").textContent
     const gameDate = new Date(header.split("-")[1]) //something like "Friday, October 18, 2019"
     const categorySet = {}

@@ -287,7 +287,9 @@ function setup() {
 function launchConsole() {
     let consoleLoc = new String(window.location)
     if(consoleLoc.includes('jeo.zamiton.com')) {
-        consoleLoc = 'jeo.zamiton.com/console.html'
+        consoleLoc = 'https://jeo.zamiton.com/console'
+    } else if(consoleLoc.includes('nathansbud.github.io/Jeopardizer')) {
+        consoleLoc = 'https://nathansbud.github.io/Jeopardizer/console.html'
     } else {
         consoleLoc = 'file:///Users/zackamiton/Code/Jeopardizer/docs/console.html'   
     }

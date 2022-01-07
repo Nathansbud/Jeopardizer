@@ -156,7 +156,6 @@ bc.onmessage = function(msg) {
                     setState(questionDiv)
                     if(!data.final) {
                         currentCell.setAttribute('disabled', true)
-                        currentCell.textContent = ""
                     } else {
                         currentCell.style.color = 'grey'
                     }
@@ -408,6 +407,7 @@ function loadGame(roundSet) {
         round.forEach(r => {
             let catName = document.createElement('th')
             catName.textContent = r['category']
+
             headerRow.appendChild(catName)
             r.clues.forEach((qa, idx) => {
                 if(questionSet[idx]) questionSet[idx].push(qa)

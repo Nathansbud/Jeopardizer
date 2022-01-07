@@ -104,7 +104,10 @@ form label {
 }
 #question * {margin: 10px;}
 .question_cell {cursor: grab;}
-.question_cell[disabled='true'] {cursor: auto;}
+.question_cell[disabled='true'] {
+    cursor: auto;
+    color:  var(--jeopardy-blue);
+}
 
 
 .footnote {color: lightblue;}

@@ -7,7 +7,7 @@
 const bc = new BroadcastChannel('Jeopardizer')
 const corsUrl =  "https://dork.nathansbud-cors.workers.dev/?" //Credit to: https://github.com/Zibri/cloudflare-cors-anywhere/blob/master/index.js
 const answerCapture = new RegExp(`(?<=<em class=\\\\?"correct_response\\\\?">)(.*)(?=</em>)`)
-const lastSeason = [6699,6697,6695,6694,6691,6686,6684,6682,6680,6678,6672,6670,6667,6666,6664,6659,6657,6655,6653,6651,6623,6622,6620,6618,6616,6614,6612,6610,6608,6607,6605,6604,6603,6602,6601,6600,6599,6598,6597,6596,6593,6592,6591,6590,6589,6588,6587,6586,6585,6584,6583,6582,6581,6580,6579,6578,6577,6576,6575,6574,6571,6570,6569,6568,6567,6565,6564,6562,6561,6557,6556,6555,6554,6553,6552,6551,6550,6549,6548,6547,6545,6544,6543,6542,6541,6540,6539,6538,6537,6536,6535,6534,6533,6532,6531,6530,6529,6528,6525,6524,6523,6520,6517,6514,6513,6512,6511,6510,6509,6508,6507,6506,6505,6504,6503,6502,6501,6500,6499,6498,6497,6496,6495,6493,6491,6486,6485,6484,6483,6482,6481,6480,6479,6478,6477,6473,6472,6471,6470,6469,6468,6467,6466,6465,6464,6463,6462,6461,6460,6459,6456,6455,6454,6453,6452,6451,6450,6449,6448,6447,6446,6445,6444,6443,6442,6441,6440,6439,6438,6437,6434,6433,6432,6431,6429,6426,6425,6424,6423,6422,6420,6419,6418,6417,6416,6414,6413,6412,6411,6410]
+const lastSeason = [7123,7121,7119,7117,7116,7114,7113,7112,7111,7110,7108,7107,7106,7105,7104,7102,7100,7098,7096,7094,7091,7089,7087,7085,7083,7078,7076,7075,7074,7073,7068,7066,7064,7062,7060,7058,7057,7055,7054,7053,7049,7048,7047,7046,7045,7043,7042,7041,7040,7039,7038,7037,7036,7035,7034,7033,7032,7031,7030,7029,7028,7027,7026,7025,7024,7023,7022,7021,7020,7019,7018,7017,7016,7015,7014,7013,7012,7011,7010,7009,7008,7005,7004,7003,7002,6999,6997,6996,6995,6994,6993,6992,6991,6990,6989,6987,6986,6985,6984,6983,6981,6980,6979,6977,6976,6974,6972,6971,6969,6968,6967,6966,6964,6963,6962,6961,6960,6958,6957,6955,6953,6951,6950,6949,6948,6947,6945,6944,6943,6942,6938,6937,6935,6934,6933,6932,6931,6930,6928,6927,6924,6923,6922,6921,6920,6917,6916,6915,6913,6911,6906,6904,6903,6902,6901,6900,6899,6898,6897,6896,6895,6894,6893,6892,6891,6890,6889,6888,6887,6886,6885,6884,6883,6882,6881,6880,6879,6878,6877,6876,6872,6871,6870,6869,6868,6866,6865,6864,6863,6862,6861,6860,6859,6858,6857,6856,6855,6854,6853,6852,6851,6850,6849,6848,6847,6846,6845,6844,6843,6842,6841,6840,6839,6838,6837,6835,6834,6833,6832,6831,6830,6829,6828,6827,6826,6825,6824,6823,6822,6821,6699,6697,6695,6694,6691,6686,6684,6682,6680,6678,6672,6670,6667,6666,6664,6659,6657,6655,6653,6651,6623,6622,6620,6618,6616,6614,6612,6610,6608,6607,6605,6604,6603,6602,6601,6600,6599,6598,6597,6596,6593,6592,6591,6590,6589,6588,6587,6586,6585,6584,6583,6582,6581,6580,6579,6578,6577,6576,6575,6574,6571,6570,6569,6568,6567,6565,6564,6562,6561,6557,6556,6555,6554,6553,6552,6551,6550,6549,6548,6547,6545,6544,6543,6542,6541,6540,6539,6538,6537,6536,6535,6534,6533,6532,6531,6530,6529,6528,6525,6524,6523,6520,6517,6514,6513,6512,6511,6510,6509,6508,6507,6506,6505,6504,6503,6502,6501,6500,6499,6498,6497,6496,6495,6493,6491,6486,6485,6484,6483,6482,6481,6480,6479,6478,6477,6473,6472,6471,6470,6469,6468,6467,6466,6465,6464,6463,6462,6461,6460,6459,6456,6455,6454,6453,6452,6451,6450,6449,6448,6447,6446,6445,6444,6443,6442,6441,6440,6439,6438,6437,6434,6433,6432,6431,6429,6426,6425,6424,6423,6422,6420,6419,6418,6417,6416,6414,6413,6412,6411,6410]
 
 const sfxNames = ["Time Out", "Daily Double", "Final Jeopardy", "Question Open", "Round Over"]
 const SFX = sfxNames.map(n => new Audio(`./data/${n}.mp3`))
@@ -61,7 +61,9 @@ let roundTables = document.getElementsByClassName("game_table")
 
 let roundNotes = {}
 const rounds = ['single_jeopardy', 'double_jeopardy', 'final_jeopardy', 'tiebreaker']
-rounds.forEach(r => roundNotes[r] = {dd: [], comments:{}})
+
+const initializeRoundNotes = () => JSON.parse(JSON.stringify({dd: [], comments: {}, categories: [], rows: []}))
+rounds.forEach(r => roundNotes[r] = initializeRoundNotes())
 
 let players = {}
 function sendMessage(action, params=[]) {
@@ -99,7 +101,7 @@ const randInt = (max, min, incl=false) => Math.floor(Math.random()*(max - min)) 
 const show = (elem, as='block') => elem.style.display = as
 const hide = (elem, useNone=true) => elem.style.display = (useNone) ? ('none') : ('hidden')
 
-const validActions = ["CLOSE_QUESTION", "WRONG_ANSWER", "RIGHT_ANSWER"]
+const validActions = ["CLOSE_QUESTION", "WRONG_ANSWER", "RIGHT_ANSWER", "CELL_CLICKED"]
 bc.onmessage = function(msg) {
     const action = msg.data.action
     const receivedAt = msg.timestamp
@@ -164,6 +166,13 @@ bc.onmessage = function(msg) {
             case "SET_VALUE":
                 if(data.coid === coid) currentValue.textContent = `$${data.value}`
                 break
+            case "CELL_CLICKED": 
+                if(data.coid == coid) {
+                    console.log(data)
+                    const relevantQuestion = document.querySelector(`.question_cell[data-cell='${data.cell}']`)
+                    if(relevantQuestion) showQuestion(relevantQuestion)
+                }
+                break
             case "SHOW_QUESTION":
                 if(data.coid === coid) {
                     currentQuestion.style.display = 'block'
@@ -214,11 +223,17 @@ function progressRound() {
             }
             roundTables[i].style.display = 'none'
             roundTables[i+1].style.display = 'table'
-            console.log(`Progressed to ${roundTables[i+1].getAttribute('id')}`)
+
+            const roundKey = roundTables[i+1].getAttribute('id')
+
+            console.log(`Progressed to ${roundKey}`)
+            sendMessage("SET_ROUND", [["roundKey", roundKey]])
+
             shouldEnd = false
             break
         } 
     }
+
     if(shouldEnd) {
         show(endSectionDiv)
         show(document.getElementById('final_text'), 'inline')
@@ -232,7 +247,11 @@ function regressRound() {
         if(roundTables[i].style.display != 'none') {
             roundTables[i].style.display = 'none'
             roundTables[i - 1].style.display = 'table'
-            console.log(`Regressed to ${roundTables[i - 1].getAttribute('id')}`)
+
+            const roundKey = roundTables[i - 1].getAttribute('id')
+
+            console.log(`Regresed to ${roundKey}`)
+            sendMessage("SET_ROUND", [["roundKey", roundKey]])
             break
         }
     }
@@ -252,7 +271,7 @@ function updateScoreList() {
 function setup() {
     hasLoaded = false
     roundNotes = {}
-    rounds.forEach(r => roundNotes[r] = {dd: [], comments:{}})
+    rounds.forEach(r => roundNotes[r] = initializeRoundNotes())
 
     if(localStorage.getItem('showAdvanced') === 'true') {
         advancedButton.textContent = 'Hide Advanced'
@@ -324,6 +343,7 @@ window.onload = function() {
                         localStorage.setItem('playedList', JSON.stringify([queryId]))
                     }
                 }).catch((error) => {
+                    console.log(error)
                     setup()
                     errorText.style.display = 'block'
                     const storedId = queryId
@@ -398,7 +418,7 @@ function loadGame(roundSet) {
     let ids = ['single_jeopardy', 'double_jeopardy', 'final_jeopardy', 'tiebreaker']
     let rse = roundSet.entries()
     if(rse.length > 3) hasTiebreaker = true
-    
+
     for(let [i, round] of roundSet.entries()) {
         let table = document.getElementById(ids[i])
         let headerRow = document.createElement('tr')
@@ -406,7 +426,7 @@ function loadGame(roundSet) {
         
         round.forEach(r => {
             let catName = document.createElement('th')
-            catName.textContent = r['category']
+            catName.textContent = r.category 
 
             headerRow.appendChild(catName)
             r.clues.forEach((qa, idx) => {
@@ -415,35 +435,39 @@ function loadGame(roundSet) {
                     questionSet[idx] = [qa]
                 }
             })
+            
+            table.appendChild(headerRow)
+            roundNotes[rounds[i]].categories.push({'name': r.category, 'comment': r.comments})
         })
-        
-        table.appendChild(headerRow)
-    
+            
         //Gonna need to rewrite this to interface with custom categories
         let sjdd = randInt(0, 30)
         let djdd = shuffle(getRange(30)).slice(0, 2)
 
+
+
         let count = 0
-        let newCells = Object.entries(questionSet).map(([ind, qs]) => qs.map((qa, indq) => {
+        let newCells = Object.entries(questionSet).map(([ind, qs]) => qs.map(({question, answer}, indq) => {
             let newCell = document.createElement('td')
-            newCell.setAttribute('data-dd', (dailyDoubleCheckbox.checked && (i === 0 && count === sjdd || i === 1 && djdd.includes(count))))
-            newCell.setAttribute('data-final', i >= 2)
-            newCell.setAttribute('data-value', 200*(i+1)*(parseInt(ind)+1)*(i < 2))
-            newCell.setAttribute('data-question', qa.question)
-            newCell.setAttribute('data-answer', qa.answer)
-            newCell.setAttribute('class', 'question_cell')
-            newCell.setAttribute('data-category', round[indq].category)
-            newCell.setAttribute('data-comments', round[indq].comments)
-            
+            const cellAttributes = {
+                cell: `${rounds[i]}-${count}`,
+                dd: dailyDoubleCheckbox.checked && (i === 0 && count === sjdd || i === 1 && djdd.includes(count)),
+                final: i >= 2,
+                value: 200*(i+1)*(parseInt(ind)+1)*(i < 2),
+                question: question,
+                answer: answer,
+                category: round[indq].category,
+                comments: round[indq].comments
+            }
+
+            Object.entries(cellAttributes).forEach(([k, v]) => newCell.dataset[k] = v)
+            newCell.classList.add("question_cell")
+
             if(round[indq].comments) {
                 roundNotes[rounds[i]].comments[round[indq].category] = round[indq].comments
             }
 
-            if(newCell.getAttribute('data-dd') === 'true') {
-                roundNotes[rounds[i]].dd.push(`${round[indq].category} (${200*(i+1)*(parseInt(ind)+1)})`) 
-            }
-            
-            if(qa.question && i < 2) newCell.textContent = "$"+newCell.getAttribute('data-value') 
+            if(question && i < 2) newCell.textContent = "$"+newCell.getAttribute('data-value') 
             else if(i >= 2) newCell.textContent = "Final Jeopardy"
             else {
                 newCell.setAttribute('disabled', true)
@@ -456,12 +480,24 @@ function loadGame(roundSet) {
             })   
             count++ 
             
-            return newCell
+            return {cell: newCell, attrs: cellAttributes}
         }))
 
-        newCells.forEach(tr => {
+
+        if(dailyDoubleCheckbox.checked) {
+            if(i === 0) roundNotes[rounds[i]].dd.push(sjdd)
+            else if(i === 1) roundNotes[rounds[i]].dd.push(...djdd)
+        }
+
+        newCells.forEach((tr, ridx) => {
             let newRow = document.createElement('tr')
-            tr.forEach(t => newRow.appendChild(t))
+            roundNotes[rounds[i]].rows.push([])
+            tr.forEach((t, cidx) => {
+                roundNotes[rounds[i]].rows[ridx].push(t.attrs)
+                newRow.appendChild(t.cell)
+            })
+            
+
             table.append(newRow)
         })
     }

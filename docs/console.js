@@ -6,7 +6,7 @@ const questionDiv = document.getElementById('question')
 const pauseDiv = document.getElementById('pause')
 
 const playerList = document.getElementById('player_list')
-const notesList = document.getElementById('notes')
+const boardDisplay = document.getElementById('board_display')
 
 const currentCategory = document.getElementById("question_category")
 const currentQuestion = document.getElementById("question_text")
@@ -69,7 +69,7 @@ function closeQuestion() {
         sb.style.display = sb.getAttribute('data-manual') == 'true' ? ('inline') : ('none')
     })
     sendMessage("CLOSE_QUESTION")
-    notesList.style.display = 'block'
+    boardDisplay.style.display = 'block'
     setState(mainDiv)
 }
 
@@ -134,8 +134,8 @@ function countdown() {
 }
 
 function restart() {
-    while(notesList.lastChild) {
-        notesList.removeChild(notesList.lastChild)
+    while(boardDisplay.lastChild) {
+        boardDisplay.removeChild(boardDisplay.lastChild)
     }
     while(playerList.lastChild) {
         playerList.removeChild(playerList.lastChild)
@@ -186,7 +186,9 @@ bc.onmessage = function(msg) {
                 if(cid == data.cid) {
                     players = data.players  
                     notes = data.notes 
+
                     timeLimit = data.limit
+                    
                     if(timeLimit) {
                         timerControls.style.display = 'block'
                         currentTime = timeLimit
@@ -198,6 +200,7 @@ bc.onmessage = function(msg) {
                     setState(mainDiv)
                     mainDiv.style.display = 'block'
                     document.querySelector('nav').style.display = 'block'
+                    document.getElementById("board_display").style.display = 'block'
                 }
                 break
             case "GET_PLAYERS":
@@ -207,7 +210,6 @@ bc.onmessage = function(msg) {
                 if(data.cid == cid) {
                     currentAnswer.textContent = data.answer
                     currentQuestion.textContent = data.question
-                    console.log(data.question)
                     currentCategory.textContent = data.category
                     currentValue.textContent = "$"+data.value
                     questionValue = parseInt(data.value)
@@ -224,8 +226,15 @@ bc.onmessage = function(msg) {
                         sb.style.display = "inline"
                     })
                     setState(questionDiv)
-                    notesList.style.display = 'none'
+                    boardDisplay.style.display = 'none'
                     sendMessage("OPEN_QUESTION", params=[["dd", data.dd], ["final", data.final]])
+                }
+                break
+            case "SET_ROUND":
+                if(cid == data.cid) {
+                    Array.from(document.querySelectorAll(".game_table")).forEach(t => t.style.display = 'none')
+                    const relevantTable = document.querySelector(`#${data.roundKey}`)
+                    if(relevantTable) relevantTable.style.display = 'table'
                 }
                 break
             case "NEW_GAME":
@@ -241,43 +250,50 @@ bc.onmessage = function(msg) {
 }
 
 function updateNotes() {
-    while(notesList.lastChild) {
-        notesList.removeChild(notesList.lastChild)
+    while(boardDisplay.lastChild) {
+        boardDisplay.removeChild(boardDisplay.lastChild)
     }
 
-    Object.entries(notes).forEach(r => {
-        const roundName = r[0].split("_").map(p => p[0].toUpperCase() + p.slice(1)).join(" ")
-        const roundData = r[1]
+    Object.entries(notes).forEach(([roundKey, roundData]) => {
+        const roundTable = document.createElement("table")
 
-        const hasComments = Object.entries(roundData.comments).length > 0
-        const hasDailyDoubles = roundData.dd.length > 0
-        
-        if(hasComments || hasDailyDoubles) {
-            const rList = document.createElement('li')
-            rList.textContent = roundName
+        roundTable.classList.add("game_table", "console")
+        roundTable.setAttribute("id", roundKey)
 
-            if(hasComments) {
-                const comList = document.createElement('ul')
-                comList.textContent = "[Comments]"
-                Object.entries(roundData.comments).forEach(([cat, com]) => {
-                    const comElem = document.createElement('li')
-                    comElem.textContent = `${cat}: ${com}`
-                    comList.appendChild(comElem)
+        const headerRow = document.createElement("tr")
+        roundData.categories.forEach(cat => {
+            const {name, comment} = cat
+            const headerCell = document.createElement("th")
+            headerCell.textContent = name
+
+            headerRow.appendChild(headerCell)
+        })
+
+        roundTable.appendChild(headerRow)
+        roundData.rows.forEach(row => {
+            const newRow = document.createElement("tr")
+            row.forEach(cell => {
+                const newCell = document.createElement('td')
+                newCell.classList.add("question_cell", "console")
+                if(!cell.question) newCell.disabled = true
+                else {
+                    Object.entries(cell).forEach(([k, v]) => newCell.dataset[k] = v)   
+                    newCell.textContent = `$${cell.value}`            
+                }
+
+                newCell.addEventListener('click', ({target}) => {
+                    if(!target.disabled) {
+                        sendMessage("CELL_CLICKED", [['cell', target.dataset.cell]])
+                        target.classList.add("seen")
+                    }
                 })
-                rList.appendChild(comList)
-            }  
-            if(hasDailyDoubles) {
-                const doubleList = document.createElement('ul')
-                doubleList.textContent = "[Daily Doubles]"
-                roundData.dd.forEach(d => {
-                    const doubleElem = document.createElement('li')
-                    doubleElem.textContent = d
-                    doubleList.appendChild(doubleElem)
-                })
-                rList.appendChild(doubleList)
-            }
-            notesList.appendChild(rList)
-        }
+                newRow.appendChild(newCell)
+            })
+            roundTable.appendChild(newRow)
+        })
+
+
+        document.getElementById("board_display").appendChild(roundTable)
     })
 }
 

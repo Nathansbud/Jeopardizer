@@ -1,6 +1,7 @@
 :root {
     --jeopardy-blue: rgb(5, 20, 129);
     --jeopardy-gold: rgb(226, 176, 114);
+    --jeopardy-red:  #dc143c;
 }
 
 body, body:fullscreen {
@@ -29,6 +30,10 @@ nav ul {list-style-type: none;}
 nav li {
     text-decoration: none;
     color: var(--jeopardy-gold);
+}
+
+#scores {
+    font-size: 300%;
 }
 
 form {
@@ -62,15 +67,7 @@ form label {
     color: var(--jeopardy-gold);
 }
 #custom_label:hover {cursor: pointer;}
-
-
-#daily_double {color: #dc143c}
 #player_scores {list-style-type: none;}
-
-#notes {
-    text-align: left;
-    font-size: 115%;
-}
 
 .game_table, .game_table td, .game_table th {
     background: var(--jeopardy-blue);
@@ -86,7 +83,10 @@ form label {
     color: var(--jeopardy-gold);
     font-size: 200%;
 }
-.game_table {
+
+.game_table td.seen {color: grey;}
+
+.game_table:not(.console) {
     position: absolute; 
     top: 0; 
     bottom: 0; 
@@ -97,6 +97,7 @@ form label {
     font-weight: bold;
 } 
 
+#daily_double {color: var(--jeopardy-red);}
 #question {
     padding-top: 25vh;
     padding-bottom: 25vh;
@@ -104,11 +105,17 @@ form label {
 }
 #question * {margin: 10px;}
 .question_cell {cursor: grab;}
+.question_cell.console[data-dd='true'] {
+    color: var(--jeopardy-red);
+} 
 .question_cell[disabled='true'] {
-    cursor: auto;
+    cursor: default;
     color:  var(--jeopardy-blue);
 }
 
+.game_table.console {
+    width:  100%;
+}
 
 .footnote {color: lightblue;}
 .footnote:hover {cursor: pointer;}

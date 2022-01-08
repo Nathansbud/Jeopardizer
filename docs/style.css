@@ -84,7 +84,6 @@ form label {
     font-size: 200%;
 }
 
-.game_table td.seen {color: grey;}
 
 .game_table:not(.console) {
     position: absolute; 
@@ -109,13 +108,18 @@ form label {
 }
 #question * {margin: 10px;}
 .question_cell {cursor: grab;}
-.question_cell.console[data-dd='true'] {
+.question_cell[data-dd='true'] {
     color: var(--jeopardy-red);
 } 
+
+.question_cell.console.seen {color: #60523E;}
+.question_cell.console.seen[data-dd='true'] {color: #551111;}
+
 .question_cell[disabled='true'] {
     cursor: default;
     color:  var(--jeopardy-blue);
 }
+
 
 .game_table.console {
     width:  100%;

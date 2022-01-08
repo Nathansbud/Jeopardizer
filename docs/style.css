@@ -14,7 +14,7 @@ body, body:fullscreen {
 
 body, div, .game_table {background: var(--jeopardy-blue);}
 
-div:not(#start):not(#fullscreen):not(.show), .game_table:not(#single_jeopardy), 
+div:not(#start):not(#fullscreen):not(.show), .game_table:not(#single_jeopardy):not(.console), 
 #final_text, .footnote_text, #daily_double, button[data-manual='false'], .hide {
     display: none;
 }
@@ -72,7 +72,7 @@ form label {
 .game_table, .game_table td, .game_table th {
     background: var(--jeopardy-blue);
     table-layout: fixed;
-    border: 6px solid  black;
+    border: 6px solid black;
     border-collapse: collapse;
 }
 .game_table th {
@@ -96,6 +96,10 @@ form label {
     height: 100%;
     font-weight: bold;
 } 
+
+.comments * { 
+    text-align: left;
+}
 
 #daily_double {color: var(--jeopardy-red);}
 #question {

@@ -16,7 +16,6 @@ const fullscreenDiv = document.getElementById('fullscreen')
 const startDiv = document.getElementById("start")
 const advancedDiv = document.getElementById('advanced')
 
-
 const startForm = document.getElementById('start_form')
 const gameId = document.getElementById('game_id')
 const footnoteId = document.getElementById('id_footnote')
@@ -46,7 +45,6 @@ const dailyDoubleText = document.getElementById("daily_double")
 
 const scoresDiv = document.getElementById("scores")
 const scoreList = document.getElementById('player_scores')
-const endSectionDiv = document.getElementById("end")
 
 let timeLimit = null
 const pauseDiv = document.getElementById("pause")
@@ -56,13 +54,15 @@ let divs = [startDiv, gameDiv, questionDiv, scoresDiv, pauseDiv]
 let cid = Date.now() /* todo: localStorage this and link it to the console */
 let coid = null
 
+let roundKey = 'single_jeopardy'
+
 let hasTiebreaker = false
 let roundTables = document.getElementsByClassName("game_table")
 
 let roundNotes = {}
 const rounds = ['single_jeopardy', 'double_jeopardy', 'final_jeopardy', 'tiebreaker']
 
-const initializeRoundNotes = () => JSON.parse(JSON.stringify({dd: [], comments: {}, categories: [], rows: []}))
+const initializeRoundNotes = () => JSON.parse(JSON.stringify({dd: [], categories: [], rows: []}))
 rounds.forEach(r => roundNotes[r] = initializeRoundNotes())
 
 let players = {}
@@ -78,7 +78,12 @@ function sendMessage(action, params=[]) {
         response: messageResponse
     })
 }
-const sendStartMessage = () => sendMessage("START_GAME", [['players', players], ['notes', roundNotes], ['limit', timeLimit]])
+const sendStartMessage = () => sendMessage("START_GAME", [
+    ['players', players], 
+    ['notes', roundNotes], 
+    ['limit', timeLimit], 
+    ["roundKey", roundKey]
+])
 
 let pulse = null //setTimeout used to communicate data from client -> console
 let hasLoaded = false
@@ -224,7 +229,7 @@ function progressRound() {
             roundTables[i].style.display = 'none'
             roundTables[i+1].style.display = 'table'
 
-            const roundKey = roundTables[i+1].getAttribute('id')
+            roundKey = roundTables[i+1].getAttribute('id')
 
             console.log(`Progressed to ${roundKey}`)
             sendMessage("SET_ROUND", [["roundKey", roundKey]])
@@ -235,7 +240,6 @@ function progressRound() {
     }
 
     if(shouldEnd) {
-        show(endSectionDiv)
         show(document.getElementById('final_text'), 'inline')
         updateScoreList()
         setState(scoresDiv)
@@ -248,7 +252,7 @@ function regressRound() {
             roundTables[i].style.display = 'none'
             roundTables[i - 1].style.display = 'table'
 
-            const roundKey = roundTables[i - 1].getAttribute('id')
+            roundKey = roundTables[i - 1].getAttribute('id')
 
             console.log(`Regresed to ${roundKey}`)
             sendMessage("SET_ROUND", [["roundKey", roundKey]])
@@ -271,6 +275,7 @@ function updateScoreList() {
 function setup() {
     hasLoaded = false
     roundNotes = {}
+    roundKey = 'single_jeopardy'
     rounds.forEach(r => roundNotes[r] = initializeRoundNotes())
 
     if(localStorage.getItem('showAdvanced') === 'true') {
@@ -462,10 +467,6 @@ function loadGame(roundSet) {
 
             Object.entries(cellAttributes).forEach(([k, v]) => newCell.dataset[k] = v)
             newCell.classList.add("question_cell")
-
-            if(round[indq].comments) {
-                roundNotes[rounds[i]].comments[round[indq].category] = round[indq].comments
-            }
 
             if(question && i < 2) newCell.textContent = "$"+newCell.getAttribute('data-value') 
             else if(i >= 2) newCell.textContent = "Final Jeopardy"

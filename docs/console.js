@@ -185,8 +185,7 @@ bc.onmessage = function(msg) {
             case "START_GAME":
                 if(cid == data.cid) {
                     players = data.players  
-                    notes = data.notes 
-
+                    notes = data.notes
                     timeLimit = data.limit
                     
                     if(timeLimit) {
@@ -199,8 +198,12 @@ bc.onmessage = function(msg) {
                     updateNotes()
                     setState(mainDiv)
                     mainDiv.style.display = 'block'
+
                     document.querySelector('nav').style.display = 'block'
                     document.getElementById("board_display").style.display = 'block'
+
+                    const activeRound = document.querySelector(`#${data.roundKey}`)
+                    if(activeRound) activeRound.style.display = 'block'
                 }
                 break
             case "GET_PLAYERS":
@@ -232,9 +235,9 @@ bc.onmessage = function(msg) {
                 break
             case "SET_ROUND":
                 if(cid == data.cid) {
-                    Array.from(document.querySelectorAll(".game_table")).forEach(t => t.style.display = 'none')
-                    const relevantTable = document.querySelector(`#${data.roundKey}`)
-                    if(relevantTable) relevantTable.style.display = 'table'
+                    Array.from(document.querySelectorAll(".round_container")).forEach(t => t.style.display = 'none')
+                    const relevantRound = document.querySelector(`#${data.roundKey}`)
+                    if(relevantRound) relevantRound.style.display = 'block'
                 }
                 break
             case "NEW_GAME":
@@ -255,16 +258,28 @@ function updateNotes() {
     }
 
     Object.entries(notes).forEach(([roundKey, roundData]) => {
+        const roundDiv = document.createElement("div")
+        roundDiv.id = roundKey
+        roundDiv.classList.add("round_container")
+
         const roundTable = document.createElement("table")
 
         roundTable.classList.add("game_table", "console")
-        roundTable.setAttribute("id", roundKey)
+        
+        const commentList = document.createElement("ul")
+        commentList.classList.add("comments")
 
         const headerRow = document.createElement("tr")
         roundData.categories.forEach(cat => {
             const {name, comment} = cat
             const headerCell = document.createElement("th")
             headerCell.textContent = name
+
+            if(comment) {
+                const commentItem = document.createElement("li")
+                commentItem.textContent = `${name}: ${comment.replaceAll("\n", " ")}`
+                commentList.appendChild(commentItem)
+            }
 
             headerRow.appendChild(headerCell)
         })
@@ -275,7 +290,7 @@ function updateNotes() {
             row.forEach(cell => {
                 const newCell = document.createElement('td')
                 newCell.classList.add("question_cell", "console")
-                if(!cell.question) newCell.disabled = true
+                if(!cell.question) newCell.setAttribute("disabled", true)
                 else {
                     Object.entries(cell).forEach(([k, v]) => newCell.dataset[k] = v)   
                     newCell.textContent = `$${cell.value}`            
@@ -292,8 +307,8 @@ function updateNotes() {
             roundTable.appendChild(newRow)
         })
 
-
-        document.getElementById("board_display").appendChild(roundTable)
+        roundDiv.append(roundTable, commentList)
+        document.getElementById("board_display").appendChild(roundDiv)
     })
 }
 

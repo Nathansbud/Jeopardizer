@@ -82,7 +82,9 @@ const sendStartMessage = () => sendMessage("START_GAME", [
     ['players', players], 
     ['notes', roundNotes], 
     ['limit', timeLimit], 
-    ["roundKey", roundKey]
+    ["roundKey", roundKey],
+    // on console relaunch, apply proper styling to seen questions
+    ["seen", Array.from(document.querySelectorAll(".question_cell[disabled='true']")).filter(c => c.dataset.question != 'undefined').map(c => c.dataset.cell)]
 ])
 
 let pulse = null //setTimeout used to communicate data from client -> console
@@ -150,7 +152,7 @@ bc.onmessage = function(msg) {
                 break
             case "OPEN_QUESTION":
                 if(data.coid === coid) {
-                    if(data.dd || data.final) {
+                    if([data.dd, data.final].includes('true')) {
                         dailyDoubleText.textContent = (data.dd) ? ("DAILY DOUBLE") : ("FINAL JEOPARDY")
                         dailyDoubleText.style.display = 'block'
                         currentQuestion.style.display = 'none'
@@ -161,7 +163,7 @@ bc.onmessage = function(msg) {
                         currentValue.style.display = 'block'
                     }
                     setState(questionDiv)
-                    if(!data.final) {
+                    if(data.final === 'false') {
                         currentCell.setAttribute('disabled', true)
                     } else {
                         currentCell.style.color = 'grey'
@@ -449,11 +451,10 @@ function loadGame(roundSet) {
         let sjdd = randInt(0, 30)
         let djdd = shuffle(getRange(30)).slice(0, 2)
 
-
-
         let count = 0
         let newCells = Object.entries(questionSet).map(([ind, qs]) => qs.map(({question, answer}, indq) => {
             let newCell = document.createElement('td')
+            
             const cellAttributes = {
                 cell: `${rounds[i]}-${count}`,
                 dd: dailyDoubleCheckbox.checked && (i === 0 && count === sjdd || i === 1 && djdd.includes(count)),
@@ -511,14 +512,7 @@ function showQuestion(cell) {
     currentQuestion.textContent = cell.getAttribute('data-question')
     currentValue.textContent = `$${cell.getAttribute('data-value')}`
 
-    sendMessage("LOAD_QUESTION", [["question", cell.getAttribute('data-question')], 
-                                  ["category", cell.getAttribute('data-category')],
-                                  ["answer", cell.getAttribute('data-answer')],
-                                  ["comment", cell.getAttribute('data-comments')],
-                                  ["dd", cell.getAttribute('data-dd') === 'true'],
-                                  ["final", cell.getAttribute('data-final') === 'true'],
-                                  ['value', cell.getAttribute('data-dd') != 'true' ? parseInt(cell.getAttribute('data-value')) : 0]
-                                ])
+    sendMessage("LOAD_QUESTION", Object.entries(cell.dataset))
 }
 
 function extractAnswer(clue) {

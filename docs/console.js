@@ -196,6 +196,11 @@ bc.onmessage = function(msg) {
 
                     updatePlayerList(restart=true)
                     updateNotes()
+                    data.seen.forEach(v => {
+                        const matchedCell = document.querySelector(`[data-cell='${v}']`)
+                        if(matchedCell) matchedCell.classList.add('seen')
+                    })
+
                     setState(mainDiv)
                     mainDiv.style.display = 'block'
 
@@ -217,8 +222,11 @@ bc.onmessage = function(msg) {
                     currentValue.textContent = "$"+data.value
                     questionValue = parseInt(data.value)
 
-                    if(data.dd || data.final) {
-                        dailyDoubleText.textContent = (data.dd) ? ("DAILY DOUBLE") : ("FINAL JEOPARDY")
+                    const relevantQuestion = document.querySelector(`[data-cell='${data.cell}']`)
+                    if(relevantQuestion) relevantQuestion.classList.add("seen")
+
+                    if([data.dd, data.final].includes('true')) {
+                        dailyDoubleText.textContent = (data.dd === 'true') ? ("DAILY DOUBLE") : ("FINAL JEOPARDY")
                         dailyDoubleText.style.display = 'block'
                         showWager(true)
                     } else {
@@ -290,10 +298,12 @@ function updateNotes() {
             row.forEach(cell => {
                 const newCell = document.createElement('td')
                 newCell.classList.add("question_cell", "console")
+
                 if(!cell.question) newCell.setAttribute("disabled", true)
                 else {
                     Object.entries(cell).forEach(([k, v]) => newCell.dataset[k] = v)   
-                    newCell.textContent = `$${cell.value}`            
+                    newCell.textContent = `$${cell.value}`
+                    if(cell.disabled) newCell.classList.add("seen")
                 }
 
                 newCell.addEventListener('click', ({target}) => {

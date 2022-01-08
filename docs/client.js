@@ -175,7 +175,6 @@ bc.onmessage = function(msg) {
                 break
             case "CELL_CLICKED": 
                 if(data.coid == coid) {
-                    console.log(data)
                     const relevantQuestion = document.querySelector(`.question_cell[data-cell='${data.cell}']`)
                     if(relevantQuestion) showQuestion(relevantQuestion)
                 }

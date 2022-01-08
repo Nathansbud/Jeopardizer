@@ -76,6 +76,8 @@ function closeQuestion() {
 
 window.onload = function() {
     backButton.addEventListener('click', closeQuestion)
+    document.addEventListener('keydown', (e) => e.keyCode === 27 ? closeQuestion() : null)
+
     progressButton.addEventListener('click', () => {
         sendMessage("PROGRESS_ROUND")
         sendMessage("SHOW_BOARD")
@@ -346,16 +348,16 @@ function updatePlayerList(restart=false) {
                 scoreButton.setAttribute('data-manual', idx == 2)
 
                 let scoreCallback = ({
-                    0:function() {
+                    0: () => {
                         if(isQuestion()) players[scoreButton.getAttribute('data-player')] -= questionValue
                     },
-                    1:function() {
+                    1: () => {
                         if(isQuestion()) {
                             players[scoreButton.getAttribute('data-player')] += questionValue
                             closeQuestion()
                         }
                     },
-                    2:function() {
+                    2: () => {
                         if(scoreInput.value) players[scoreButton.getAttribute('data-player')] += parseInt(scoreInput.value)
                     }
                 })[idx] || ""

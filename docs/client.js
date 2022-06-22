@@ -108,7 +108,6 @@ const randInt = (max, min, incl=false) => Math.floor(Math.random()*(max - min)) 
 const show = (elem, as='block') => elem.style.display = as
 const hide = (elem, useNone=true) => elem.style.display = (useNone) ? ('none') : ('hidden')
 
-const validActions = ["CLOSE_QUESTION", "WRONG_ANSWER", "RIGHT_ANSWER", "CELL_CLICKED"]
 bc.onmessage = function(msg) {
     const action = msg.data.action
     const receivedAt = msg.timestamp
@@ -153,7 +152,7 @@ bc.onmessage = function(msg) {
             case "OPEN_QUESTION":
                 if(data.coid === coid) {
                     if([data.dd, data.final].includes('true')) {
-                        dailyDoubleText.textContent = (data.dd) ? ("DAILY DOUBLE") : ("FINAL JEOPARDY")
+                        dailyDoubleText.textContent = (data.dd === 'true') ? ("DAILY DOUBLE") : ("FINAL JEOPARDY")
                         dailyDoubleText.style.display = 'block'
                         currentQuestion.style.display = 'none'
                         currentValue.style.display = 'none'
@@ -391,7 +390,7 @@ function setState(div) {
 
 
 customSelector.addEventListener('change', () => {
-    console.log("ma'am")
+    console.log("Attempting to load custom game...")
     loadCustom()
 })
 advancedButton.addEventListener('click', () => {
@@ -462,10 +461,13 @@ function loadGame(roundSet) {
                 question: question,
                 answer: answer,
                 category: round[indq].category,
-                comments: round[indq].comments
+                comments: round[indq].comments,
+                client: true
             }
 
-            Object.entries(cellAttributes).forEach(([k, v]) => newCell.dataset[k] = v)
+            Object.entries(cellAttributes).forEach(([k, v]) => {
+                if(!k.startsWith("console")) newCell.dataset[k] = v
+            })
             newCell.classList.add("question_cell")
 
             if(question && i < 2) newCell.textContent = "$"+newCell.getAttribute('data-value') 

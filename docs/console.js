@@ -1,5 +1,4 @@
 const bc = new BroadcastChannel('Jeopardizer')
-const validActions = ["LOAD_GAME", "LOAD_QUESTION", "LINK_CLIENT"]
 
 const mainDiv = document.getElementById('main')
 const questionDiv = document.getElementById('question')
@@ -303,7 +302,9 @@ function updateNotes() {
 
                 if(!cell.question) newCell.setAttribute("disabled", true)
                 else {
-                    Object.entries(cell).forEach(([k, v]) => newCell.dataset[k] = v)   
+                    Object.entries(cell).forEach(([k, v]) => {
+                        if(!k.startsWith("client")) newCell.dataset[k] = v
+                    })   
                     newCell.textContent = `$${cell.value}`
                     if(cell.disabled) newCell.classList.add("seen")
                 }

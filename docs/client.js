@@ -233,7 +233,6 @@ function shouldTiebreaker() {
 
 function progressRound() {
     let shouldEnd = true
-    const hasClues = Array.from(roundTables).map(rt => rt.children.length > 0)
 
     for(let i = 0; i < roundTables.length - 1; i++) {
         if(roundTables[i].style.display != 'none') {

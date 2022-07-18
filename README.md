@@ -1,14 +1,31 @@
 # Jeopardizer: Jeopardy, for the folks at home!
 
-![Question Image](https://i.imgur.com/JVKhtRI.png)
+![Question View](./media/setup.png)
 
-## What?
+Jeopardizer is a webapp to host local games of Jeopardy! Designed for two monitors, one player takes the role of host, and the remaining players try their hands as contestants.
 
-Jeopardizer is a tool to create and play games of Jeopardy, randomly (with past categories from games throughout history), from a specific past game via J-Archive link, or by creating custom categories! Jeopardizer is designed for 2 screens in mind (one for host console, and one for questions), and is ideally played with with 3 players and 1 host.
+Games are loaded from [J-Archive](https://j-archive.com/) by providing the ID of a specific game (seen [here](https://j-archive.com/showgame.php?game_id=6969) as a URL parameter).
 
-![Console Image](https://i.imgur.com/PZmUn0F.png)
+## Custom Games
 
-## Controls
+By default, Jeopardizer pulls a provided J-Archive game. However, custom games can be defined as JSON files, and loaded in during game setup by the host. A [base template](./media/custom.json) is provided. 
+
+Note that categories must have 5 questions, but questions need not all have content (providing empty strings for question/answer will render as a blank, non-selectable space). Conversely, rounds can have any number of categories (though only 6 have been reliably tested). However, regardless of question count, **current game logic relies on an n x 5 board** (i.e. all categories must have 5 defined questions, blank questions included) 
+
+Support for categories with varied numbers of questions (i.e. not 5) and additional rounds beyond the standard set (single, double, final, tiebreaker) is planned. Question media (e.g. images, video, audio, ...) is unlikely to be added at present.
+
+## Known Limitations
+
+J-Archive is wonderful, but only archives the _text_ content of questions, and cannot archive what was not seen in a real game. Games with missing questions will be rendered as gaps on the board in Jeopardizer, and questions which may have originally had media on the show (e.g. "The building seen here...") will not render said media (unfortunately, J-Archive does not have it).
+
+## What's the deal with the /app/ folder?
+
+Jeopardizer was originally an Java applet, revamped as a webapp for increased usability. Though hopefully functional, it hasn't been tested in several years, and is not actively maintained. Installation and controls are provided if desired:
+
+<details>
+<summary>Jeopardizer App Setup</summary>  
+
+### Controls
 
 - Questions can be accessed by clicking their respective squares
 - Backspace will dock a player for a wrong answer, Enter will award points and escape the question. 
@@ -19,22 +36,20 @@ Jeopardizer is a tool to create and play games of Jeopardy, randomly (with past 
 - If a Daily Double question is opened, a wager must be input using non-numpad number keys (haven't actually tested with numpad though), hyphen/subtract key will remove the last number (-), and equals key (=) will input that wager, which can then be awarded/subtracted normally. Slash (/) will show the question if not visible after wager is input, or during Final Jeopardy.
 - As a failsafe for an accidental misclick, a "wager" value can also be inputted outside of a question, and awarded to a player.
 
-## Categories
-
-![Category Image](https://i.imgur.com/BSJtmJl.png)
+### Categories
 
 By default, rounds in Jeopardizer are loaded from the single, double, and final jeopardy files located in data/questions/all, which are created by scraping J-Archive. Categories are randomly selected from these past files to create a standard Jeopardy game (6 categories for Single Jeopardy, 6 categories for Double Jeopardy, 1 category for Final Jeopardy), with the option for user-specified category count and date range are provided. Content-based filters are unlikely to be implemented as J-Archive is untagged.
 
 Specific games are require a J-Archive URL, which is then scraped to create files in data/questions/custom, rather than the random category selection. This requires an internet connection.
 
-## Custom Games
+### Custom Games
 
 Custom games can be created by adding custom JSON files to data/questions/custom, based on the following structure:
 
 ```javascript
 [
     {"Category":"CategoryName", 
-     "Clues":[
+    "Clues":[
         {
             "Question":"QuestionText", //Required
             "Answer":"AnswerText", //Required
@@ -52,8 +67,8 @@ Custom games can be created by adding custom JSON files to data/questions/custom
             }            
         }
         ...
-     ], 
-     "Date":"MM/DD/YYYY" //Optional, used for date filter
+    ], 
+    "Date":"MM/DD/YYYY" //Optional, used for date filter
     }, 
     ...
 ]
@@ -69,7 +84,7 @@ CategoryN|Q1|A1|Q2|A2|Q3|A3|Q4|A4|Q5|A5
 ```
 Running either customs.py or Jeopardizer will move these files to data/questions/custom, where they can be loaded in as custom categories; this does not yet support media specifications, though those can be manually added to the generated JSON files. 
 
-## Dependencies
+### Dependencies
 
 <em>Game (Java)</em>
 
@@ -103,5 +118,4 @@ Running either customs.py or Jeopardizer will move these files to data/questions
         <ul><li>BeautifulSoup is used for to scrape J-Archive's game files, so install this in order to run the scraper</ul>
     </li>
 </ul>
-
-
+</details>

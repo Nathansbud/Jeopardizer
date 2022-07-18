@@ -25,6 +25,7 @@ const progressButton = document.getElementById('progress_button')
 const regressButton = document.getElementById('regress_button')
 const scoresButton = document.getElementById('scores_button')
 const resetButton = document.getElementById('reset_button')
+const buzzerButton = document.getElementById('buzzer_button')
 
 const sfxDropdown = document.getElementById('sfx_dropdown')
 const playButton = document.getElementById('play_sfx')
@@ -168,6 +169,13 @@ window.addEventListener('beforeunload', (event) => {
     sendMessage("CONSOLE_CLOSE")
 })
 
+buzzerButton.addEventListener('click', () => {
+    const ok = confirm("Are you sure? Launching buzzers will require all players to join a new buzz.in game!")
+    if(ok) {
+        sendMessage("OPEN_BUZZERS")
+    }
+})
+
 bc.onmessage = function(msg) {
     const action = msg.data.action
     const data = msg.data.response
@@ -253,6 +261,7 @@ bc.onmessage = function(msg) {
                 break
             case "CLIENT_CLOSE":
                 window.close()
+                if(buzzerWindow) buzzerWindow.close()
                 break
             default:
                 console.log("Invalid action at console: ", msg)

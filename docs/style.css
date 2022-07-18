@@ -32,6 +32,20 @@ nav li {
     color: var(--jeopardy-gold);
 }
 
+#player_list {
+    display: table;
+    margin: 0 auto;
+    padding: 5px;
+}
+
+#player_list li {
+    text-align: left;
+}
+
+#player_list li button, #player_list li span {
+    margin-right: 5px;
+}
+
 #scores {
     font-size: 300%;
 }

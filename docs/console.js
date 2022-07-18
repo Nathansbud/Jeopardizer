@@ -380,10 +380,10 @@ function updatePlayerList(restart=false) {
                 return scoreButton
             })
             
-            pl.appendChild(playerSpan)
-            pl.appendChild(subtractButton)
-            pl.appendChild(addButton)
             pl.appendChild(addFromInputButton)
+            pl.appendChild(addButton)
+            pl.appendChild(subtractButton)
+            pl.appendChild(playerSpan)
             playerList.appendChild(pl)
         })
     } else {

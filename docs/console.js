@@ -39,7 +39,7 @@ let timerCallback;
 const divs = [mainDiv, questionDiv, pauseDiv]
 const states = ["Main", "Question"]
 
-let notes = null
+let board = null
 
 let cid = null
 let coid = Date.now()
@@ -194,7 +194,7 @@ bc.onmessage = function(msg) {
             case "START_GAME":
                 if(cid == data.cid) {
                     players = data.players  
-                    notes = data.notes
+                    board = data.board
                     timeLimit = data.limit
                     
                     if(timeLimit) {
@@ -204,7 +204,7 @@ bc.onmessage = function(msg) {
                     }
 
                     updatePlayerList(restart=true)
-                    updateNotes()
+                    updateBoard()
                     data.seen.forEach(v => {
                         const matchedCell = document.querySelector(`[data-cell='${v}']`)
                         if(matchedCell) matchedCell.classList.add('seen')
@@ -270,12 +270,15 @@ bc.onmessage = function(msg) {
     }
 }
 
-function updateNotes() {
+function updateBoard() {
     while(boardDisplay.lastChild) {
         boardDisplay.removeChild(boardDisplay.lastChild)
     }
 
-    Object.entries(notes).forEach(([roundKey, roundData]) => {
+    board.forEach(b => {
+        const roundKey = Object.keys(b)[0]
+        const roundData = Object.values(b)[0]
+
         const roundDiv = document.createElement("div")
         roundDiv.id = roundKey
         roundDiv.classList.add("round_container")
@@ -288,14 +291,14 @@ function updateNotes() {
         commentList.classList.add("comments")
 
         const headerRow = document.createElement("tr")
-        roundData.categories.forEach(cat => {
-            const {name, comment} = cat
+        roundData[0].forEach(cat => {
+            const { category, comment } = cat
             const headerCell = document.createElement("th")
-            headerCell.textContent = name
+            headerCell.textContent = category
 
             if(comment) {
                 const commentItem = document.createElement("li")
-                commentItem.textContent = `${name}: ${comment.replaceAll("\n", " ")}`
+                commentItem.textContent = `${category}: ${comment.replaceAll("\n", " ")}`
                 commentList.appendChild(commentItem)
             }
 
@@ -303,7 +306,7 @@ function updateNotes() {
         })
 
         roundTable.appendChild(headerRow)
-        roundData.rows.forEach(row => {
+        roundData.slice(1).forEach(row => {
             const newRow = document.createElement("tr")
             row.forEach(cell => {
                 const newCell = document.createElement('td')

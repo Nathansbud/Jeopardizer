@@ -59,16 +59,13 @@ let coid = null
 let consoleWindow = null
 let buzzerWindow = null
 
-let roundKey = 'single_jeopardy'
+let roundKey = null
 
 let hasTiebreaker = false
 let roundTables = document.getElementsByClassName("game_table")
 
-let roundNotes = {}
-const rounds = ['single_jeopardy', 'double_jeopardy', 'final_jeopardy', 'tiebreaker']
-
-const initializeRoundNotes = () => JSON.parse(JSON.stringify({dd: [], categories: [], rows: []}))
-rounds.forEach(r => roundNotes[r] = initializeRoundNotes())
+let roundData = {}
+let roundNames = []
 
 let players = {}
 function sendMessage(action, params=[]) {
@@ -85,11 +82,12 @@ function sendMessage(action, params=[]) {
 }
 const sendStartMessage = () => sendMessage("START_GAME", [
     ['players', players], 
-    ['notes', roundNotes], 
+    ['board', roundData], 
     ['limit', timeLimit], 
     ["roundKey", roundKey],
+    // ["settings",]
     // on console relaunch, apply proper styling to seen questions
-    ["seen", Array.from(document.querySelectorAll(".question_cell[disabled='true']")).filter(c => c.dataset.question != 'undefined').map(c => c.dataset.cell)]
+    ["seen", Array.from(document.querySelectorAll(".question_cell[data-seen='true']")).filter(c => c.dataset.question != 'undefined').map(c => c.dataset.cell)]
 ])
 
 let pulse = null //setTimeout used to communicate data from client -> console
@@ -168,11 +166,8 @@ bc.onmessage = function(msg) {
                         currentValue.style.display = 'block'
                     }
                     setState(questionDiv)
-                    if(data.final === 'false') {
-                        currentCell.setAttribute('disabled', true)
-                    } else {
-                        currentCell.style.color = 'grey'
-                    }
+                    currentCell.style.color = 'grey'
+                    currentCell.dataset.seen = 'true'
                 }
                 break
             case "SET_VALUE":
@@ -233,13 +228,14 @@ function shouldTiebreaker() {
 
 function progressRound() {
     let shouldEnd = true
-
+    const roundTables = document.getElementsByClassName("game_table");
     for(let i = 0; i < roundTables.length - 1; i++) {
         if(roundTables[i].style.display != 'none') {
-            if(i === roundTables.length - 2 && !shouldTiebreaker()) {
+            if(i === roundTables.length - 1) {
                 shouldEnd = true
                 break
             }
+
             roundTables[i].style.display = 'none'
             roundTables[i+1].style.display = 'table'
 
@@ -288,9 +284,7 @@ function updateScoreList() {
 
 function setup() {
     hasLoaded = false
-    roundNotes = {}
-    roundKey = 'single_jeopardy'
-    rounds.forEach(r => roundNotes[r] = initializeRoundNotes())
+    roundData = {}
 
     if(localStorage.getItem('showAdvanced') === 'true') {
         advancedButton.textContent = 'Hide Advanced'
@@ -355,7 +349,6 @@ window.onload = function() {
             playerNames.forEach(pn => players[pn] = 0)
             if(customSelector.files.length > 0) {
                 startGame(customGame)
-                // fullscreenDiv.requestFullscreen().catch(() => console.log("SKRT"))
             } else if(queryId && queryId >= gameId.min && queryId <= gameId.max) {
                 getGame(queryId).then((value) => {
                     startGame(value)
@@ -383,7 +376,25 @@ window.onload = function() {
 }
 
 function startGame(gameObj) {
-    loadGame(gameObj)
+    const {
+        data, passed, reason
+    } = loadGame(gameObj)
+    
+    if(!passed) {
+        console.log(`Failed to load game for ${reason ?? 'unknown reason'}`);
+        return;
+    } 
+    
+    roundData = Object.entries(data).map(([k, v]) => {
+        return {[k]: v.board}
+    });
+
+    Object.entries(data).forEach(([roundName, roundInfo]) => {
+        const { table } = roundInfo;
+        gameDiv.appendChild(table);
+        table.style.display = (roundName != roundKey) ? 'none' : 'table';
+    })
+
     if(!coid) {
         launchConsole()
         pulse = heartbeat()
@@ -391,11 +402,7 @@ function startGame(gameObj) {
     else sendStartMessage()
 
     console.log("Sent linking message...")
-    
-    Array.from(roundTables).forEach(rt => {
-        if(rt != document.getElementById('single_jeopardy')) rt.style.display = 'none'
-        else rt.style.display = 'table'
-    })
+
     if(coid) setState(gameDiv)          
     hasLoaded = true
 }
@@ -428,7 +435,7 @@ function loadCustom() {
     const JSONReader = new FileReader()
     JSONReader.onload = function(e) {
         try {
-            customGame = Object.values(JSON.parse(e.target.result))
+            customGame = JSON.parse(e.target.result)
             customLabel.textContent = customSelector.files[0].name
         } catch(e) {
             customGame = null
@@ -438,90 +445,114 @@ function loadCustom() {
     JSONReader.readAsText(customSelector.files[0])
 }
 
-function loadGame(roundSet) {
-    let ids = ['single_jeopardy', 'double_jeopardy', 'final_jeopardy', 'tiebreaker']
-    let rse = roundSet.entries()
-    if(rse.length > 3) hasTiebreaker = true
+function loadGame(config) { 
+    while(gameDiv.lastChild) {
+        gameDiv.removeChild(gameDiv.lastChild)
+    }
 
-    for(let [i, round] of roundSet.entries()) {
-        let table = document.getElementById(ids[i])
-        let headerRow = document.createElement('tr')
-        let questionSet = {}
+    const roundData = {}
+    const parsedRounds = config.rounds;
+    if(!parsedRounds) {
+        return {passed: false, reason: "Custom games must have at least 1 round!"};
+    }
+    
+    let firstRound = true;
+    for(let [roundNum, round] of parsedRounds.entries()) {
+        const {
+            name, 
+            multiplier, 
+            categories, 
+            dds
+        } = round;
+
+        const roundName = name ?? `round-${roundNum + 1}`
+        if(firstRound) {
+            roundKey = roundName;
+            firstRound = false;
+        }
         
-        round.forEach(r => {
-            let catName = document.createElement('th')
-            catName.textContent = r.category 
-
-            headerRow.appendChild(catName)
-            r.clues.forEach((qa, idx) => {
-                if(questionSet[idx]) questionSet[idx].push(qa)
-                else {
-                    questionSet[idx] = [qa]
-                }
-            })
-            
-            table.appendChild(headerRow)
-            roundNotes[rounds[i]].categories.push({'name': r.category, 'comment': r.comments})
-        })
-            
-        //Gonna need to rewrite this to interface with custom categories
-        let sjdd = randInt(0, 30)
-        let djdd = shuffle(getRange(30)).slice(0, 2)
-
-        let count = 0
-        let newCells = Object.entries(questionSet).map(([ind, qs]) => qs.map(({question, answer}, indq) => {
-            let newCell = document.createElement('td')
-            
-            const cellAttributes = {
-                cell: `${rounds[i]}-${count}`,
-                dd: dailyDoubleCheckbox.checked && (i === 0 && count === sjdd || i === 1 && djdd.includes(count)),
-                final: i >= 2,
-                value: 200*(i+1)*(parseInt(ind)+1)*(i < 2),
-                question: question,
-                answer: answer,
-                category: round[indq].category,
-                comments: round[indq].comments,
-                client: true
+        if(!categories) return {passed: false, reason: "Custom rounds must have at least 1 category!"}
+        const numCategories = categories.length;
+        const requiredRows = categories.reduce((acc, curr) => {
+            const catLength = curr.clues.length;
+            if(catLength >= acc) {
+                return catLength;
             }
-
-            Object.entries(cellAttributes).forEach(([k, v]) => {
-                if(!k.startsWith("console")) newCell.dataset[k] = v
-            })
-            newCell.classList.add("question_cell")
-
-            if(question && i < 2) newCell.textContent = "$"+newCell.getAttribute('data-value') 
-            else if(i >= 2) newCell.textContent = "Final Jeopardy"
-            else {
-                newCell.setAttribute('disabled', true)
-            }
-
-            newCell.addEventListener('click', function() {
-                if(!this.getAttribute('disabled')) {
-                    showQuestion(newCell)
-                }
-            })   
-            count++ 
+            return acc;
+        }, 0)        
+        const roundBoard = [...Array(requiredRows + 1)].map(_ => Array(numCategories))
+        const validDds = new Set(getRange(numCategories * requiredRows));
+        
+        for(let [column, cat] of categories.entries()) {
+            const { clues, comment, category } = cat;   
             
-            return {cell: newCell, attrs: cellAttributes}
-        }))
-
-
-        if(dailyDoubleCheckbox.checked) {
-            if(i === 0) roundNotes[rounds[i]].dd.push(sjdd)
-            else if(i === 1) roundNotes[rounds[i]].dd.push(...djdd)
+            roundBoard[0][column] = {category: category, comment: comment}
+            for(let row = 0; row < requiredRows; row++) {
+                const ques = clues[row] ?? {};
+                const { question, answer, value, dd } = ques;
+                const baseValue = 200 * (row + 1);
+                if(!answer) validDds.delete(row * numCategories + column)
+                roundBoard[row + 1][column] = {
+                    cell: `${roundName}-${row}-${column}`,
+                    idx: row * numCategories + column,  
+                    question: question ?? "",
+                    answer: answer ?? "",
+                    value: value ?? (baseValue * (multiplier ?? 1)),
+                    category: category,
+                    comment: comment,
+                    dd: Boolean(dd ?? false),
+                    client: true
+                }
+            }
         }
 
-        newCells.forEach((tr, ridx) => {
-            let newRow = document.createElement('tr')
-            roundNotes[rounds[i]].rows.push([])
-            tr.forEach((t, cidx) => {
-                roundNotes[rounds[i]].rows[ridx].push(t.attrs)
-                newRow.appendChild(t.cell)
-            })
-            
-
-            table.append(newRow)
+        
+        const ddIndices = shuffle(Array.from(validDds)).slice(0, Math.min(Math.abs(dds ?? 0), validDds.size))
+        ddIndices.forEach(dd => {
+            roundBoard[1 + Math.floor(dd / numCategories)][dd % numCategories].dd = true;
         })
+
+        const roundTable = document.createElement('table');
+        roundTable.classList.add("game_table");
+        roundTable.id = roundName
+
+        const tableHeader = document.createElement('tr');
+        roundBoard[0].forEach(c => {
+            const header = document.createElement('th');
+            header.textContent = c.category;
+            header.dataset['comment'] = c.comment;
+            tableHeader.appendChild(header);
+        })
+
+        roundTable.appendChild(tableHeader);
+        roundBoard.slice(1).forEach(row => {
+            const newRow = document.createElement('tr');
+            row.forEach(q => {
+                const cell = document.createElement("td");
+                cell.classList.add('question_cell');
+                cell.textContent = `$${q.value}`
+                cell.setAttribute('disabled', !!!q.answer);
+                cell.addEventListener('click', function() {
+                    if(this.getAttribute('disabled').includes('false')) {
+                        showQuestion(this)
+                        this.dataset.seen = "true"
+                    }
+                })  
+                Object.entries(q).forEach(([k, v]) => {cell.dataset[k] = v});
+                newRow.appendChild(cell);
+            })
+            roundTable.appendChild(newRow);
+        })
+        
+        roundData[roundName] = {
+            board: roundBoard,
+            table: roundTable
+        };
+    }
+    
+    return {
+        passed: true,
+        data: roundData
     }
 }
 
@@ -549,7 +580,7 @@ function getCategories(tables) {
                  .map(c => c.map(function(cn) {
                      return {
                          "category":cn.querySelector(".category_name").textContent.trim(),
-                         "comments":cn.querySelector('.category_comments').textContent.trim(),
+                         "comment":cn.querySelector('.category_comments').textContent.trim(),
                          "answer":extractAnswer(cn) //only for final round; is null otherwise!
                         }
                     }))
@@ -575,7 +606,7 @@ async function getGame(gid) {
                                 "answer": extractAnswer(cn) 
                             }
                           }))
-    
+                          
     let roundSet = []
     for(let [i, r] of categories.entries()) {
         for(let [j, cat] of Array.from(r).entries()) {
@@ -585,8 +616,26 @@ async function getGame(gid) {
         }             
         roundSet.push(r)
     }
-        
-    return roundSet
+    
+    return {
+        "rounds": [
+            {
+                "name": "single_jeopardy",
+                "dds": 1,
+                "categories": roundSet[0]
+            },
+            {
+                "name": "double_jeopardy",
+                "dds": 2,
+                "multiplier": 2,
+                "categories": roundSet[1]
+            },
+            {
+                "name": "final_jeopardy",
+                "categories": roundSet[2]
+            }
+        ]
+    }
 }
 
 footnoteId.addEventListener('change', function() {

@@ -14,8 +14,7 @@ body, body:fullscreen {
 
 body, div, .game_table {background: var(--jeopardy-blue);}
 
-div:not(#start):not(#fullscreen):not(.show), .game_table:not(#single_jeopardy):not(.console), 
-#final_text, .footnote_text, #daily_double, button[data-manual='false'], .hide {
+div:not(#start):not(#fullscreen):not(.show), #final_text, .footnote_text, #daily_double, button[data-manual='false'], .hide {
     display: none;
 }
 

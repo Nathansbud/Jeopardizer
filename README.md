@@ -8,11 +8,11 @@ Games are loaded from [J-Archive](https://j-archive.com/) by providing the ID of
 
 ## Custom Games
 
-By default, Jeopardizer pulls a provided J-Archive game. However, custom games can be defined as JSON files, and loaded in during game setup by the host. A [base template](./media/custom.json) is provided. 
+By default, Jeopardizer pulls a provided J-Archive game. However, custom games can be defined as JSON files, and loaded in during game setup by the host. A [base template](./media/custom.json) is provided. Rounds can have any number of categories, and categories can have any number of questions, and round board size will always be `# Categories * Max(# Questions)` for consistency. 
 
-Note that categories must have 5 questions, but questions need not all have content (providing empty strings for question/answer will render as a blank, non-selectable space). Conversely, rounds can have any number of categories (though only 6 have been reliably tested). However, regardless of question count, **current game logic relies on an n x 5 board** (i.e. all categories must have 5 defined questions, blank questions included) 
+Question values can either be defined via a round multiplier (e.g. 2 for Double Jeopardy scoring), or on questions themselves. Daily doubles can either be assigned to specific questions, or a specific number can be designed per round which will be randomly assigned to (non-null) questions on the board. 
 
-Support for categories with varied numbers of questions (i.e. not 5) and additional rounds beyond the standard set (single, double, final, tiebreaker) is planned. Question media (e.g. images, video, audio, ...) is unlikely to be added at present.
+Questions can also be designed as "final" to have question screen display Final Jeopardy rather than Daily Double, and rounds themselves can have _mode_ "final" in order to stop progression after that round (future rounds can still be selected via dropdown, in the event of tiebreakers or additional rounds). Note that designating a round with mode final does not enforce wager logic (i.e. a normal round could be designated the final round).
 
 ## Known Limitations
 

@@ -250,6 +250,8 @@ bc.onmessage = function(msg) {
                     document.getElementById("board_display").style.display = 'block'
 
                     const activeRound = document.querySelector(`#${data.roundKey}`)
+                    roundDropdown.value = data.roundKey
+
                     if(activeRound) activeRound.style.display = 'block'
                 }
                 break
@@ -291,6 +293,8 @@ bc.onmessage = function(msg) {
             case "SET_ROUND":
                 if(cid == data.cid) {
                     Array.from(document.querySelectorAll(".round_container")).forEach(t => t.style.display = 'none')
+                    
+                    roundDropdown.value = data.roundKey
                     const relevantRound = document.querySelector(`#${data.roundKey}`)
                     if(relevantRound) relevantRound.style.display = 'block'
                 }

@@ -133,8 +133,8 @@ form label {
 .question_cell[disabled='true'] {
     cursor: default;
     color:  var(--jeopardy-blue);
+    font-size: 0;
 }
-
 
 .game_table.console {
     width:  100%;

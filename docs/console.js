@@ -23,6 +23,9 @@ const questionButton = document.getElementById('question_button')
 const backButton = document.getElementById('back_button')
 const progressButton = document.getElementById('progress_button')
 const regressButton = document.getElementById('regress_button')
+const roundDropdown = document.getElementById('round_dropdown')
+const roundButton = document.getElementById('select_round')
+
 const scoresButton = document.getElementById('scores_button')
 const resetButton = document.getElementById('reset_button')
 const buzzerButton = document.getElementById('buzzer_button')
@@ -39,7 +42,8 @@ let timerCallback;
 const divs = [mainDiv, questionDiv, pauseDiv]
 const states = ["Main", "Question"]
 
-let notes = null
+let board = null
+let settings = {}
 
 let cid = null
 let coid = Date.now()
@@ -76,7 +80,7 @@ function closeQuestion() {
 
 window.onload = function() {
     backButton.addEventListener('click', closeQuestion)
-    document.addEventListener('keydown', (e) => e.keyCode === 27 ? closeQuestion() : null)
+    document.addEventListener('keydown', (e) => e.key === "Escape" ? closeQuestion() : null)
 
     progressButton.addEventListener('click', () => {
         sendMessage("PROGRESS_ROUND")
@@ -93,6 +97,22 @@ window.onload = function() {
         sendMessage("REGRESS_ROUND")
         sendMessage("SHOW_BOARD")
         scoresButton.textContent = "Show Scores"
+
+        currentTime = timeLimit
+        timerText.textContent = getTimeText(timeLimit)
+        clearInterval(timerCallback)            
+        timerButton.textContent = 'Start Timer'
+    })
+
+    roundButton.addEventListener('click', () => {
+        sendMessage("SET_ROUND", [['roundKey', roundDropdown.options[roundDropdown.selectedIndex].value]])        
+        sendMessage("SHOW_BOARD")
+        scoresButton.textContent = "Show Scores"
+
+        currentTime = timeLimit
+        timerText.textContent = getTimeText(timeLimit)
+        clearInterval(timerCallback)            
+        timerButton.textContent = 'Start Timer'
     })
     
     questionButton.addEventListener('click', () => sendMessage('SHOW_QUESTION'))
@@ -135,13 +155,17 @@ function countdown() {
     timerText.textContent = getTimeText(currentTime)
 }
 
+function clearChildren(node) {
+    while(node.lastChild) {
+        node.removeChild(node.lastChild)
+    }
+}
+
 function restart() {
-    while(boardDisplay.lastChild) {
-        boardDisplay.removeChild(boardDisplay.lastChild)
+    for(let node of [boardDisplay, playerList, roundDropdown]) {
+        clearChildren(node);
     }
-    while(playerList.lastChild) {
-        playerList.removeChild(playerList.lastChild)
-    }
+
     mainDiv.style.display = 'none'
     document.querySelector('nav').style.display = 'none'
     setState(pauseDiv)
@@ -194,20 +218,29 @@ bc.onmessage = function(msg) {
             case "START_GAME":
                 if(cid == data.cid) {
                     players = data.players  
-                    notes = data.notes
+                    board = data.board
                     timeLimit = data.limit
+                    settings = data.settings
                     
                     if(timeLimit) {
                         timerControls.style.display = 'block'
                         currentTime = timeLimit
                         timerText.textContent = getTimeText(currentTime)
                     }
-
+                    
                     updatePlayerList(restart=true)
-                    updateNotes()
+                    updateBoard()
                     data.seen.forEach(v => {
                         const matchedCell = document.querySelector(`[data-cell='${v}']`)
                         if(matchedCell) matchedCell.classList.add('seen')
+                    })
+                    
+                    board.forEach(b => {
+                        const key = Object.keys(b)[0]
+                        const opt = document.createElement("option") 
+                        opt.text = key
+                        opt.value = key
+                        roundDropdown.add(opt)
                     })
 
                     setState(mainDiv)
@@ -217,6 +250,8 @@ bc.onmessage = function(msg) {
                     document.getElementById("board_display").style.display = 'block'
 
                     const activeRound = document.querySelector(`#${data.roundKey}`)
+                    roundDropdown.value = data.roundKey
+
                     if(activeRound) activeRound.style.display = 'block'
                 }
                 break
@@ -233,26 +268,33 @@ bc.onmessage = function(msg) {
 
                     const relevantQuestion = document.querySelector(`[data-cell='${data.cell}']`)
                     if(relevantQuestion) relevantQuestion.classList.add("seen")
-
-                    if([data.dd, data.final].includes('true')) {
-                        dailyDoubleText.textContent = (data.dd === 'true') ? ("DAILY DOUBLE") : ("FINAL JEOPARDY")
+                        
+                    if(data.dd.includes('true') && settings.ddEnabled) {
+                        dailyDoubleText.textContent = "DAILY DOUBLE";
+                        dailyDoubleText.style.display = 'block'
+                        showWager(true)
+                    } else if(data.final === 'true') {
+                        dailyDoubleText.textContent = "FINAL JEOPARDY";
                         dailyDoubleText.style.display = 'block'
                         showWager(true)
                     } else {
                         dailyDoubleText.style.display = 'none'
                         showWager(false)
                     }
+
                     Array.from(document.querySelectorAll("button[data-manual]")).forEach(sb => {
                         sb.style.display = "inline"
                     })
                     setState(questionDiv)
                     boardDisplay.style.display = 'none'
-                    sendMessage("OPEN_QUESTION", params=[["dd", data.dd], ["final", data.final]])
+                    sendMessage("OPEN_QUESTION", params=[["dd", data.dd && settings.ddEnabled], ["final", data.final]])
                 }
                 break
             case "SET_ROUND":
                 if(cid == data.cid) {
                     Array.from(document.querySelectorAll(".round_container")).forEach(t => t.style.display = 'none')
+                    
+                    roundDropdown.value = data.roundKey
                     const relevantRound = document.querySelector(`#${data.roundKey}`)
                     if(relevantRound) relevantRound.style.display = 'block'
                 }
@@ -260,9 +302,17 @@ bc.onmessage = function(msg) {
             case "NEW_GAME":
                 break
             case "CLIENT_CLOSE":
-                window.close()
-                if(buzzerWindow) buzzerWindow.close()
+                if(cid == data.cid) {
+                    window.close()
+                    if(buzzerWindow) buzzerWindow.close()
+                }
                 break
+            case "REQUEST_SCORES":
+                if(cid == data.cid) {
+                    sendMessage("SHOW_SCORES")
+                    scoresButton.textContent = "Show Board"
+                }
+                break;
             default:
                 console.log("Invalid action at console: ", msg)
                 break
@@ -270,12 +320,13 @@ bc.onmessage = function(msg) {
     }
 }
 
-function updateNotes() {
-    while(boardDisplay.lastChild) {
-        boardDisplay.removeChild(boardDisplay.lastChild)
-    }
+function updateBoard() {
+    clearChildren(boardDisplay)
+    
+    board.forEach(b => {
+        const roundKey = Object.keys(b)[0]
+        const roundData = Object.values(b)[0]
 
-    Object.entries(notes).forEach(([roundKey, roundData]) => {
         const roundDiv = document.createElement("div")
         roundDiv.id = roundKey
         roundDiv.classList.add("round_container")
@@ -283,19 +334,22 @@ function updateNotes() {
         const roundTable = document.createElement("table")
 
         roundTable.classList.add("game_table", "console")
+        if(settings.ddEnabled) {
+            roundTable.classList.add("dd_enabled")
+        }
         
         const commentList = document.createElement("ul")
         commentList.classList.add("comments")
 
         const headerRow = document.createElement("tr")
-        roundData.categories.forEach(cat => {
-            const {name, comment} = cat
+        roundData[0].forEach(cat => {
+            const { category, comment } = cat
             const headerCell = document.createElement("th")
-            headerCell.textContent = name
+            headerCell.textContent = category
 
             if(comment) {
                 const commentItem = document.createElement("li")
-                commentItem.textContent = `${name}: ${comment.replaceAll("\n", " ")}`
+                commentItem.textContent = `${category}: ${comment.replaceAll("\n", " ")}`
                 commentList.appendChild(commentItem)
             }
 
@@ -303,7 +357,7 @@ function updateNotes() {
         })
 
         roundTable.appendChild(headerRow)
-        roundData.rows.forEach(row => {
+        roundData.slice(1).forEach(row => {
             const newRow = document.createElement("tr")
             row.forEach(cell => {
                 const newCell = document.createElement('td')
@@ -336,9 +390,7 @@ function updateNotes() {
 
 function updatePlayerList(restart=false) {
     if(restart) {
-        while(playerList.lastChild) {
-            playerList.removeChild(playerList.lastChild)
-        }
+        clearChildren(playerList)
 
         Object.entries(players).forEach(pe => {
             let pl = document.createElement('li')

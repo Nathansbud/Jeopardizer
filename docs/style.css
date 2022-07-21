@@ -2,6 +2,7 @@
     --jeopardy-blue: rgb(5, 20, 129);
     --jeopardy-gold: rgb(226, 176, 114);
     --jeopardy-red:  #dc143c;
+    --ddEnabled: "true";
 }
 
 body, body:fullscreen {
@@ -14,8 +15,7 @@ body, body:fullscreen {
 
 body, div, .game_table {background: var(--jeopardy-blue);}
 
-div:not(#start):not(#fullscreen):not(.show), .game_table:not(#single_jeopardy):not(.console), 
-#final_text, .footnote_text, #daily_double, button[data-manual='false'], .hide {
+div:not(#start):not(#fullscreen):not(.show), #final_text, .footnote_text, #daily_double, button[data-manual='false'], .hide {
     display: none;
 }
 
@@ -122,18 +122,19 @@ form label {
 }
 #question * {margin: 10px;}
 .question_cell {cursor: grab;}
-.question_cell[data-dd='true']:not([data-client='true']) {
+.game_table.dd_enabled .question_cell[data-dd='true']:not([data-client='true']) {
     color: var(--jeopardy-red);
 } 
 
 .question_cell.console.seen {color: #60523E;}
-.question_cell.console.seen[data-dd='true'] {color: #551111;}
+.game_table.dd_enabled .question_cell.console.seen[data-dd='true'] {color: #551111;}
+
 
 .question_cell[disabled='true'] {
     cursor: default;
     color:  var(--jeopardy-blue);
+    font-size: 0;
 }
-
 
 .game_table.console {
     width:  100%;

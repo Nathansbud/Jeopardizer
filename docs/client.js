@@ -60,14 +60,13 @@ let consoleWindow = null
 let buzzerWindow = null
 
 let roundKey = null
-
 let hasTiebreaker = false
-let roundTables = document.getElementsByClassName("game_table")
-
-let roundData = {}
-let roundNames = []
 
 let players = {}
+let roundData = {}
+let roundSettings = {}
+let roundNames = []
+
 function sendMessage(action, params=[]) {
     let messageResponse = {
         src: "CLIENT",
@@ -82,10 +81,10 @@ function sendMessage(action, params=[]) {
 }
 const sendStartMessage = () => sendMessage("START_GAME", [
     ['players', players], 
-    ['board', roundData], 
+    ['board', Object.entries(roundData).map(([k, v]) => {return {[k]: v.board}})],
     ['limit', timeLimit], 
     ["roundKey", roundKey],
-    // ["settings",]
+    ["settings", roundSettings],
     // on console relaunch, apply proper styling to seen questions
     ["seen", Array.from(document.querySelectorAll(".question_cell[data-seen='true']")).filter(c => c.dataset.question != 'undefined').map(c => c.dataset.cell)]
 ])
@@ -191,6 +190,9 @@ bc.onmessage = function(msg) {
             case "PROGRESS_ROUND":
                 if(data.coid === coid) progressRound()
                 break
+            case "SET_ROUND":
+                if(data.coid === coid) setRound(data.roundKey);
+                break;
             case "REGRESS_ROUND":
                 if(data.coid === coid) regressRound()
                 break
@@ -203,13 +205,16 @@ bc.onmessage = function(msg) {
                 break
             case "OPEN_BUZZERS": 
                 if(data.coid === coid) {
-                    if(buzzerWindow) {
+                    if(!buzzerWindow.closed) {
                         if(buzzerWindow.location === buzzUrl) buzzerWindow.location.reload()
-                        else buzzerWindow.location.replace(buzzUrl)
+                        else {
+                            buzzerWindow.location.replace(buzzUrl)
+                        }
                     } else {
-                        buzzerWindow = window.open(buzzUrl, '_blank', 'toolbar=0,location=0,menubar=0')
+                        buzzerWindow = window.open(buzzUrl, `${cid}_BUZZERS`, 'toolbar=0,location=0,menubar=0')
                     }
                 }
+                break;
             default:
                 if(action in validActions) {
                     console.log("Received unimplemented action: ", msg.data)
@@ -226,43 +231,44 @@ function shouldTiebreaker() {
     return hasTiebreaker && !pv.map(ps => pv.indexOf(ps) === pv.lastIndexOf(ps)).every(s => s)
 }
 
-function progressRound() {
-    let shouldEnd = true
-    const roundTables = document.getElementsByClassName("game_table");
-    for(let i = 0; i < roundTables.length - 1; i++) {
-        if(roundTables[i].style.display != 'none') {
-            if(i === roundTables.length - 1) {
-                shouldEnd = true
-                break
-            }
-
-            roundTables[i].style.display = 'none'
-            roundTables[i+1].style.display = 'table'
-
-            roundKey = roundTables[i+1].getAttribute('id')
-
-            console.log(`Progressed to ${roundKey}`)
-            sendMessage("SET_ROUND", [["roundKey", roundKey]])
-
-            shouldEnd = false
-            break
-        } 
+function setRound(rk) {
+    for(let round of roundNames) {
+        if(round !== rk) document.querySelector(`.game_table.${round}`).style.display = 'none';
+        else {
+            document.querySelector(`.game_table.${rk}`).style.display = 'table';
+            roundKey = round;
+            sendMessage("SET_ROUND", [["roundKey", roundKey]])            
+        }
     }
+}
 
-    if(shouldEnd) {
-        show(document.getElementById('final_text'), 'inline')
-        updateScoreList()
-        setState(scoresDiv)
+function progressRound() {
+    for(let i = 0; i < roundNames.length; i++) {
+        if(roundNames[i] === roundKey) {
+            if(roundData[roundKey].settings.mode === 'final' || i === roundNames.length - 1) {
+                show(document.getElementById('final_text'), 'inline')
+                updateScoreList()
+                // PROGRESS_ROUND message is send with SHOW_BOARD, so circumvent by requesting score view
+                sendMessage("REQUEST_SCORES")
+                break;
+            } else {
+                document.querySelector(`.game_table.${roundKey}`).style.display = 'none';
+                roundKey = roundNames[i+1];
+                document.querySelector(`.game_table.${roundKey}`).style.display = 'table';
+                console.log(`Progressed to ${roundKey}`)
+                sendMessage("SET_ROUND", [["roundKey", roundKey]])
+                break;
+            }
+        }
     }
 }
 
 function regressRound() {
-    for(let i = roundTables.length - 1; i > 0; i--) {
-        if(roundTables[i].style.display != 'none') {
-            roundTables[i].style.display = 'none'
-            roundTables[i - 1].style.display = 'table'
-
-            roundKey = roundTables[i - 1].getAttribute('id')
+    for(let i = roundNames.length - 1; i > 0; i--) {
+        if(roundNames[i] === roundKey) {
+            document.querySelector(`.game_table.${roundKey}`).style.display = 'none';
+            roundKey = roundNames[i - 1];
+            document.querySelector(`.game_table.${roundKey}`).style.display = 'table';
 
             console.log(`Regresed to ${roundKey}`)
             sendMessage("SET_ROUND", [["roundKey", roundKey]])
@@ -306,12 +312,6 @@ function setup() {
     customLabel.textContent = "Select File..."
 
     if(startButton.getAttribute('disabled')) startButton.removeAttribute('disabled')
-    Array.from(roundTables).forEach(rt => {
-        while(rt.lastChild) {
-            rt.removeChild(rt.lastChild)
-        }
-    })
-    
     setState(startDiv)
 }
 
@@ -325,9 +325,10 @@ function launchConsole() {
         consoleLoc = './console.html'   
     }
     
-    consoleWindow = window.open(consoleLoc, '_blank', 'toolbar=0,location=0,menubar=0')
+    consoleWindow = window.open(consoleLoc, `${cid}_CONSOLE`, 'toolbar=0,location=0,menubar=0')
     if(buzzerCheckbox.checked && (!buzzerWindow || buzzerWindow.closed)) {
-        buzzerWindow = window.open(buzzUrl, '_blank', 'toolbar=0,location=0,menubar=0')
+        console.log("???")
+        buzzerWindow = window.open(buzzUrl, `${cid}_BUZZERS`, 'toolbar=0,location=0,menubar=0')
     }
 
     self.focus()
@@ -347,7 +348,7 @@ window.onload = function() {
         if(playerNames) {
             startButton.setAttribute('disabled', true)
             playerNames.forEach(pn => players[pn] = 0)
-            if(customSelector.files.length > 0) {
+            if(customGame) {
                 startGame(customGame)
             } else if(queryId && queryId >= gameId.min && queryId <= gameId.max) {
                 getGame(queryId).then((value) => {
@@ -359,10 +360,12 @@ window.onload = function() {
                     } else {
                         localStorage.setItem('playedList', JSON.stringify([queryId]))
                     }
-                }).catch((error) => {
-                    console.log(error)
+                }).catch((e) => {
                     setup()
+                    
                     errorText.style.display = 'block'
+                    errorText.textContent = "J-Archive is offline! Try again later, or choose a custom game instead.";
+
                     const storedId = queryId
                     gameId.value = storedId
                 })
@@ -375,25 +378,40 @@ window.onload = function() {
     })
 }
 
+
 function startGame(gameObj) {
+    const loadGameContainer = () => {
+        try {
+            return loadGame(gameObj)
+        } catch(e) {
+            return {passed: false, reason: "Unknown reason; if custom, try editing your game, otherwise try again later!"}
+        }
+    }
+
     const {
-        data, passed, reason
-    } = loadGame(gameObj)
+        data, passed, reason, settings
+    } = loadGameContainer()
     
     if(!passed) {
-        console.log(`Failed to load game for ${reason ?? 'unknown reason'}`);
+        const errorMsg = `Failed to load game: ${reason ?? 'unknown reason'}`
+        errorText.textContent = errorMsg;
+        errorMsg.style.display = 'block';
+        console.log(errorMsg);
         return;
-    } 
+    } else {
+        errorText.style.display = 'none';
+    }
     
-    roundData = Object.entries(data).map(([k, v]) => {
-        return {[k]: v.board}
-    });
+    roundData = data;
+    roundNames = Object.keys(data);
 
     Object.entries(data).forEach(([roundName, roundInfo]) => {
         const { table } = roundInfo;
         gameDiv.appendChild(table);
         table.style.display = (roundName != roundKey) ? 'none' : 'table';
     })
+    
+    roundSettings = settings;
 
     if(!coid) {
         launchConsole()
@@ -403,7 +421,7 @@ function startGame(gameObj) {
 
     console.log("Sent linking message...")
 
-    if(coid) setState(gameDiv)          
+    if(coid) setState(gameDiv)        
     hasLoaded = true
 }
 
@@ -450,8 +468,9 @@ function loadGame(config) {
         gameDiv.removeChild(gameDiv.lastChild)
     }
 
-    const roundData = {}
+    const parsedData = {}
     const parsedRounds = config.rounds;
+
     if(!parsedRounds) {
         return {passed: false, reason: "Custom games must have at least 1 round!"};
     }
@@ -462,10 +481,15 @@ function loadGame(config) {
             name, 
             multiplier, 
             categories, 
+            mode,
             dds
         } = round;
 
-        const roundName = name ?? `round-${roundNum + 1}`
+        const roundName = ("" + (name ?? `round-${roundNum + 1}`)).trim().toLowerCase()
+        if(roundName.match(/[^A-Za-z0-9\-_]/)) {
+            return {passed: false, reason: "Custom rounds may only contain characters: alphanumeric characters, hyphens (-), and underscores (_)!"}
+        }
+
         if(firstRound) {
             roundKey = roundName;
             firstRound = false;
@@ -489,7 +513,7 @@ function loadGame(config) {
             roundBoard[0][column] = {category: category, comment: comment}
             for(let row = 0; row < requiredRows; row++) {
                 const ques = clues[row] ?? {};
-                const { question, answer, value, dd } = ques;
+                const { question, answer, value, dd, final } = ques;
                 const baseValue = 200 * (row + 1);
                 if(!answer) validDds.delete(row * numCategories + column)
                 roundBoard[row + 1][column] = {
@@ -501,6 +525,7 @@ function loadGame(config) {
                     category: category,
                     comment: comment,
                     dd: Boolean(dd ?? false),
+                    final: final,
                     client: true
                 }
             }
@@ -513,8 +538,7 @@ function loadGame(config) {
         })
 
         const roundTable = document.createElement('table');
-        roundTable.classList.add("game_table");
-        roundTable.id = roundName
+        roundTable.classList.add("game_table", roundName);
 
         const tableHeader = document.createElement('tr');
         roundBoard[0].forEach(c => {
@@ -544,15 +568,21 @@ function loadGame(config) {
             roundTable.appendChild(newRow);
         })
         
-        roundData[roundName] = {
+        parsedData[roundName] = {
             board: roundBoard,
-            table: roundTable
+            table: roundTable,
+            settings: {
+                mode: mode
+            }
         };
     }
     
     return {
         passed: true,
-        data: roundData
+        data: parsedData,
+        settings: {
+            "ddEnabled": config.ddEnabled ?? dailyDoubleCheckbox.checked,
+        }
     }
 }
 

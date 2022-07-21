@@ -30,6 +30,7 @@ const customLabel = document.getElementById('custom_label')
 const dailyDoubleCheckbox = document.getElementById('dd_checkbox')
 const buzzerCheckbox = document.getElementById('buzzer_checkbox')
 const timerCheckbox = document.getElementById('time_checkbox')
+const playerCheckbox = document.getElementById('player_checkbox')
 const timerInput = document.getElementById('time_limit')
 
 const startButton = document.getElementById('start_button')
@@ -133,8 +134,9 @@ bc.onmessage = function(msg) {
             case "CONSOLE_CLOSE":
                 if(data.coid === coid) {
                     coid = null
-                    setState(pauseDiv)
-                    playSFX(null)
+                    if(activeState() != startDiv) {
+                        setState(pauseDiv)
+                    }
                 }
                 break
             case "SHOW_SCORES":
@@ -216,11 +218,7 @@ bc.onmessage = function(msg) {
                 }
                 break;
             default:
-                if(action in validActions) {
-                    console.log("Received unimplemented action: ", msg.data)
-                } else {
-                    console.log("Invalid action: ", msg.data)
-                }
+                console.log("Received unimplemented action: ", msg.data)
                 break
         }
     }
@@ -345,8 +343,12 @@ window.onload = function() {
         players = {}
         timeLimit = (timerCheckbox.checked && timerInput.value >= timerInput.min) ? (timerInput.value) : (null)
         let queryId = gameId.value
-        let playerNames = (playerInput.value) ? (playerInput.value.split(",").map(pn => pn.trim())) : (playerInput.value)
-        if(playerNames) {
+        
+        let playerNames = (playerInput.value) ? 
+            (playerInput.value.split(",").map(pn => pn.trim())) : 
+            (!playerCheckbox.checked ? [] : playerInput.value);
+
+        if(playerNames || !playerCheckbox.checked) {
             startButton.setAttribute('disabled', true)
             playerNames.forEach(pn => players[pn] = 0)
             if(customGame) {
@@ -433,6 +435,11 @@ function setState(div) {
     })
 }
 
+function activeState() {
+    for(let d of divs) {
+        if(d.style.display === 'block') return d;
+    }
+}
 
 customSelector.addEventListener('change', () => {
     console.log("Attempting to load custom game...")

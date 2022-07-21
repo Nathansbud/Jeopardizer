@@ -14,6 +14,10 @@ const currentAnswer = document.getElementById("question_answer")
 let questionValue = 0
 const scoreInput = document.getElementById("score_input")
 
+const addPlayer = document.getElementById("add_player")
+const removePlayer = document.getElementById("remove_player")
+const playerDropdown = document.getElementById("players")
+
 const dailyDoubleText = document.getElementById('daily_double')
 const wagerControls = document.getElementById('wager_controls')
 const wagerButton = document.getElementById('wager_button')
@@ -125,8 +129,10 @@ window.onload = function() {
     
     scoresButton.addEventListener('click', () => {
         if(scoresButton.textContent == "Show Scores") {
-            sendMessage("SHOW_SCORES")
-            scoresButton.textContent = "Show Board"
+            if(Object.entries(players).length > 0) {
+                sendMessage("SHOW_SCORES")
+                scoresButton.textContent = "Show Board"
+            }
         } else {
             sendMessage("SHOW_BOARD")
             scoresButton.textContent = "Show Scores"
@@ -145,6 +151,38 @@ window.onload = function() {
             timerButton.textContent = 'Start Timer'
         }
     })
+
+    addPlayer.addEventListener('click', () => {
+        const name = prompt("Player Name: ");
+        if(name && !(name in players)) {
+            if(Object.entries(players).length === 0) {
+                removePlayer.disabled = false;
+            }
+
+            const newOption = document.createElement('option');
+            newOption.text = name;
+            newOption.value = name;
+            playerDropdown.add(newOption);
+
+            players[name] = 0;
+
+            sendMessage("UPDATE_PLAYERS", [['players', players]])
+            updatePlayerList(restart=true)
+        } 
+    })
+
+    removePlayer.addEventListener('click', () => {
+        const playerToRemove = playerDropdown.options[playerDropdown.selectedIndex].value
+        delete players[playerToRemove]
+        playerDropdown.remove(playerDropdown.selectedIndex);
+        
+        sendMessage("UPDATE_PLAYERS", [['players', players]])
+        updatePlayerList(restart=true)
+
+        if(Object.entries(players).length === 0) {
+            removePlayer.disabled = true;
+        } 
+    })
 }
 
 function countdown() {
@@ -162,10 +200,11 @@ function clearChildren(node) {
 }
 
 function restart() {
-    for(let node of [boardDisplay, playerList, roundDropdown]) {
+    for(let node of [boardDisplay, playerList, roundDropdown, playerDropdown]) {
         clearChildren(node);
     }
 
+    scoresButton.textContent = 'Show Scores'
     mainDiv.style.display = 'none'
     document.querySelector('nav').style.display = 'none'
     setState(pauseDiv)
@@ -235,6 +274,16 @@ bc.onmessage = function(msg) {
                         if(matchedCell) matchedCell.classList.add('seen')
                     })
                     
+                    const playerNames = Object.keys(players)
+                    
+                    if(playerNames.length === 0) removePlayer.disabled = true;
+                    playerNames.forEach(p => {
+                        const opt = document.createElement("option") 
+                        opt.text = p
+                        opt.value = p
+                        playerDropdown.add(opt)
+                    })
+ 
                     board.forEach(b => {
                         const key = Object.keys(b)[0]
                         const opt = document.createElement("option") 
@@ -309,8 +358,10 @@ bc.onmessage = function(msg) {
                 break
             case "REQUEST_SCORES":
                 if(cid == data.cid) {
-                    sendMessage("SHOW_SCORES")
-                    scoresButton.textContent = "Show Board"
+                    if(Object.entries(players).length > 0) {
+                        sendMessage("SHOW_SCORES")
+                        scoresButton.textContent = "Show Board"
+                    }
                 }
                 break;
             default:

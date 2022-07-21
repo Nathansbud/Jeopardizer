@@ -10,9 +10,18 @@
     <header>
         <nav>
             <span id='timer' class='hide'>Round Time: <span id='round_timer'>Disabled</span><button id='timer_button'>Start Timer</button><br></span>
-            <ul id='player_list'></ul>
+            <hr>
+            <ul id='player_list'>
+
+            </ul>
             <label for='score_input'>Score Input: </label>
             <input type='number' min='0' step='100' value='0' id='score_input'/>
+            <br>
+            <div class="show" id="player_controls">
+                <button id="add_player">+ Add Player</button>
+                <select id="players"></select>
+                <button id="remove_player">- Remove Player</button>
+            </div>
             <hr>
             <label for="sfx_dropdown">SFX: </label>
             <select id='sfx_dropdown'>

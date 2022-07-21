@@ -42,7 +42,10 @@ nav li {
     text-align: left;
 }
 
-#player_list li button, #player_list li span {
+#player_controls {
+    margin-top: 5px;
+}
+#player_list li button, #player_list li span, #timer * {
     margin-right: 5px;
 }
 

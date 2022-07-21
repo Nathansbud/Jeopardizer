@@ -291,6 +291,7 @@ function updateScoreList() {
 function setup() {
     hasLoaded = false
     roundData = {}
+    customGame = null
 
     if(localStorage.getItem('showAdvanced') === 'true') {
         advancedButton.textContent = 'Hide Advanced'

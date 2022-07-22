@@ -5,9 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Console - Jeopardizer</title>
     <link rel="stylesheet" href="style.css">
+    <script src="lib/broadcast-channel.min.js"></script>
 </head>
 <body>
-    <header>
+    <header class="game-container">
         <nav>
             <span id='timer' class='hide'>Round Time: <span id='round_timer'>Disabled</span><button id='timer_button'>Start Timer</button><br></span>
             <hr>
@@ -36,38 +37,40 @@
             <hr>
         </nav>
     </header>
-    <div id="main">
-        <button id="scores_button">Show Scores</button>
-        <button id='progress_button'>Progress Round</button>
-        <button id='regress_button'>Regress Round</button>
-        <select id="round_dropdown">
+    <div class="game-container">
+        <div id="main">
+            <button id="scores_button">Show Scores</button>
+            <button id='progress_button'>Progress Round</button>
+            <button id='regress_button'>Regress Round</button>
+            <select id="round_dropdown">
 
-        </select>
-        <button id="select_round">Set Round</button>
-        <button id='reset_button'>New Game</button>
-        <button id='buzzer_button'>Launch Buzzers</button>
-        <hr>
-        <div id="board_display">
+            </select>
+            <button id="select_round">Set Round</button>
+            <button id='reset_button'>New Game</button>
+            <button id='buzzer_button'>Launch Buzzers</button>
+            <hr>
+            <div id="board_display">
 
+            </div>
         </div>
-    </div>
-    <div id="question">
-        <h2 id='daily_double'>DAILY DOUBLE</h2>        
-        <div id='wager_controls'>
-            <span>Amount: </span><input id='wager_input' min='0' value='0' step='any' type='number'/>
-            <button id='wager_button'>Set Wager</button>
-            <button id='question_button'>Show Question</button>
-        </div>
-        <h2 id='question_value'></h2>
+        <div id="question">
+            <h2 id='daily_double'>DAILY DOUBLE</h2>        
+            <div id='wager_controls'>
+                <span>Amount: </span><input id='wager_input' min='0' value='0' step='any' type='number'/>
+                <button id='wager_button'>Set Wager</button>
+                <button id='question_button'>Show Question</button>
+            </div>
+            <h2 id='question_value'></h2>
 
-        <h2 id="question_category"></h2>
-        <h2 id='question_text'></h2>
-        
-        <h3 id='question_answer'></h2>
-        <button id='back_button'>Close</button>
-    </div>
-    <div id='pause'>
-        <h1>Waiting for new game...</h1>
+            <h2 id="question_category"></h2>
+            <h2 id='question_text'></h2>
+            
+            <h3 id='question_answer'></h2>
+            <button id='back_button'>Close</button>
+        </div>
+        <div id='pause'>
+            <h1>Waiting for new game...</h1>
+        </div>
     </div>
     <script src="console.js"></script>
 </body>

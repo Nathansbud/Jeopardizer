@@ -1,9 +1,4 @@
-let bc = {};
-if(window.BroadcastChannel) {
-    bc = new BroadcastChannel('Jeopardizer')
-} else {
-    alert("Jeopardizer requires the BroadcastChannel API, which is unfortunately not available in your browser. Try updating to the latest version, or switch to a different one!") 
-}
+const bc = new BroadcastChannel2('Jeopardizer')
 
 const corsUrl =  "https://dork.nathansbud-cors.workers.dev/?" //Credit to: https://github.com/Zibri/cloudflare-cors-anywhere/blob/master/index.js
 const buzzUrl = "https://buzzin.live/host"
@@ -116,9 +111,9 @@ const hide = (elem, useNone=true) => elem.style.display = (useNone) ? ('none') :
 
 bc.onmessage = function(msg) {
     console.log(msg)
-    const action = msg.data.action
+    const action = msg.action
     const receivedAt = msg.timestamp
-    const data = msg.data.response
+    const data = msg.response
     if(data.src === "CONSOLE" && data.cid === cid) { 
         switch(action) {
             case "HEARTBEAT":
@@ -314,7 +309,7 @@ function setup() {
     customLabel.textContent = "Select File..."
 
     if(startButton.getAttribute('disabled')) startButton.removeAttribute('disabled')
-    if(window.BroadcastChannel) {
+    if(bc) {
         setState(startDiv)
     } else {
         setState(incompatibleDiv)
@@ -372,6 +367,7 @@ window.onload = function() {
                     }
                 }).catch((e) => {
                     setup()
+                    console.log(e)
                     
                     errorText.style.display = 'block'
                     errorText.textContent = "J-Archive is offline! Try again later, or choose a custom game instead.";
@@ -614,7 +610,7 @@ function showQuestion(cell) {
 function extractAnswer(clue) {
     let aa = clue?.querySelector('div')?.getAttribute('onmouseover')
     if(aa) {
-        return aa.match(answerCaptureAlt)[1].trim().replace(/<\/?i>/g, "")
+        return aa.match(answerCapture)[1].trim().replace(/<\/?i>/g, "")
     } else {
         return ""
     }

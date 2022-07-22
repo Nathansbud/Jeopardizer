@@ -1,4 +1,4 @@
-const bc = new BroadcastChannel('Jeopardizer')
+const bc = new BroadcastChannel2('Jeopardizer')
 
 const mainDiv = document.getElementById('main')
 const questionDiv = document.getElementById('question')
@@ -240,9 +240,10 @@ buzzerButton.addEventListener('click', () => {
 })
 
 bc.onmessage = function(msg) {
-    const action = msg.data.action
-    const data = msg.data.response
-    if(data.src == "CLIENT") { 
+    console.log(msg)
+    const action = msg.action
+    const data = msg.response
+    if(data?.src == "CLIENT") { 
         switch(action) {
             case "HEARTBEAT":            
                 sendMessage("HEARTBEAT")

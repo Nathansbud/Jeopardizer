@@ -18,6 +18,12 @@ Questions can also be designed as "final" to have question screen display Final 
 
 J-Archive is wonderful, but only archives the _text_ content of questions, and cannot archive what was not seen in a real game. Games with missing questions will be rendered as gaps on the board in Jeopardizer, and questions which may have originally had media on the show (e.g. "The building seen here...") will not render said media (unfortunately, J-Archive does not have it).
 
+## Credits 
+
+- Full credit to J-Archive for all of their data, this app wouldn't be possible without them
+- BroadcastChannel polyfill courtesy of [pubkey/broadcast-channel](https://github.com/pubkey/broadcast-channel)
+
+
 ## What's the deal with the /app/ folder?
 
 Jeopardizer was originally a Java applet, revamped as a webapp for increased usability. Though hopefully functional, it hasn't been tested in several years, and is not actively maintained. Installation and controls are provided if desired:

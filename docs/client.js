@@ -1,13 +1,14 @@
-/*Todo:
+let bc = {};
+if(window.BroadcastChannel) {
+    bc = new BroadcastChannel('Jeopardizer')
+} else {
+    alert("Jeopardizer requires the BroadcastChannel API, which is unfortunately not available in your browser. Try updating to the latest version, or switch to a different one!") 
+}
 
-- Custom Games
-    - Support media, multiplier (e.g. n -> 200n..1000n), DD #...
-*/
-
-const bc = new BroadcastChannel('Jeopardizer')
 const corsUrl =  "https://dork.nathansbud-cors.workers.dev/?" //Credit to: https://github.com/Zibri/cloudflare-cors-anywhere/blob/master/index.js
 const buzzUrl = "https://buzzin.live/host"
-const answerCapture = new RegExp(`(?<=<em class=\\\\?"correct_response\\\\?">)(.*)(?=</em>)`)
+const answerCapture = new RegExp(`<em class=\\\\?"correct_response\\\\?">(.*)</em>`)
+
 const lastSeason = [7123,7121,7119,7117,7116,7114,7113,7112,7111,7110,7108,7107,7106,7105,7104,7102,7100,7098,7096,7094,7091,7089,7087,7085,7083,7078,7076,7075,7074,7073,7068,7066,7064,7062,7060,7058,7057,7055,7054,7053,7049,7048,7047,7046,7045,7043,7042,7041,7040,7039,7038,7037,7036,7035,7034,7033,7032,7031,7030,7029,7028,7027,7026,7025,7024,7023,7022,7021,7020,7019,7018,7017,7016,7015,7014,7013,7012,7011,7010,7009,7008,7005,7004,7003,7002,6999,6997,6996,6995,6994,6993,6992,6991,6990,6989,6987,6986,6985,6984,6983,6981,6980,6979,6977,6976,6974,6972,6971,6969,6968,6967,6966,6964,6963,6962,6961,6960,6958,6957,6955,6953,6951,6950,6949,6948,6947,6945,6944,6943,6942,6938,6937,6935,6934,6933,6932,6931,6930,6928,6927,6924,6923,6922,6921,6920,6917,6916,6915,6913,6911,6906,6904,6903,6902,6901,6900,6899,6898,6897,6896,6895,6894,6893,6892,6891,6890,6889,6888,6887,6886,6885,6884,6883,6882,6881,6880,6879,6878,6877,6876,6872,6871,6870,6869,6868,6866,6865,6864,6863,6862,6861,6860,6859,6858,6857,6856,6855,6854,6853,6852,6851,6850,6849,6848,6847,6846,6845,6844,6843,6842,6841,6840,6839,6838,6837,6835,6834,6833,6832,6831,6830,6829,6828,6827,6826,6825,6824,6823,6822,6821,6699,6697,6695,6694,6691,6686,6684,6682,6680,6678,6672,6670,6667,6666,6664,6659,6657,6655,6653,6651,6623,6622,6620,6618,6616,6614,6612,6610,6608,6607,6605,6604,6603,6602,6601,6600,6599,6598,6597,6596,6593,6592,6591,6590,6589,6588,6587,6586,6585,6584,6583,6582,6581,6580,6579,6578,6577,6576,6575,6574,6571,6570,6569,6568,6567,6565,6564,6562,6561,6557,6556,6555,6554,6553,6552,6551,6550,6549,6548,6547,6545,6544,6543,6542,6541,6540,6539,6538,6537,6536,6535,6534,6533,6532,6531,6530,6529,6528,6525,6524,6523,6520,6517,6514,6513,6512,6511,6510,6509,6508,6507,6506,6505,6504,6503,6502,6501,6500,6499,6498,6497,6496,6495,6493,6491,6486,6485,6484,6483,6482,6481,6480,6479,6478,6477,6473,6472,6471,6470,6469,6468,6467,6466,6465,6464,6463,6462,6461,6460,6459,6456,6455,6454,6453,6452,6451,6450,6449,6448,6447,6446,6445,6444,6443,6442,6441,6440,6439,6438,6437,6434,6433,6432,6431,6429,6426,6425,6424,6423,6422,6420,6419,6418,6417,6416,6414,6413,6412,6411,6410]
 
 const sfxNames = ["Time Out", "Daily Double", "Final Jeopardy", "Question Open", "Round Over"]
@@ -16,6 +17,7 @@ const SFX = sfxNames.map(n => new Audio(`./data/${n}.mp3`))
 const fullscreenDiv = document.getElementById('fullscreen')
 const startDiv = document.getElementById("start")
 const advancedDiv = document.getElementById('advanced')
+const incompatibleDiv = document.getElementById('incompatible')
 
 const startForm = document.getElementById('start_form')
 const gameId = document.getElementById('game_id')
@@ -53,7 +55,7 @@ let timeLimit = null
 const pauseDiv = document.getElementById("pause")
 let customGame = null
 
-let divs = [startDiv, gameDiv, questionDiv, scoresDiv, pauseDiv]
+let divs = [startDiv, gameDiv, questionDiv, scoresDiv, pauseDiv, incompatibleDiv]
 let cid = Date.now() /* todo: localStorage this and link it to the console */
 let coid = null
 
@@ -113,6 +115,7 @@ const show = (elem, as='block') => elem.style.display = as
 const hide = (elem, useNone=true) => elem.style.display = (useNone) ? ('none') : ('hidden')
 
 bc.onmessage = function(msg) {
+    console.log(msg)
     const action = msg.data.action
     const receivedAt = msg.timestamp
     const data = msg.data.response
@@ -311,7 +314,11 @@ function setup() {
     customLabel.textContent = "Select File..."
 
     if(startButton.getAttribute('disabled')) startButton.removeAttribute('disabled')
-    setState(startDiv)
+    if(window.BroadcastChannel) {
+        setState(startDiv)
+    } else {
+        setState(incompatibleDiv)
+    }
 }
 
 function launchConsole() {
@@ -607,7 +614,7 @@ function showQuestion(cell) {
 function extractAnswer(clue) {
     let aa = clue?.querySelector('div')?.getAttribute('onmouseover')
     if(aa) {
-        return aa.match(answerCapture)[0].trim().replace(/<\/?i>/g, "")
+        return aa.match(answerCaptureAlt)[1].trim().replace(/<\/?i>/g, "")
     } else {
         return ""
     }

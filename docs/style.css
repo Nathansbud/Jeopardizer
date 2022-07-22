@@ -2,7 +2,15 @@
     --jeopardy-blue: rgb(5, 20, 129);
     --jeopardy-gold: rgb(226, 176, 114);
     --jeopardy-red:  #dc143c;
-    --ddEnabled: "true";
+}
+
+/* Safari doesn't pick up CSS rules on body, for some reason? */
+#fullscreen {
+    background: var(--jeopardy-blue);
+    color: var(--jeopardy-gold);
+    text-align: center;
+    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+    overflow: hidden;
 }
 
 body, body:fullscreen {

@@ -110,7 +110,6 @@ const show = (elem, as='block') => elem.style.display = as
 const hide = (elem, useNone=true) => elem.style.display = (useNone) ? ('none') : ('hidden')
 
 bc.onmessage = function(msg) {
-    console.log(msg)
     const action = msg.action
     const receivedAt = msg.timestamp
     const data = msg.response
@@ -328,7 +327,6 @@ function launchConsole() {
     
     consoleWindow = window.open(consoleLoc, `${cid}_CONSOLE`, 'toolbar=0,location=0,menubar=0')
     if(buzzerCheckbox.checked && (!buzzerWindow || buzzerWindow.closed)) {
-        console.log("???")
         buzzerWindow = window.open(buzzUrl, `${cid}_BUZZERS`, 'toolbar=0,location=0,menubar=0')
     }
 
@@ -366,9 +364,7 @@ window.onload = function() {
                         localStorage.setItem('playedList', JSON.stringify([queryId]))
                     }
                 }).catch((e) => {
-                    setup()
-                    console.log(e)
-                    
+                    setup()                    
                     errorText.style.display = 'block'
                     errorText.textContent = "J-Archive is offline! Try again later, or choose a custom game instead.";
 

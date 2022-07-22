@@ -240,7 +240,6 @@ buzzerButton.addEventListener('click', () => {
 })
 
 bc.onmessage = function(msg) {
-    console.log(msg)
     const action = msg.action
     const data = msg.response
     if(data?.src == "CLIENT") { 

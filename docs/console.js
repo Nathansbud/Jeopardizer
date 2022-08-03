@@ -84,8 +84,6 @@ function closeQuestion() {
 
 window.onload = function() {
     backButton.addEventListener('click', closeQuestion)
-    document.addEventListener('keydown', (e) => e.key === "Escape" ? closeQuestion() : null)
-
     progressButton.addEventListener('click', () => {
         sendMessage("PROGRESS_ROUND")
         sendMessage("SHOW_BOARD")

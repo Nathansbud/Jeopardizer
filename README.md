@@ -8,7 +8,7 @@ Games are loaded from [J-Archive](https://j-archive.com/) by providing the ID of
 
 ## Custom Games
 
-By default, Jeopardizer pulls a provided J-Archive game. However, custom games can be defined as JSON files, and loaded in during game setup by the host. A [base template](./media/custom.json) is provided. Rounds can have any number of categories, and categories can have any number of questions, and round board size will always be `# Categories * Max(# Questions)` for consistency. 
+By default, Jeopardizer pulls a provided J-Archive game. However, custom games can be defined as JSON files, and loaded in during game setup by the host. A [base template](./media/custom.json) is provided. Rounds can have any number of categories, categories can have any number of questions, and round board size will always be `# Categories * Max(# Questions)` for consistency. 
 
 Question values can either be defined via a round multiplier (e.g. 2 for Double Jeopardy scoring), or on questions themselves. Daily doubles can either be assigned to specific questions, or a specific number can be designed per round which will be randomly assigned to (non-null) questions on the board. 
 

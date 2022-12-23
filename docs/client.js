@@ -397,8 +397,7 @@ function startGame(gameObj) {
     if(!passed) {
         const errorMsg = `Failed to load game: ${reason ?? 'unknown reason'}`
         errorText.textContent = errorMsg;
-        errorMsg.style.display = 'block';
-        console.log(errorMsg);
+        errorText.style.display = 'block';
         return;
     } else {
         errorText.style.display = 'none';

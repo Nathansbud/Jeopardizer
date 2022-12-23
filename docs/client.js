@@ -520,7 +520,7 @@ function loadGame(config) {
             roundBoard[0][column] = {category: category, comment: comment}
             for(let row = 0; row < requiredRows; row++) {
                 const ques = clues[row] ?? {};
-                const { question, answer, value, dd, final } = ques;
+                const { question, answer, value, dd } = ques;
                 const baseValue = 200 * (row + 1);
                 if(!answer) validDds.delete(row * numCategories + column)
                 roundBoard[row + 1][column] = {
@@ -532,7 +532,7 @@ function loadGame(config) {
                     category: category,
                     comment: comment,
                     dd: Boolean(dd ?? false),
-                    final: final,
+                    final: ques.final ?? cat.final ?? round.final,
                     client: true
                 }
             }
@@ -669,7 +669,8 @@ async function getGame(gid) {
             },
             {
                 "name": "final_jeopardy",
-                "categories": roundSet[2]
+                "categories": roundSet[2],
+                "final": true
             }
         ]
     }

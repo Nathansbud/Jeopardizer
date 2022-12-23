@@ -538,7 +538,16 @@ function loadGame(config) {
                     let mediaItem;
                     switch(type) {
                         case "audio":
-                            mediaItem = new Audio(path);
+                            mediaItem = new Audio(path);    
+                            mediaItem.currentTime = metadata.start ?? 0;
+                            if(metadata.end) {
+                                mediaItem.addEventListener('timeupdate', () => {
+                                    if(mediaItem.currentTime >= metadata.end) {
+                                        mediaItem.pause();
+                                        mediaItem.currentTime = metadata.start ?? 0;
+                                    }
+                                })
+                            }
                             break;
                         default: 
                             console.log(`Attempted to load unsupported media type: ${type}`)
@@ -741,8 +750,8 @@ function hideMedia() {
         const { media, metadata, type } = mediaEntry;
         switch(type) {
             case "audio":
-                media.currentTime = 0;
                 media.pause();
+                media.currentTime = metadata.start ?? 0;
                 break;
             default:
                 console.log("Tried to display unsupported media type!")

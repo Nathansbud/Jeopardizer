@@ -14,6 +14,8 @@ Question values can either be defined via a round multiplier (e.g. 2 for Double 
 
 Questions can also be designed as "final" to have question screen display Final Jeopardy rather than Daily Double, and rounds themselves can have _mode_ "final" in order to stop progression after that round (future rounds can still be selected via dropdown, in the event of tiebreakers or additional rounds). Note that designating a round with mode final does not enforce wager logic (i.e. a normal round could be designated the final round).
 
+Media support is currently being implemented, by way of the `media` property on a question. Question media has a type (audio, image, video), a path (URL), and various metadata properties (primarily: `start`, `stop` for audio/video, `width`, `height` for image/video). If a question has available media, the media can be (dis)played via console. For browser security reasons, media unfortunately **cannot be specified via a local path**. However, local files can be served on a URL by spinning up a local server in the desired directory; I recommend [http-server](https://www.npmjs.com/package/http-server), which supports range requests (unfortunately, Python `http.server` and `SimpleHTTPServer` do not, which prevents custom start points, at least in Google Chrome). 
+
 ## Known Limitations
 
 J-Archive is wonderful, but only archives the _text_ content of questions, and cannot archive what was not seen in a real game. Games with missing questions will be rendered as gaps on the board in Jeopardizer, and questions which may have originally had media on the show (e.g. "The building seen here...") will not render said media (unfortunately, J-Archive does not have it).

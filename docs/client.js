@@ -9,6 +9,8 @@ const lastSeason = [7123,7121,7119,7117,7116,7114,7113,7112,7111,7110,7108,7107,
 const sfxNames = ["Time Out", "Daily Double", "Final Jeopardy", "Question Open", "Round Over"]
 const SFX = sfxNames.map(n => new Audio(`./data/${n}.mp3`))
 
+let mediaMap = {}
+
 const fullscreenDiv = document.getElementById('fullscreen')
 const startDiv = document.getElementById("start")
 const advancedDiv = document.getElementById('advanced')
@@ -111,17 +113,9 @@ const hide = (elem, useNone=true) => elem.style.display = (useNone) ? ('none') :
 
 bc.onmessage = function(msg) {
     const action = msg.action
-    const receivedAt = msg.timestamp
     const data = msg.response
     if(data.src === "CONSOLE" && data.cid === cid) { 
         switch(action) {
-            case "HEARTBEAT":
-                if(data.coid === coid) {
-                    heartbeatLast = heartbeatCurrent
-                    heartbeatCurrent = receivedAt
-                }
-                console.log("Heartbeat received...")
-                break
             case "LINK_CONSOLE":
                 console.log("Loading game...")
                 coid = data.coid
@@ -130,8 +124,9 @@ bc.onmessage = function(msg) {
                 break
             case "CONSOLE_CLOSE":
                 if(data.coid === coid) {
-                    coid = null
+                    coid = null;
                     if(activeState() != startDiv) {
+                        hideMedia();
                         setState(pauseDiv)
                     }
                 }
@@ -184,7 +179,10 @@ bc.onmessage = function(msg) {
                 }
                 break
             case "CLOSE_QUESTION":
-                if(data.coid === coid) setState(gameDiv)
+                if(data.coid === coid) {
+                    hideMedia();
+                    setState(gameDiv)
+                }
                 break
             case "PROGRESS_ROUND":
                 if(data.coid === coid) progressRound()
@@ -199,6 +197,17 @@ bc.onmessage = function(msg) {
             case "PAUSE_SFX":
                 if(data.coid === coid) playSFX(data.sfx) //null if pause
                 break
+            
+            case "PLAY_MEDIA":
+                if(data.coid === coid) {
+                    showMedia();
+                }
+                break;
+            case "PAUSE_MEDIA":
+                if(data.coid === coid) {
+                    hideMedia();
+                }
+                break;
             case "RESTART":
                 if(data.coid === coid) setup()
                 break
@@ -519,9 +528,32 @@ function loadGame(config) {
             roundBoard[0][column] = {category: category, comment: comment}
             for(let row = 0; row < requiredRows; row++) {
                 const ques = clues[row] ?? {};
-                const { question, answer, value, dd } = ques;
+                const { question, answer, value, dd, media } = ques;
                 const baseValue = 200 * (row + 1);
+                const questionKey = `${roundName}-${row}-${column}`;
+                
                 if(!answer) validDds.delete(row * numCategories + column)
+                if(media) {
+                    const { type, path, metadata } = media;
+                    let mediaItem;
+                    switch(type) {
+                        case "audio":
+                            mediaItem = new Audio(path);
+                            break;
+                        default: 
+                            console.log(`Attempted to load unsupported media type: ${type}`)
+                            break;
+                    }
+                    
+                    if(mediaItem) {
+                        mediaMap[questionKey] = {
+                            media: mediaItem,
+                            metadata: metadata,
+                            type: type,
+                        }
+                    }
+                }
+
                 roundBoard[row + 1][column] = {
                     cell: `${roundName}-${row}-${column}`,
                     idx: row * numCategories + column,  
@@ -532,12 +564,12 @@ function loadGame(config) {
                     comment: comment,
                     dd: Boolean(dd ?? false),
                     final: ques.final ?? cat.final ?? round.final,
-                    client: true
+                    client: true,
+                    media: !!media
                 }
             }
         }
 
-        
         const ddIndices = shuffle(Array.from(validDds)).slice(0, Math.min(Math.abs(dds ?? 0), validDds.size))
         ddIndices.forEach(dd => {
             roundBoard[1 + Math.floor(dd / numCategories)][dd % numCategories].dd = true;
@@ -583,7 +615,7 @@ function loadGame(config) {
         };
     }
     
-    return {
+    return {    
         passed: true,
         data: parsedData,
         settings: {
@@ -632,7 +664,6 @@ async function getGame(gid) {
     const gameDate = new Date(header.split("-")[1]) //something like "Friday, October 18, 2019"
     const categorySet = {}
     
-
     let rounds = Array.from(pageContent.getElementsByClassName("round")).concat(Array.from(pageContent.getElementsByClassName("final_round")))
     let categories = getCategories(rounds)
     let questions = rounds.map(r => Array.from(r.getElementsByClassName("clue")))
@@ -687,6 +718,37 @@ function playSFX(sf) {
         }
     }
     if(sf) SFX[sfxNames.indexOf(sf)].play()
+}
+
+function showMedia() {
+    const mediaEntry = mediaMap[currentCell?.dataset.cell];
+    if(mediaEntry) {
+        const { media, metadata, type } = mediaEntry;
+        switch(type) {
+            case "audio":
+                media.play();
+                break;
+            default:
+                console.log("Tried to display unsupported media type!")
+                break;
+        }
+    }
+}
+
+function hideMedia() {
+    const mediaEntry = mediaMap[currentCell?.dataset.cell];
+    if(mediaEntry) {
+        const { media, metadata, type } = mediaEntry;
+        switch(type) {
+            case "audio":
+                media.currentTime = 0;
+                media.pause();
+                break;
+            default:
+                console.log("Tried to display unsupported media type!")
+                break;
+        }
+    }
 }
 
 

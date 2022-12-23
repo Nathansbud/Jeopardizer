@@ -35,8 +35,12 @@ const resetButton = document.getElementById('reset_button')
 const buzzerButton = document.getElementById('buzzer_button')
 
 const sfxDropdown = document.getElementById('sfx_dropdown')
-const playButton = document.getElementById('play_sfx')
-const pauseButton = document.getElementById('pause_sfx')
+
+const playSFX = document.getElementById('play_sfx')
+const pauseSFX = document.getElementById('pause_sfx')
+
+const playMedia = document.getElementById('play_media')
+const pauseMedia = document.getElementById('pause_media')
 
 const timerControls = document.getElementById('timer')
 const timerText = document.getElementById('round_timer')
@@ -138,8 +142,13 @@ window.onload = function() {
     })
 
     resetButton.addEventListener('click', restart)
-    playButton.addEventListener('click', () => sendMessage("PLAY_SFX", [['sfx', sfxDropdown.options[sfxDropdown.selectedIndex].value]]))
-    pauseButton.addEventListener('click', () => sendMessage("PAUSE_SFX"))
+    
+    playSFX.addEventListener('click', () => sendMessage("PLAY_SFX", [['sfx', sfxDropdown.options[sfxDropdown.selectedIndex].value]]))
+    pauseSFX.addEventListener('click', () => sendMessage("PAUSE_SFX"))
+
+    playMedia.addEventListener('click', () => sendMessage("PLAY_MEDIA"))
+    pauseMedia.addEventListener('click', () => sendMessage("PAUSE_MEDIA"))
+
     timerButton.addEventListener('click', () => {
         if(timerButton.textContent == 'Start Timer') {
             timerButton.textContent = 'Pause Timer'
@@ -242,9 +251,6 @@ bc.onmessage = function(msg) {
     const data = msg.response
     if(data?.src == "CLIENT") { 
         switch(action) {
-            case "HEARTBEAT":            
-                sendMessage("HEARTBEAT")
-                break
             case "LINK_CLIENT":
                 console.log("Received linking message...linking console...")
                 if(!cid) {

@@ -331,6 +331,29 @@
             ]
         },
         {
+            "name": "custom-media",
+            "categories": [
+                {
+                    "category": "Name That Tune!",
+                    "comment": "Audio test",
+                    "clues": [
+                        {
+                            "question": "Banger?",
+                            "answer": "obvi",
+                            "media": {
+                                "type": "audio",
+                                "path": "http://localhost:8000/01%20-%20Against%20All%20Logic%20-%20Fantasy.mp3",
+                                "metadata": {
+                                    "start": 5,
+                                    "end": 6
+                                }
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
             "name": "nonstandard-final",
             "mode": "final",
             "categories": [

@@ -23,7 +23,7 @@ body, body:fullscreen {
 
 body, #game-container, div, .game_table {background: var(--jeopardy-blue);}
 
-div:not(#start):not(.game-container):not(.show), #final_text, .footnote_text, #daily_double, button[data-manual='false'], .hide {
+div:not(#start):not(.game-container):not(.show), #final_text, .footnote_text, #daily_double, button[data-manual='false'], [data-manual='support'], .hide {
     display: none;
 }
 
@@ -162,3 +162,15 @@ form label {
 .center_container button {
     margin: 5px;
 } 
+
+#media {
+    width: 100vw;
+    height: 100vh;
+}
+
+img {
+    border: 2px solid white;
+    position: relative;
+    top: 50%;
+    transform: translateY(-50%);
+}

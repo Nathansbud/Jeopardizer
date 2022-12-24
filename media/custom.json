@@ -350,6 +350,24 @@
                             }
                         }
                     ]
+                },
+                {
+                    "category": "Picture This!",
+                    "comment": "Image test",
+                    "clues": [
+                        {
+                            "question": "wot",
+                            "answer": "wat",
+                            "media": {
+                                "type": "image",
+                                "path": "http://localhost:8000/LOUD.jpg",
+                                "metadata": {
+                                    "width": 500,
+                                    "height": 500
+                                }
+                            }
+                        }
+                    ]
                 }
             ]
         },

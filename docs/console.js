@@ -77,8 +77,19 @@ const isQuestion = () => getState() == "Question"
 const isMain = () => getState() == "Main"
 
 function closeQuestion() {
-    Array.from(document.querySelectorAll('button[data-manual]')).forEach(sb => {
-        sb.style.display = sb.getAttribute('data-manual') == 'true' ? ('inline') : ('none')
+    Array.from(document.querySelectorAll('[data-manual]')).forEach(sb => {
+        switch(sb.dataset.manual) {
+            case 'true':
+                sb.style.display = 'inline';
+                break;
+            case 'support':
+                // could change this, but the idea is just hidden non-inline elements for spacing
+                sb.style.display = 'block';
+                break;
+            case 'false':
+                sb.style.display = 'none';
+                break;
+        }
     })
     sendMessage("CLOSE_QUESTION")
     boardDisplay.style.display = 'block'

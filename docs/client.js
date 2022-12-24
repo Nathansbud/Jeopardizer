@@ -37,6 +37,7 @@ const relaunchButton = document.getElementById('relaunch_button')
 
 const gameDiv = document.getElementById("game")
 const questionDiv = document.getElementById("question")
+const mediaDiv = document.getElementById("media")
 
 let currentCell = null
 const currentCategory = document.getElementById("question_category")
@@ -52,7 +53,7 @@ let timeLimit = null
 const pauseDiv = document.getElementById("pause")
 let customGame = null
 
-let divs = [startDiv, gameDiv, questionDiv, scoresDiv, pauseDiv, incompatibleDiv]
+let divs = [startDiv, gameDiv, questionDiv, mediaDiv, scoresDiv, pauseDiv, incompatibleDiv]
 let cid = Date.now() /* todo: localStorage this and link it to the console */
 let coid = null
 
@@ -279,6 +280,10 @@ function regressRound() {
             break
         }
     }
+}
+
+function cleanup(elem) {
+    while(elem.lastChild) elem.removeChild(elem.lastChild);
 }
 
 function updateScoreList() {
@@ -549,6 +554,15 @@ function loadGame(config) {
                                 })
                             }
                             break;
+                        case "image":
+                            mediaItem = new Image();
+                            if(metadata.width) mediaItem.width = metadata.width;
+                            if(metadata.height) mediaItem.height = metadata.height;
+                            
+                            // idk anything about css
+                            mediaItem.style.maxWidth = 500;
+                            mediaItem.style.maxHeight = 500;
+                            mediaItem.src = path;
                         default: 
                             console.log(`Attempted to load unsupported media type: ${type}`)
                             break;
@@ -737,6 +751,11 @@ function showMedia() {
             case "audio":
                 media.play();
                 break;
+            case "image":
+                cleanup(mediaDiv); 
+                mediaDiv.appendChild(media);
+                setState(mediaDiv);
+                break;
             default:
                 console.log("Tried to display unsupported media type!")
                 break;
@@ -752,6 +771,9 @@ function hideMedia() {
             case "audio":
                 media.pause();
                 media.currentTime = metadata.start ?? 0;
+                break;
+            case "image":
+                setState(questionDiv);
                 break;
             default:
                 console.log("Tried to display unsupported media type!")

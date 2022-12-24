@@ -558,11 +558,26 @@ function loadGame(config) {
                             mediaItem = new Image();
                             if(metadata.width) mediaItem.width = metadata.width;
                             if(metadata.height) mediaItem.height = metadata.height;
-                            
-                            // idk anything about css
-                            mediaItem.style.maxWidth = 500;
-                            mediaItem.style.maxHeight = 500;
                             mediaItem.src = path;
+                            break;
+                        case "video":
+                            mediaItem = document.createElement("video");
+                            mediaItem.currentTime = metadata.start ?? 0;
+                            mediaItem.src = path;
+                            mediaItem.controls = false;
+
+                            if(metadata.width) mediaItem.width = metadata.width;
+                            if(metadata.height) mediaItem.height = metadata.height;
+
+                            if(metadata.end) {
+                                mediaItem.addEventListener('timeupdate', () => {
+                                    if(mediaItem.currentTime >= metadata.end) {
+                                        mediaItem.pause();
+                                        mediaItem.currentTime = metadata.start ?? 0;
+                                    }
+                                })
+                            }
+                            break;
                         default: 
                             console.log(`Attempted to load unsupported media type: ${type}`)
                             break;
@@ -756,6 +771,12 @@ function showMedia() {
                 mediaDiv.appendChild(media);
                 setState(mediaDiv);
                 break;
+            case "video":
+                cleanup(mediaDiv);
+                mediaDiv.appendChild(media);
+                setTimeout(() => media.play(), 500);
+                setState(mediaDiv);
+                break;
             default:
                 console.log("Tried to display unsupported media type!")
                 break;
@@ -773,6 +794,11 @@ function hideMedia() {
                 media.currentTime = metadata.start ?? 0;
                 break;
             case "image":
+                setState(questionDiv);
+                break;
+            case "video":
+                media.pause();
+                media.currentTime = metadata.start ?? 0;
                 setState(questionDiv);
                 break;
             default:

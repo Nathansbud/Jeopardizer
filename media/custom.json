@@ -338,11 +338,11 @@
                     "comment": "Audio test",
                     "clues": [
                         {
-                            "question": "Banger?",
-                            "answer": "obvi",
+                            "question": "This song has a lot of bleeps and bloops",
+                            "answer": "SoundHelix Song 1 (idk it was stock audio I found online)",
                             "media": {
                                 "type": "audio",
-                                "path": "http://localhost:8000/01%20-%20Against%20All%20Logic%20-%20Fantasy.mp3",
+                                "path": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
                                 "metadata": {
                                     "start": 50,
                                     "end": 60
@@ -356,14 +356,34 @@
                     "comment": "Image test",
                     "clues": [
                         {
-                            "question": "wot",
-                            "answer": "wat",
+                            "question": "The image seen here is not a natural number",
+                            "answer": "Zero",
                             "media": {
                                 "type": "image",
-                                "path": "http://localhost:8000/LOUD.jpg",
+                                "path": "https://d138zd1ktt9iqe.cloudfront.net/media/seo_landing_files/zero-is-not-a-natural-number-1612769491.png",
                                 "metadata": {
-                                    "width": 500,
-                                    "height": 500
+                                    "width": 781.5,
+                                    "height": 560.25
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    "category": "Heartbreak Feels Good!",
+                    "comment": "Video test",
+                    "clues": [
+                        {
+                            "question": "The planet seen here goes round and round...",
+                            "answer": "Earth",
+                            "media": {
+                                "type": "video",
+                                "path": "https://file-examples.com/storage/fe332cf53a63a4bd5991eb4/2017/04/file_example_MP4_480_1_5MG.mp4",
+                                "metadata": {
+                                    "width": 480,
+                                    "height": 270,
+                                    "start": 20,
+                                    "end": 30
                                 }
                             }
                         }

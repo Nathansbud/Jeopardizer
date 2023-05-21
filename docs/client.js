@@ -476,6 +476,7 @@ function loadCustom() {
             customGame = JSON.parse(e.target.result)
             customLabel.textContent = customSelector.files[0].name
         } catch(e) {
+            console.log(e)
             customGame = null
             customLabel.textContent = 'Invalid file!'
         }
@@ -673,12 +674,7 @@ function showQuestion(cell) {
 }
 
 function extractAnswer(clue) {
-    let aa = clue?.querySelector('div')?.getAttribute('onmouseover')
-    if(aa) {
-        return aa.match(answerCapture)[1].trim().replace(/<\/?i>/g, "")
-    } else {
-        return ""
-    }
+    return clue?.querySelector('.correct_response')?.textContent;   
 }
 
 function getCategories(tables) {
@@ -686,8 +682,7 @@ function getCategories(tables) {
                  .map(c => c.map(function(cn) {
                      return {
                          "category":cn.querySelector(".category_name").textContent.trim(),
-                         "comment":cn.querySelector('.category_comments').textContent.trim(),
-                         "answer":extractAnswer(cn) //only for final round; is null otherwise!
+                         "comment":cn.querySelector('.category_comments').textContent.trim()
                         }
                     }))
 }
@@ -715,9 +710,8 @@ async function getGame(gid) {
     let roundSet = []
     for(let [i, r] of categories.entries()) {
         for(let [j, cat] of Array.from(r).entries()) {
-            if(i < 2) cat['clues'] = questions[i].filter((elem, idx) => ((idx - j) % 6) === 0)
-            else cat['clues'] = [{question: questions[i][0]['question'], answer: cat['answer']}]
-            delete cat['answer']
+            if(i < 2) cat['clues'] = questions[i].filter((_, idx) => ((idx - j) % 6) === 0)
+            else cat['clues'] = [{question: questions[i][0]['question'], answer: questions[i][0]['answer']}]
         }             
         roundSet.push(r)
     }

@@ -327,7 +327,8 @@ bc.onmessage = function(msg) {
                     currentAnswer.textContent = data.answer
                     currentQuestion.textContent = data.question
                     currentCategory.textContent = data.category
-                    currentValue.textContent = "$"+data.value
+                    currentValue.textContent = data.label + (data.label === `$${data.value}` ? '' : ` (${data.value})`)
+
                     questionValue = parseInt(data.value)
 
                     const relevantQuestion = document.querySelector(`[data-cell='${data.cell}']`)
@@ -434,7 +435,8 @@ function updateBoard() {
                     Object.entries(cell).forEach(([k, v]) => {
                         if(!k.startsWith("client")) newCell.dataset[k] = v
                     })   
-                    newCell.textContent = `$${cell.value}`
+                    
+                    newCell.textContent = cell.label
                     if(cell.disabled) newCell.classList.add("seen")
                 }
 

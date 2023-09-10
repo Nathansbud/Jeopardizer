@@ -149,8 +149,9 @@ bc.onmessage = function(msg) {
                 break
             case "OPEN_QUESTION":
                 if(data.coid === coid) {
-                    if([data.dd, data.final].includes('true')) {
-                        dailyDoubleText.textContent = (data.dd === 'true') ? ("DAILY DOUBLE") : ("FINAL JEOPARDY")
+                    const isTrue = v => ['true', true].includes(v)
+                    if([data.dd, data.final].some(isTrue)) {
+                        dailyDoubleText.textContent = isTrue(data.dd) ? ("DAILY DOUBLE") : ("FINAL JEOPARDY")
                         dailyDoubleText.style.display = 'block'
                         currentQuestion.style.display = 'none'
                         currentValue.style.display = 'none'
@@ -165,7 +166,9 @@ bc.onmessage = function(msg) {
                 }
                 break
             case "SET_VALUE":
-                if(data.coid === coid) currentValue.textContent = `$${data.value}`
+                if(data.coid === coid) {
+                    currentValue.textContent = data.label;
+                }
                 break
             case "CELL_CLICKED": 
                 if(data.coid == coid) {
@@ -534,7 +537,7 @@ function loadGame(config) {
             roundBoard[0][column] = {category: category, comment: comment}
             for(let row = 0; row < requiredRows; row++) {
                 const ques = clues[row] ?? {};
-                const { question, answer, value, dd, media } = ques;
+                const { question, answer, value, dd, media, label } = ques;
                 const baseValue = 200 * (row + 1);
                 const questionKey = `${roundName}-${row}-${column}`;
                 
@@ -592,13 +595,16 @@ function loadGame(config) {
                         }
                     }
                 }
+                
+                const computedValue = value ?? (baseValue * (multiplier ?? 1));
 
                 roundBoard[row + 1][column] = {
                     cell: `${roundName}-${row}-${column}`,
                     idx: row * numCategories + column,  
                     question: question ?? "",
                     answer: answer ?? "",
-                    value: value ?? (baseValue * (multiplier ?? 1)),
+                    value: computedValue,
+                    label: label ?? `$${computedValue}`,
                     category: category,
                     comment: comment,
                     dd: Boolean(dd ?? false),
@@ -631,14 +637,15 @@ function loadGame(config) {
             row.forEach(q => {
                 const cell = document.createElement("td");
                 cell.classList.add('question_cell');
-                cell.textContent = `$${q.value}`
+                cell.textContent = q.label;  
                 cell.setAttribute('disabled', !!!q.answer);
                 cell.addEventListener('click', function() {
                     if(this.getAttribute('disabled').includes('false')) {
                         showQuestion(this)
                         this.dataset.seen = "true"
                     }
-                })  
+                })
+                
                 Object.entries(q).forEach(([k, v]) => {cell.dataset[k] = v});
                 newRow.appendChild(cell);
             })
@@ -668,7 +675,7 @@ function showQuestion(cell) {
     
     currentCategory.textContent = cell.getAttribute('data-category')
     currentQuestion.textContent = cell.getAttribute('data-question')
-    currentValue.textContent = `$${cell.getAttribute('data-value')}`
+    currentValue.textContent = cell.getAttribute('data-label')
 
     sendMessage("LOAD_QUESTION", Object.entries(cell.dataset))
 }

@@ -352,7 +352,9 @@ bc.onmessage = function(msg) {
                     })
                     setState(questionDiv)
                     boardDisplay.style.display = 'none'
-                    sendMessage("OPEN_QUESTION", params=[["dd", data.dd && settings.ddEnabled], ["final", data.final]])
+                    const isTrue = v => ['true', true].includes(v)
+                    
+                    sendMessage("OPEN_QUESTION", params=[["dd", isTrue(data.dd) && settings.ddEnabled], ["final", data.final]])
                 }
                 break
             case "SET_ROUND":

@@ -18,11 +18,11 @@ Media support is currently being implemented, by way of the `media` property on 
 
 ## Known Limitations
 
-J-Archive is wonderful, but only archives the _text_ content of questions, and cannot archive what was not seen in a real game. Games with missing questions will be rendered as gaps on the board in Jeopardizer, and questions which may have originally had media on the show (e.g. "The building seen here...") will not render said media (unfortunately, J-Archive does not have it).
+J-Archive is wonderful, but their volunteers only archive the _text_ content of questions seen in episodes. Jeoparizer acts as a front-end to make J-Archive records playable, so questions which may have originally had associated media (e.g. "The building seen here...") or questions never chosen by players cannot be recreated.
 
 ## Credits 
 
-- Full credit to J-Archive for all of their data, this app wouldn't be possible without them
+- All credit to the dedicated archivists of J-Archive for the ability to play past games; non-custom games would not be possible otherwise!
 - BroadcastChannel polyfill courtesy of [pubkey/broadcast-channel](https://github.com/pubkey/broadcast-channel)
 
 

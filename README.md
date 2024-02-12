@@ -28,7 +28,9 @@ J-Archive is wonderful, but only archives the _text_ content of questions, and c
 
 ## What's the deal with the /app/ folder?
 
-Jeopardizer was originally a Java applet, revamped as a webapp for increased usability. Though hopefully functional, it hasn't been tested in several years, and is not actively maintained. Installation and controls are provided if desired:
+Jeopardizer was originally a Java applet, revamped as a webapp for increased usability. Though hopefully functional, it hasn't been tested in several years, and is not actively maintained. **As of 02/12/24, all scraped data from J-Archive has been removed from the repo.**
+
+Installation and controls are provided if desired:
 
 <details>
 <summary>Jeopardizer App Setup</summary>  

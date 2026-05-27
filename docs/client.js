@@ -505,8 +505,7 @@ function loadGame(config) {
             name, 
             multiplier, 
             categories, 
-            mode,
-            dds
+            mode
         } = round;
 
         const roundName = ("" + (name ?? `round-${roundNum + 1}`)).trim().toLowerCase()
@@ -528,9 +527,7 @@ function loadGame(config) {
             }
             return acc;
         }, 0)        
-        const roundBoard = [...Array(requiredRows + 1)].map(_ => Array(numCategories))
-        const validDds = new Set(getRange(numCategories * requiredRows));
-        
+        const roundBoard = [...Array(requiredRows + 1)].map(_ => Array(numCategories))        
         for(let [column, cat] of categories.entries()) {
             const { clues, comment, category } = cat;   
             
@@ -541,7 +538,6 @@ function loadGame(config) {
                 const baseValue = 200 * (row + 1);
                 const questionKey = `${roundName}-${row}-${column}`;
                 
-                if(!answer) validDds.delete(row * numCategories + column)
                 if(media) {
                     const { type, path, metadata } = media;
                     let mediaItem;
@@ -614,11 +610,6 @@ function loadGame(config) {
                 }
             }
         }
-
-        const ddIndices = shuffle(Array.from(validDds)).slice(0, Math.min(Math.abs(dds ?? 0), validDds.size))
-        ddIndices.forEach(dd => {
-            roundBoard[1 + Math.floor(dd / numCategories)][dd % numCategories].dd = true;
-        })
 
         const roundTable = document.createElement('table');
         roundTable.classList.add("game_table", roundName);
@@ -710,10 +701,11 @@ async function getGame(gid) {
                           .map(c => c.map(function(cn) {
                             return {
                                 "question": cn.querySelector('.clue_text')?.textContent.trim(),
-                                "answer": extractAnswer(cn) 
+                                "answer": extractAnswer(cn),
+                                "dd": !!cn.querySelector('.clue_value_daily_double'),
                             }
                           }))
-                          
+    
     let roundSet = []
     for(let [i, r] of categories.entries()) {
         for(let [j, cat] of Array.from(r).entries()) {
@@ -727,12 +719,10 @@ async function getGame(gid) {
         "rounds": [
             {
                 "name": "single_jeopardy",
-                "dds": 1,
                 "categories": roundSet[0]
             },
             {
                 "name": "double_jeopardy",
-                "dds": 2,
                 "multiplier": 2,
                 "categories": roundSet[1]
             },

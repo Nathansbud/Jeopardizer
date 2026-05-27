@@ -2,7 +2,6 @@
    "rounds": [
         {
             "name": "start-here",
-            "dds": 1,
             "categories":[
                 {
                     "category":"Sighs & Blunders", 
@@ -137,7 +136,6 @@
         },
         {
             "name": "non-standard-dimensions",
-            "dds": 2,
             "multiplier": 2,
             "categories": [
                 {
@@ -276,30 +274,34 @@
         },
         {
             "name": "oops-all-doubles",
-            "dds": 10,
             "categories": [
                 {
                     "category":"DD1",
                     "clues":[
                         {
                             "question":"TestQ",
-                            "answer":"TestA"
+                            "answer":"TestA",
+                            "dd": true
                         },
                         {
                             "question":"TestQ",
-                            "answer":"TestA"
+                            "answer":"TestA",
+                            "dd": true
                         },
                         {
                             "question":"TestQ",
-                            "answer":"TestA"
+                            "answer":"TestA",
+                            "dd": true
                         },
                         {
                             "question":"TestQ",
-                            "answer":"TestA"
+                            "answer":"TestA",
+                            "dd": true
                         },
                         {
                             "question":"TestQ",
-                            "answer":"TestA"
+                            "answer":"TestA",
+                            "dd": true
                         }
                     ]
                 },

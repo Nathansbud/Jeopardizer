@@ -1,4 +1,5 @@
 const bc = new BroadcastChannel2('Jeopardizer')
+const rootElement = document.querySelector(':root')
 
 const corsUrl =  "https://dork.nathansbud-cors.workers.dev/?" //Credit to: https://github.com/Zibri/cloudflare-cors-anywhere/blob/master/index.js
 const buzzUrl = "https://buzzin.live/host"
@@ -161,7 +162,7 @@ bc.onmessage = function(msg) {
                         currentValue.style.display = 'block'
                     }
                     setState(questionDiv)
-                    currentCell.style.color = 'grey'
+                    currentCell.style.color = getComputedStyle(rootElement).getPropertyValue("--jeopardy-blue")
                     currentCell.dataset.seen = 'true'
                 }
                 break
@@ -693,7 +694,6 @@ async function getGame(gid) {
 
     const header = pageContent.getElementById("game_title").textContent
     const gameDate = new Date(header.split("-")[1]) //something like "Friday, October 18, 2019"
-    const categorySet = {}
     
     let rounds = Array.from(pageContent.getElementsByClassName("round")).concat(Array.from(pageContent.getElementsByClassName("final_round")))
     let categories = getCategories(rounds)

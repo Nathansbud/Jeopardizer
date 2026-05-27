@@ -127,9 +127,12 @@ form label {
 
 #daily_double {color: var(--jeopardy-red);}
 #question {
+    color: white;
+}
+
+#fullscreen #question {
     padding-top: 25vh;
     padding-bottom: 25vh;
-    color: white;
 }
 #question * {margin: 10px;}
 .question_cell {cursor: grab;}
